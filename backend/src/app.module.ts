@@ -8,6 +8,7 @@ import { typeOrmConfig } from './config/database.config';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+
     }),
     TypeOrmModule.forRootAsync(typeOrmConfig),
   ],
