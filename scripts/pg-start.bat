@@ -72,7 +72,7 @@ echo Attente que PostgreSQL soit pret...
 timeout /t 3 /nobreak >nul
 
 echo.
-echo 🗄️  Creation de la base de donnees %DB_NAME%...
+echo Creation de la base de donnees %DB_NAME%...
 
 REM --- Définir le mot de passe pour éviter les prompts ---
 set PGPASSWORD=%DB_PASSWORD%
@@ -98,14 +98,14 @@ if %errorlevel% == 0 (
 
 REM --- Configure la timezone ---
 echo.
-echo 🌍 Configuration de la timezone...
+echo Configuration de la timezone...
 "%PG_BIN%\psql.exe" -U %DB_USER% -d %DB_NAME% -c "SET timezone = 'Europe/Brussels';"
 
 echo.
 echo ===========================================
-echo ✅ PostgreSQL est pret pour le projet %DB_NAME%
+echo PostgreSQL est pret pour le projet %DB_NAME%
 echo.
-echo 📋 Informations de connexion:
+echo Informations de connexion:
 echo    Host: localhost
 echo    Port: 5432
 echo    Database: %DB_NAME%
