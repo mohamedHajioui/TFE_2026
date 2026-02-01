@@ -80,17 +80,10 @@ set PGPASSWORD=%DB_PASSWORD%
 REM --- Vérifie si la base existe déjà ---
 "%PG_BIN%\psql.exe" -U %DB_USER% -lqt | findstr /i %DB_NAME% >nul 2>&1
 if %errorlevel% == 0 (
-    echo ⚠️  La base %DB_NAME% existe deja
-    echo Voulez-vous la supprimer et la recreer? (O/N)
-    set /p RECREATE=
-    if /i "%RECREATE%"=="O" (
-        echo Suppression de la base %DB_NAME%...
-        "%PG_BIN%\dropdb.exe" -U %DB_USER% %DB_NAME%
-        echo Creation de la nouvelle base %DB_NAME%...
-        "%PG_BIN%\createdb.exe" -U %DB_USER% %DB_NAME%
-    ) else (
-        echo Conservation de la base existante
-    )
+    echo La base %DB_NAME% existe deja - suppression automatique...
+    "%PG_BIN%\dropdb.exe" -U %DB_USER% %DB_NAME%
+    echo Creation de la nouvelle base %DB_NAME%...
+    "%PG_BIN%\createdb.exe" -U %DB_USER% %DB_NAME%
 ) else (
     echo Creation de la base %DB_NAME%...
     "%PG_BIN%\createdb.exe" -U %DB_USER% %DB_NAME%

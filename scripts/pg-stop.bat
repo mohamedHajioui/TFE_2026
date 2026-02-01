@@ -20,9 +20,9 @@ REM Arrête le service
 net stop %SERVICE_NAME%
 
 if %errorlevel%==0 (
-    echo ✅ PostgreSQL arrete avec succes !
+    echo PostgreSQL arrete avec succes !
 ) else (
-    echo ❌ Erreur : impossible d'arreter PostgreSQL.
+    echo Erreur : impossible d'arreter PostgreSQL.
     echo Verifie le nom du service dans le script.
 )
 
