@@ -7,13 +7,13 @@ export class TimeSlot {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'date' })
+  @Column()
   date: string;
 
-  @Column({ type: 'time' })
+  @Column()
   startTime: string; // "12:00"
 
-  @Column({ type: 'time' })
+  @Column()
   endTime: string; // "12:30"
 
   @Column()
