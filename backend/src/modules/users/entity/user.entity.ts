@@ -1,7 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Address } from '../../Adress/entity/adress.entity';
+
 
 export enum UserRole {
   CLIENT = 'CLIENT',
+  EMPLOYEE = 'EMPLOYEE',
   ADMIN = 'ADMIN',
 }
 
@@ -28,4 +31,7 @@ export class User {
 
   @Column({ default: true })
   isActive: boolean;
+
+  @OneToMany(() => Address, (address) => address.user)
+  addresses: Address[];
 }
