@@ -3,6 +3,16 @@ import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { Product } from '../../products/entity/product.entity';
 import { Order } from '../../order/entity/order.entity';
 
+export interface SandwichCustomization {
+  removed?: number[];
+  extra?: {
+    ingredientId: number;
+    quantity: number;
+  }[];
+  breadType?: string;
+  notes?: string;
+}
+
 @Entity()
 export class OrderItem {
   @PrimaryGeneratedColumn()
@@ -18,7 +28,7 @@ export class OrderItem {
   totalPrice: number;
 
   @Column({ type: 'json', nullable: true })
-  customization: any; // Pour les sandwichs personnalisés (pain, garnitures, etc.)
+  customization: SandwichCustomization; // Pour les sandwichs personnalisés (pain, garnitures, etc.)
 
   @Column({ nullable: true })
   specialInstructions: string; // "Sans oignons", "Bien cuit", etc.

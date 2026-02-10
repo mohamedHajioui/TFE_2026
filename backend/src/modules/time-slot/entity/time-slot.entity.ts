@@ -8,7 +8,7 @@ export class TimeSlot {
   id: number;
 
   @Column({ type: 'date' })
-  date: Date;
+  date: string;
 
   @Column({ type: 'time' })
   startTime: string; // "12:00"
