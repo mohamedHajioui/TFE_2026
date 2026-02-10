@@ -1,5 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { Address } from '../../Adress/entity/adress.entity';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Address } from '../../adress/entity/adress.entity';
+import { Order } from '../../order/entity/order.entity';
 
 
 export enum UserRole {
@@ -16,11 +24,14 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column({ unique: true, length: 100 })
+  @Column({ length: 100 })
   displayName: string;
 
   @Column()
   passwordHash: string;
+
+  @Column({ nullable: true })
+  phoneNumber: string;
 
   @Column({
     type: 'enum',
@@ -29,9 +40,18 @@ export class User {
   })
   role: UserRole;
 
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
   @Column({ default: true })
   isActive: boolean;
 
   @OneToMany(() => Address, (address) => address.user)
   addresses: Address[];
+
+  @OneToMany(() => Order, (order) => order.user)
+  orders: Order[];
 }

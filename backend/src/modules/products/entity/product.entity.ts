@@ -1,18 +1,21 @@
 import {
   Column,
   Entity,
-  JoinTable,
-  ManyToMany,
   PrimaryGeneratedColumn,
+  OneToMany,
+  ManyToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Menu } from '../../menus/entity/menu.entity';
-import { Ingredient } from '../../ingredients/entity/ingredient.entity';
-
+import { ProductIngredient } from '../../product-ingredients/entity/product-ingredient.entity';
 
 export enum ProductCategory {
   SANDWICH = 'SANDWICH',
   DRINK = 'DRINK',
   DESSERT = 'DESSERT',
+  SIDE = 'SIDE', // Accompagnements (frites, salades)
+  SAUCE = 'SAUCE',
 }
 
 @Entity()
@@ -29,19 +32,32 @@ export class Product {
   })
   category: ProductCategory;
 
-  @Column({ nullable: true, length: 255 })
-  description?: string;
+  @Column({ nullable: true, type: 'text' })
+  description: string;
 
   @Column('decimal', { precision: 6, scale: 2 })
-  price: number;
+  basePrice: number; // Prix de base (avant suppléments)
 
-  @ManyToMany(() => Ingredient)
-  @JoinTable()
-  ingredients: Ingredient[];
-
-  @ManyToMany(() => Menu, (menu) => menu.products)
-  menus: Menu[];
+  @Column({ nullable: true })
+  imageUrl: string;
 
   @Column({ default: true })
   isActive: boolean;
+
+  @Column({ default: false })
+  isCustomizable: boolean; // true pour sandwichs personnalisables
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @OneToMany(() => ProductIngredient, (pi) => pi.product, {
+    cascade: true,
+  })
+  productIngredients: ProductIngredient[];
+
+  @ManyToMany(() => Menu, (menu) => menu.products)
+  menus: Menu[];
 }

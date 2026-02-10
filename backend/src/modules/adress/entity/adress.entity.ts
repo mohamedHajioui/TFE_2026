@@ -1,5 +1,12 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from '../../users/entity/user.entity';
+import { Order } from '../../order/entity/order.entity';
 
 
 @Entity()
@@ -23,8 +30,14 @@ export class Address {
   country: string;
 
   @Column({ nullable: true })
+  complement: string; // Instructions de livraison
+
+  @Column({ nullable: true })
   label: string; // Maison, Travail, etc.
 
   @ManyToOne(() => User, (user) => user.addresses, { onDelete: 'CASCADE' })
   user: User;
+
+  @OneToMany(() => Order, (order) => order.deliveryAddress)
+  orders: Order[];
 }
