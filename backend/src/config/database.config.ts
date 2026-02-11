@@ -11,9 +11,13 @@ export const typeOrmConfig: TypeOrmModuleAsyncOptions = {
     password: configService.get('DB_PASSWORD'),
     database: configService.get('DB_DATABASE'),
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-    migrations: ['database/migrations/*.ts'],
-    migrationsRun: false,
-    synchronize: false,
+    migrations: [
+      configService.get('NODE_ENV') === 'production'
+        ? 'dist/database/migrations/*.js'
+        : 'database/migrations/*.js',
+    ],
+    migrationsRun: true,
+    synchronize: true,
     logging: configService.get('NODE_ENV') === 'development',
   }),
   inject: [ConfigService],
