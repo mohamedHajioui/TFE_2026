@@ -4,6 +4,10 @@ import {
   JoinTable,
   ManyToMany,
   PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  BeforeInsert,
+  BeforeUpdate,
 } from 'typeorm';
 import { Product } from '../../products/entity/product.entity';
 
@@ -15,22 +19,38 @@ export class Menu {
   @Column({ unique: true, length: 100 })
   name: string;
 
-  @Column({ nullable: true, length: 255 })
-  description?: string;
+  @Column({ nullable: true, type: 'text' })
+  description: string;
 
   @Column('decimal', { precision: 6, scale: 2 })
   price: number;
 
-  @ManyToMany(() => Product, { eager: true })
-  @JoinTable()
+  @ManyToMany(() => Product, (product) => product.menus)
+  @JoinTable({
+    name: 'menu_products',
+    joinColumn: {
+      name: 'menu_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'product_id',
+      referencedColumnName: 'id',
+    },
+  })
   products: Product[];
 
-  @Column({ type: 'date', nullable: true })
-  availableFrom?: Date;
+  @Column({ nullable: true })
+  availableFrom: string; // Format "YYYY-MM-DD"
 
-  @Column({ type: 'date', nullable: true })
-  availableTo?: Date;
+  @Column({ nullable: true })
+  availableTo: string; // Format "YYYY-MM-DD"
 
   @Column({ default: true })
   isActive: boolean;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
