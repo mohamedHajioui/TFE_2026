@@ -6,8 +6,6 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  BeforeInsert,
-  BeforeUpdate,
 } from 'typeorm';
 import { Product } from '../../products/entity/product.entity';
 
@@ -37,7 +35,16 @@ export class Menu {
       referencedColumnName: 'id',
     },
   })
-  products: Product[];
+  allowedProducts: Product[];
+
+  // Configuration du menu (combien de chaque catégorie)
+  @Column({ type: 'json' })
+  configuration: {
+    sandwich: { required: boolean; quantity: number }; // Ex: 1 sandwich obligatoire
+    drink: { required: boolean; quantity: number }; // Ex: 1 boisson obligatoire
+    dessert: { required: boolean; quantity: number }; // Ex: 1 dessert optionnel
+    side: { required: boolean; quantity: number }; // Ex: 0 accompagnement
+  };
 
   @Column({ nullable: true })
   availableFrom: string; // Format "YYYY-MM-DD"
