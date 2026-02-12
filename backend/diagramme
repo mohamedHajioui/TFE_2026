@@ -1,0 +1,248 @@
+@startuml Sandwicherie_Database_Model
+
+!theme plain
+hide methods
+hide stereotypes
+
+skinparam class {
+  BackgroundColor<<enum>> LightGreen
+  BackgroundColor<<table>> LightSteelBlue
+}
+
+' ===== ENUMS =====
+
+enum UserRole <<enum>> {
+  CLIENT
+  EMPLOYEE
+  ADMIN
+}
+
+enum IngredientCategory <<enum>> {
+  BREAD
+  PROTEIN
+  CHEESE
+  VEGETABLE
+  SAUCE
+  SEASONING
+  OTHER
+}
+
+enum ProductCategory <<enum>> {
+  SANDWICH
+  DRINK
+  DESSERT
+  SIDE
+  SAUCE
+}
+
+enum OrderStatus <<enum>> {
+  PENDING
+  CONFIRMED
+  IN_PREPARATION
+  READY
+  IN_DELIVERY
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderType <<enum>> {
+  PICKUP
+  DELIVERY
+}
+
+enum PaymentStatus <<enum>> {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum OrderItemType <<enum>> {
+  product
+  menu
+}
+
+' ===== ENTITIES =====
+
+class User <<table>> {
+  + id : int
+  --
+  email : string {unique}
+  displayName : string
+  passwordHash : string
+  phoneNumber : string
+  role : UserRole
+  isActive : boolean
+  createdAt : datetime
+  updatedAt : datetime
+}
+
+class Address <<table>> {
+  + id : int
+  --
+  street : string
+  number : string
+  postalCode : string
+  city : string
+  country : string
+  complement : string
+  label : string
+  user_id : int {FK}
+}
+
+class Order <<table>> {
+  + id : int
+  --
+  orderNumber : string {unique}
+  type : OrderType
+  status : OrderStatus
+  paymentStatus : PaymentStatus
+  subtotal : decimal
+  deliveryFee : decimal
+  total : decimal
+  customerNote : text
+  internalNote : text
+  completedAt : datetime
+  createdAt : datetime
+  updatedAt : datetime
+  user_id : int {FK}
+  deliveryAddress_id : int {FK}
+  timeSlot_id : int {FK}
+}
+
+class OrderItem <<table>> {
+  + id : int
+  --
+  quantity : int
+  unitPrice : decimal
+  totalPrice : decimal
+  itemType : OrderItemType
+  menuChoices : json
+  customization : json
+  specialInstructions : string
+  order_id : int {FK}
+  product_id : int {FK}
+  menu_id : int {FK}
+}
+
+class Product <<table>> {
+  + id : int
+  --
+  name : string
+  category : ProductCategory
+  description : text
+  basePrice : decimal
+  imageUrl : string
+  isActive : boolean
+  isCustomizable : boolean
+  createdAt : datetime
+  updatedAt : datetime
+}
+
+class Menu <<table>> {
+  + id : int
+  --
+  name : string {unique}
+  description : text
+  price : decimal
+  configuration : json
+  availableFrom : string
+  availableTo : string
+  isActive : boolean
+  createdAt : datetime
+  updatedAt : datetime
+}
+
+class Ingredient <<table>> {
+  + id : int
+  --
+  name : string {unique}
+  category : IngredientCategory
+  currentStock : decimal
+  minStock : decimal
+  maxStock : decimal
+  unit : string
+  costPerUnit : decimal
+  isAvailable : boolean
+  createdAt : datetime
+  updatedAt : datetime
+}
+
+class ProductIngredient <<table>> {
+  + id : int
+  --
+  quantity : decimal
+  unit : string
+  isRequired : boolean
+  extraPrice : decimal
+  product_id : int {FK}
+  ingredient_id : int {FK}
+}
+
+class TimeSlot <<table>> {
+  + id : int
+  --
+  date : string
+  startTime : string
+  endTime : string
+  maxCapacity : int
+  currentBookings : int
+  isAvailable : boolean
+}
+
+class menu_products <<table>> {
+  menu_id : int {FK}
+  product_id : int {FK}
+}
+
+' ===== RELATIONS =====
+
+' User relations
+User "1" -- "0..*" Address : possède
+User "1" -- "0..*" Order : passe
+User -- UserRole
+
+' Address relations
+Address "0..*" -- "1" User : appartient à
+Address "1" -- "0..*" Order : utilisée pour
+
+' Order relations
+Order "0..*" -- "0..1" User : passée par
+Order "0..*" -- "0..1" Address : livrée à
+Order "0..*" -- "0..1" TimeSlot : planifiée dans
+Order "1" *-- "1..*" OrderItem : contient
+Order -- OrderStatus
+Order -- OrderType
+Order -- PaymentStatus
+
+' OrderItem relations
+OrderItem "0..*" -- "1" Order : appartient à
+OrderItem "0..*" -- "0..1" Product : référence
+OrderItem "0..*" -- "0..1" Menu : référence
+OrderItem -- OrderItemType
+
+' Product relations
+Product "1" *-- "0..*" ProductIngredient : composé de
+Product "0..*" -- "0..*" Menu
+Product -- ProductCategory
+
+' Menu relations
+Menu "0..*" -- "0..*" Product : contient
+Menu .. menu_products
+
+' Ingredient relations
+Ingredient "1" -- "0..*" ProductIngredient : utilisé dans
+Ingredient -- IngredientCategory
+
+' ProductIngredient relations (table d'association enrichie)
+ProductIngredient "0..*" -- "1" Product : pour
+ProductIngredient "0..*" -- "1" Ingredient : utilise
+
+' TimeSlot relations
+TimeSlot "1" -- "0..*" Order : accueille
+
+' Table de jointure Menu-Product
+menu_products -- Menu
+menu_products -- Product
+
+@enduml

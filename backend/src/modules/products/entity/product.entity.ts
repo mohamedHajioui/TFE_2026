@@ -58,6 +58,6 @@ export class Product {
   })
   productIngredients: ProductIngredient[];
 
-  @ManyToMany(() => Menu, (menu) => menu.products)
+  @ManyToMany(() => Menu, (menu) => menu.allowedProducts)
   menus: Menu[];
 }
