@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../users/entity/user.entity';
 import { JwtPayload } from '../../../common/utils/jwt.util';
+import express, { Request } from 'express';
 
 /**
  * Stratégie JWT pour Passport
@@ -21,20 +22,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {
-    const jwtSecret = configService.get<string>('JWT_SECRET');
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET is not defined in environment variables');
-    }
-
     super({
-      // Extraire le JWT du header Authorization: "Bearer <token>"
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-
-      // Ne pas ignorer l'expiration (rejeter les tokens expirés)
+      // Extraire le JWT depuis le cookie 'accessToken'
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (request: express.Request) => {
+          return request?.cookies?.accessToken;
+        },
+      ]),
       ignoreExpiration: false,
-
-      // Secret pour vérifier la signature du token
-      secretOrKey: jwtSecret,
+      secretOrKey: configService.get<string>('JWT_SECRET') || '',
     });
   }
 

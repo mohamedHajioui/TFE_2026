@@ -1,9 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Activer le parsing des cookies
+  app.use(cookieParser());
 
   // Activer CORS (pour que le frontend puisse communiquer)
   app.enableCors({
@@ -11,7 +15,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Préfixe global pour toutes les routes (optionnel mais recommandé)
+  // Préfixe global pour toutes les routes
   app.setGlobalPrefix('api'); // Toutes les routes commenceront par /api
 
   // Validation globale (redondant si déjà dans app.module, mais bon à avoir)

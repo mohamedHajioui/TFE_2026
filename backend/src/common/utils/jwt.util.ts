@@ -47,7 +47,7 @@ export class JwtUtil {
   generateAccessToken(payload: JwtPayload): string {
     const secret = this.configService.get<string>('JWT_SECRET');
     // 15 minutes en secondes
-    const expiresIn = this.configService.get<number>('JWT_EXPIRATION_SECONDS') || 900;
+    const expiresIn = this.configService.get<number>('JWT_EXPIRATION_SECONDS') || '15m';
 
     return this.jwtService.sign({ ...payload }, { secret, expiresIn });
   }
@@ -69,7 +69,7 @@ export class JwtUtil {
   generateRefreshToken(payload: JwtPayload): string {
     const secret = this.configService.get<string>('JWT_REFRESH_SECRET');
     // 7 jours en secondes (7 * 24 * 60 * 60 = 604800)
-    const expiresIn = this.configService.get<number>('JWT_REFRESH_EXPIRATION_SECONDS') || 604800;
+    const expiresIn = this.configService.get<number>('JWT_REFRESH_EXPIRATION_SECONDS') || '7d';
 
     return this.jwtService.sign({ ...payload }, { secret, expiresIn });
   }
