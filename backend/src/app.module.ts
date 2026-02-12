@@ -5,6 +5,7 @@ import { typeOrmConfig } from './config/database.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { ProductModule } from './modules/products/product.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
     }),
     TypeOrmModule.forRootAsync(typeOrmConfig),
     AuthModule,
+    ProductModule,
   ],
   providers: [
     // Validation globale des DTOs

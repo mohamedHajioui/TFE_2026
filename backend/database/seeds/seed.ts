@@ -14,7 +14,10 @@ import {
   OrderType,
   PaymentStatus,
 } from '../../src/modules/order/entity/order.entity';
-import { OrderItem, SandwichCustomization } from '../../src/modules/order-item/entity/order-item.entity';
+import {
+  OrderItem,
+  ProductCustomization,
+} from '../../src/modules/order-item/entity/order-item.entity';
 import { Address } from '../../src/modules/adress/entity/adress.entity';
 import { CryptoUtil } from '../../src/common/utils/crypto.util';
 import { AppDataSource } from '../data-source';
@@ -248,9 +251,7 @@ async function createIngredients() {
     },
   ];
 
-  const ingredients = ingredientsData.map((data) =>
-    ingredientRepo.create(data),
-  );
+  const ingredients = ingredientsData.map((data) => ingredientRepo.create(data));
   const savedIngredients = await ingredientRepo.save(ingredients);
 
   console.log(`✅ ${savedIngredients.length} ingrédients créés`);
@@ -497,7 +498,13 @@ async function createMenus() {
     description: 'Sandwich Américain + Boisson + Cookie',
     price: 10.0,
     isActive: true,
-    products: [sandwichAmericain, coca, cookie],
+    allowedProducts: [sandwichAmericain, coca, cookie],
+    configuration: {
+      sandwich: { required: true, quantity: 1 },
+      drink: { required: true, quantity: 1 },
+      dessert: { required: true, quantity: 1 },
+      side: { required: false, quantity: 0 },
+    },
   });
 
   // Menu 2 : Menu Healthy
@@ -506,7 +513,13 @@ async function createMenus() {
     description: 'Sandwich Poulet Avocat + Ice Tea + Tiramisu',
     price: 12.5,
     isActive: true,
-    products: [sandwichPoulet, iceTea, tiramisu],
+    allowedProducts: [sandwichPoulet, iceTea, tiramisu],
+    configuration: {
+      sandwich: { required: true, quantity: 1 },
+      drink: { required: true, quantity: 1 },
+      dessert: { required: true, quantity: 1 },
+      side: { required: false, quantity: 0 },
+    },
   });
 
   await menuRepo.save([menuMidi, menuHealthy]);
@@ -599,7 +612,10 @@ async function createAddresses() {
       city: 'Bruxelles',
       country: 'Belgium',
       label: 'Domicile',
-      complement: faker.helpers.maybe(() => faker.helpers.arrayElement(['Code porte: 1234', '2ème étage', 'Sonnette à gauche']), { probability: 0.3 }),
+      complement: faker.helpers.maybe(
+        () => faker.helpers.arrayElement(['Code porte: 1234', '2ème étage', 'Sonnette à gauche']),
+        { probability: 0.3 },
+      ),
     });
 
     addresses.push(address);
@@ -607,9 +623,7 @@ async function createAddresses() {
 
   await addressRepo.save(addresses);
 
-  console.log(
-    `✅ ${addresses.length} adresses créées pour ${clients.length} clients`,
-  );
+  console.log(`${addresses.length} adresses créées pour ${clients.length} clients`);
 }
 
 /**
@@ -654,7 +668,13 @@ async function createOrders() {
       user: client,
       timeSlot,
       type: orderType,
-      status: faker.helpers.arrayElement([OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.IN_PREPARATION, OrderStatus.READY, OrderStatus.COMPLETED]),
+      status: faker.helpers.arrayElement([
+        OrderStatus.PENDING,
+        OrderStatus.CONFIRMED,
+        OrderStatus.IN_PREPARATION,
+        OrderStatus.READY,
+        OrderStatus.COMPLETED,
+      ]),
       paymentStatus: faker.helpers.weightedArrayElement([
         { value: PaymentStatus.PAID, weight: 8 },
         { value: PaymentStatus.PENDING, weight: 2 },
@@ -663,7 +683,10 @@ async function createOrders() {
       subtotal: 0,
       deliveryFee: orderType === OrderType.DELIVERY ? 3.5 : 0,
       total: 0,
-      customerNote: faker.helpers.maybe(() => faker.helpers.arrayElement(['Sans oignons SVP', 'Bien cuit', 'Livrer après 13h']), { probability: 0.3 }),
+      customerNote: faker.helpers.maybe(
+        () => faker.helpers.arrayElement(['Sans oignons SVP', 'Bien cuit', 'Livrer après 13h']),
+        { probability: 0.3 },
+      ),
     });
 
     await orderRepo.save(order);
@@ -677,15 +700,20 @@ async function createOrders() {
       const quantity = faker.number.int({ min: 1, max: 2 });
       const unitPrice = product.basePrice;
 
-      let customization: SandwichCustomization | undefined = undefined;
+      let customization: ProductCustomization | undefined = undefined;
       let totalPrice = unitPrice * quantity;
 
       if (product.isCustomizable && product.category === ProductCategory.SANDWICH) {
         const hasCustomization = faker.datatype.boolean();
         if (hasCustomization) {
           customization = {
-            removed: faker.helpers.maybe(() => [faker.number.int({ min: 1, max: 5 })], { probability: 0.3 }),
-            extra: faker.helpers.maybe(() => [{ ingredientId: faker.number.int({ min: 1, max: 10 }), quantity: 1 }], { probability: 0.4 }),
+            removed: faker.helpers.maybe(() => [faker.number.int({ min: 1, max: 5 })], {
+              probability: 0.3,
+            }),
+            extra: faker.helpers.maybe(
+              () => [{ ingredientId: faker.number.int({ min: 1, max: 10 }), quantity: 1 }],
+              { probability: 0.4 },
+            ),
           };
 
           if (customization.extra) {
@@ -697,6 +725,7 @@ async function createOrders() {
       const orderItem = orderItemRepo.create({
         order,
         product,
+        itemType: 'product',
         quantity,
         unitPrice,
         totalPrice,
