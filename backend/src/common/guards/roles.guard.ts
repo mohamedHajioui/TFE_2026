@@ -38,13 +38,10 @@ export class RolesGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     // Récupérer les rôles requis définis via @Roles()
-    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
-      ROLES_KEY,
-      [
-        context.getHandler(), // Decorator sur la méthode
-        context.getClass(), // Decorator sur le controller
-      ],
-    );
+    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(ROLES_KEY, [
+      context.getHandler(), // Decorator sur la méthode
+      context.getClass(), // Decorator sur le controller
+    ]);
 
     // Si aucun rôle requis, autoriser
     // (endpoint accessible à tout utilisateur authentifié)

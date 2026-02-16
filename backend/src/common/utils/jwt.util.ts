@@ -142,7 +142,7 @@ export class JwtUtil {
 
   /**
    * Décode un token SANS le vérifier
-   * ⚠️ N'utilisez ceci QUE pour le debug ou affichage
+   * N'utilisez ceci QUE pour le debug ou affichage
    * Ne pas utiliser pour la sécurité !
    *
    * @param token - Token à décoder
