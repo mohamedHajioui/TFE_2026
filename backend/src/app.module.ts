@@ -23,8 +23,10 @@ import { ProductModule } from './modules/products/product.module';
       provide: APP_PIPE,
       useValue: new ValidationPipe({
         whitelist: true, // Retire les propriétés non définies dans le DTO
-        forbidNonWhitelisted: true, // Rejette si propriétés non autorisées
+        forbidNonWhitelisted: false, // Ne pas rejeter les requêtes avec des propriétés supplémentaires
         transform: true, // Transforme automatiquement les types
+        skipMissingProperties: false,
+        validationError: { target: false, value: false },
         transformOptions: {
           enableImplicitConversion: true,
         },
