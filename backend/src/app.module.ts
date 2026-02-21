@@ -7,6 +7,7 @@ import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { ProductModule } from './modules/products/product.module';
 import { IngredientModule } from './modules/ingredients/ingredient.module';
+import { TimeSlotModule } from './modules/time-slot/time-slot.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { IngredientModule } from './modules/ingredients/ingredient.module';
     AuthModule,
     ProductModule,
     IngredientModule,
+    TimeSlotModule,
   ],
   providers: [
     // Validation globale des DTOs
