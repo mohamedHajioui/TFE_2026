@@ -18,7 +18,7 @@ export class Menu {
   name: string;
 
   @Column({ nullable: true, type: 'text' })
-  description: string;
+  description: string | null;
 
   @Column('decimal', { precision: 6, scale: 2 })
   price: number;
@@ -47,10 +47,10 @@ export class Menu {
   };
 
   @Column({ nullable: true })
-  availableFrom: string; // Format "YYYY-MM-DD"
+  availableFrom: string | null; // Format "YYYY-MM-DD"
 
   @Column({ nullable: true })
-  availableTo: string; // Format "YYYY-MM-DD"
+  availableTo: string | null; // Format "YYYY-MM-DD"
 
   @Column({ default: true })
   isActive: boolean;
