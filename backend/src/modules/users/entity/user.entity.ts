@@ -6,7 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Address } from '../../adress/entity/adress.entity';
+import { Address } from '../../adress/entity/address.entity';
 import { Order } from '../../order/entity/order.entity';
 
 

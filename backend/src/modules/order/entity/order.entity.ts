@@ -10,7 +10,7 @@ import {
 import { User } from '../../users/entity/user.entity';
 
 import { TimeSlot } from '../../time-slot/entity/time-slot.entity';
-import { Address } from '../../adress/entity/adress.entity';
+import { Address } from '../../adress/entity/address.entity';
 import { OrderItem } from '../../order-item/entity/order-item.entity';
 
 

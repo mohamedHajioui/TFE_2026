@@ -18,7 +18,7 @@ import {
   OrderItem,
   ProductCustomization,
 } from '../../src/modules/order-item/entity/order-item.entity';
-import { Address } from '../../src/modules/adress/entity/adress.entity';
+import { Address } from '../../src/modules/adress/entity/address.entity';
 import { CryptoUtil } from '../../src/common/utils/crypto.util';
 import { AppDataSource } from '../data-source';
 

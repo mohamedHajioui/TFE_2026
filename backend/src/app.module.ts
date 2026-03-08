@@ -8,6 +8,9 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { ProductModule } from './modules/products/product.module';
 import { IngredientModule } from './modules/ingredients/ingredient.module';
 import { TimeSlotModule } from './modules/time-slot/time-slot.module';
+import { UserModule } from './modules/users/user.module';
+import { AddressModule } from './modules/adress/address.module';
+import { MenuModule } from './modules/menus/menu.module';
 
 @Module({
   imports: [
@@ -20,6 +23,9 @@ import { TimeSlotModule } from './modules/time-slot/time-slot.module';
     ProductModule,
     IngredientModule,
     TimeSlotModule,
+    MenuModule,
+    UserModule,
+    AddressModule,
   ],
   providers: [
     // Validation globale des DTOs
