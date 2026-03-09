@@ -19,8 +19,9 @@ import { User } from './entity/user.entity';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { UserRole } from './entity/user.entity';
+
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserRole } from './enums/user-role.enum';
 
 @Controller('users')
 @UseGuards(RolesGuard)

@@ -20,7 +20,8 @@ import { Ingredient } from './entity/ingredient.entity';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { UserRole } from '../users/entity/user.entity';
+import { UserRole } from '../users/enums/user-role.enum';
+
 
 
 @Controller('ingredients')

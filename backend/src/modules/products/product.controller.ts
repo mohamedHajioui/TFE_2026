@@ -20,7 +20,8 @@ import { Product } from './entity/product.entity';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { UserRole } from '../users/entity/user.entity';
+import { UserRole } from '../users/enums/user-role.enum';
+
 
 /**
  * Controller gérant les endpoints des produits
@@ -29,10 +30,6 @@ import { UserRole } from '../users/entity/user.entity';
 @UseGuards(RolesGuard)
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
-
-  // ============================================
-  // ROUTES PUBLIQUES (GET - Lecture)
-  // ============================================
 
   /**
    * Liste tous les produits avec filtres optionnels
@@ -82,11 +79,6 @@ export class ProductController {
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<Product> {
     return await this.productService.findOne(id);
   }
-
-  // ============================================
-  // ROUTES PROTÉGÉES (POST/PUT/DELETE - Écriture)
-  // ============================================
-
   /**
    * Créer un nouveau produit
    * POST /api/products/create

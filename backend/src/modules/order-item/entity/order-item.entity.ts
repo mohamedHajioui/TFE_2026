@@ -1,8 +1,15 @@
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
-
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Product } from '../../products/entity/product.entity';
-import { Order } from '../../order/entity/order.entity';
+
 import { Menu } from '../../menus/entity/menu.entity';
+import { Order } from '../../order/entity/order.entity';
 
 export interface MenuChoices {
   sandwich?: number;
@@ -12,11 +19,8 @@ export interface MenuChoices {
 }
 
 export interface ProductCustomization {
-  removed?: number[];
-  extra?: {
-    ingredientId: number;
-    quantity: number;
-  }[];
+  removed?: number[]; // IDs des ingrédients retirés
+  extra?: number[]; // IDs des ingrédients ajoutés (simplifié)
   breadType?: string;
   notes?: string;
 }
@@ -35,32 +39,34 @@ export class OrderItem {
   @Column('decimal', { precision: 10, scale: 2 })
   totalPrice: number;
 
-  // Type d'item : 'product' ou 'menu'
   @Column({
     type: 'enum',
     enum: ['product', 'menu'],
+    default: 'product', // ✅ AJOUTÉ : Défaut
   })
   itemType: 'product' | 'menu';
 
-  // Référence à un Product (si itemType = 'product')
   @ManyToOne(() => Product, { onDelete: 'SET NULL', nullable: true })
   product: Product | null;
 
-  // Référence à un Menu (si itemType = 'menu')
   @ManyToOne(() => Menu, { onDelete: 'SET NULL', nullable: true })
   menu: Menu | null;
 
-  // Pour les menus : choix du client
   @Column({ type: 'json', nullable: true })
   menuChoices: MenuChoices | null;
 
-  // Pour les produits : personnalisations
   @Column({ type: 'json', nullable: true })
   customization: ProductCustomization | null;
 
-  @Column({ nullable: true })
-  specialInstructions: string; // "Sans oignons", "Bien cuit", etc.
+  @Column({ type: 'text', nullable: true })
+  specialInstructions: string;
 
   @ManyToOne(() => Order, (order) => order.items, { onDelete: 'CASCADE' })
   order: Order;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

@@ -11,6 +11,7 @@ import { TimeSlotModule } from './modules/time-slot/time-slot.module';
 import { UserModule } from './modules/users/user.module';
 import { AddressModule } from './modules/adress/address.module';
 import { MenuModule } from './modules/menus/menu.module';
+import { OrderModule } from './modules/order/order.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { MenuModule } from './modules/menus/menu.module';
     MenuModule,
     UserModule,
     AddressModule,
+    OrderModule,
   ],
   providers: [
     // Validation globale des DTOs

@@ -8,13 +8,7 @@ import {
 } from 'typeorm';
 import { Address } from '../../adress/entity/address.entity';
 import { Order } from '../../order/entity/order.entity';
-
-
-export enum UserRole {
-  CLIENT = 'CLIENT',
-  EMPLOYEE = 'EMPLOYEE',
-  ADMIN = 'ADMIN',
-}
+import { UserRole } from '../enums/user-role.enum';
 
 @Entity()
 export class User {

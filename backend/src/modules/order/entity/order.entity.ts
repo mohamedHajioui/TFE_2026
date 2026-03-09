@@ -6,27 +6,26 @@ import {
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 import { User } from '../../users/entity/user.entity';
-
+import { OrderItem } from '../../order-item/entity/order-item.entity';
 import { TimeSlot } from '../../time-slot/entity/time-slot.entity';
 import { Address } from '../../adress/entity/address.entity';
-import { OrderItem } from '../../order-item/entity/order-item.entity';
-
 
 export enum OrderStatus {
-  PENDING = 'PENDING', // En attente de confirmation
-  CONFIRMED = 'CONFIRMED', // Confirmée
-  IN_PREPARATION = 'IN_PREPARATION', // En préparation
-  READY = 'READY', // Prête pour retrait/livraison
-  IN_DELIVERY = 'IN_DELIVERY', // En cours de livraison
-  COMPLETED = 'COMPLETED', // Terminée
-  CANCELLED = 'CANCELLED', // Annulée
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+  IN_PREPARATION = 'IN_PREPARATION',
+  READY = 'READY',
+  IN_DELIVERY = 'IN_DELIVERY',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
 }
 
 export enum OrderType {
-  PICKUP = 'PICKUP', // Retrait sur place
-  DELIVERY = 'DELIVERY', // Livraison
+  PICKUP = 'PICKUP',
+  DELIVERY = 'DELIVERY',
 }
 
 export enum PaymentStatus {
@@ -37,12 +36,14 @@ export enum PaymentStatus {
 }
 
 @Entity()
+@Index(['orderNumber'])
+@Index(['user', 'status'])
 export class Order {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
-  orderNumber: string; // Ex: "CMD-20250210-001"
+  @Column({ unique: true, length: 50 })
+  orderNumber: string;
 
   @Column({
     type: 'enum',
@@ -65,19 +66,19 @@ export class Order {
   paymentStatus: PaymentStatus;
 
   @Column('decimal', { precision: 10, scale: 2 })
-  subtotal: number; // Total sans frais de livraison
+  subtotal: number;
 
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
-  deliveryFee: number; // Frais de livraison
+  deliveryFee: number;
 
   @Column('decimal', { precision: 10, scale: 2 })
-  total: number; // Total final
+  total: number;
 
   @Column({ nullable: true, type: 'text' })
-  customerNote: string; // Notes du client
+  customerNote: string;
 
   @Column({ nullable: true, type: 'text' })
-  internalNote: string; // Notes internes (cuisine/gestion)
+  internalNote: string;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -85,24 +86,26 @@ export class Order {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp' })
   completedAt: Date;
 
-  // Relations
-
-  @ManyToOne(() => User, (user) => user.orders, { onDelete: 'SET NULL' })
+  @ManyToOne(() => User, (user) => user.orders, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
   user: User;
 
   @ManyToOne(() => Address, (address) => address.orders, {
     nullable: true,
     onDelete: 'SET NULL',
   })
-  deliveryAddress: Address; // Null si retrait sur place
+  deliveryAddress: Address;
 
   @ManyToOne(() => TimeSlot, (timeSlot) => timeSlot.orders, {
     onDelete: 'SET NULL',
+    nullable: true,
   })
-  timeSlot: TimeSlot; // Créneau horaire de retrait/livraison
+  timeSlot: TimeSlot;
 
   @OneToMany(() => OrderItem, (orderItem) => orderItem.order, {
     cascade: true,

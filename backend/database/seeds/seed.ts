@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { User, UserRole } from '../../src/modules/users/entity/user.entity';
+import { User } from '../../src/modules/users/entity/user.entity';
 import { Product, ProductCategory } from '../../src/modules/products/entity/product.entity';
 import {
   Ingredient,
@@ -21,6 +21,7 @@ import {
 import { Address } from '../../src/modules/adress/entity/address.entity';
 import { CryptoUtil } from '../../src/common/utils/crypto.util';
 import { AppDataSource } from '../data-source';
+import { UserRole } from '../../src/modules/users/enums/user-role.enum';
 
 /**
  * Script de seeding - VERSION ALLÉGÉE
@@ -710,13 +711,12 @@ async function createOrders() {
             removed: faker.helpers.maybe(() => [faker.number.int({ min: 1, max: 5 })], {
               probability: 0.3,
             }),
-            extra: faker.helpers.maybe(
-              () => [{ ingredientId: faker.number.int({ min: 1, max: 10 }), quantity: 1 }],
-              { probability: 0.4 },
-            ),
+            extra: faker.helpers.maybe(() => [faker.number.int({ min: 1, max: 10 })], {
+              probability: 0.4,
+            }),
           };
 
-          if (customization.extra) {
+          if (customization && customization.extra) {
             totalPrice += 1.5 * quantity;
           }
         }
