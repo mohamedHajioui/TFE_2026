@@ -18,17 +18,6 @@ async function bootstrap() {
   // Préfixe global pour toutes les routes
   app.setGlobalPrefix('api'); // Toutes les routes commenceront par /api
 
-  // Validation globale (redondant si déjà dans app.module, mais bon à avoir)
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: false,
-      transform: true,
-      skipMissingProperties: false,
-      validationError: { target: false, value: false },
-    }),
-  );
-
   const port = process.env.PORT || 3000;
   await app.listen(port);
 

@@ -46,10 +46,10 @@ export class Menu {
     side: { required: boolean; quantity: number }; // Ex: 0 accompagnement
   };
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   availableFrom: string | null; // Format "YYYY-MM-DD"
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   availableTo: string | null; // Format "YYYY-MM-DD"
 
   @Column({ default: true })

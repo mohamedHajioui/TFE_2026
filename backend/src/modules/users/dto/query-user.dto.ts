@@ -1,6 +1,6 @@
 import { IsOptional, IsEnum, IsBoolean, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
-import { UserRole } from '../entity/user.entity';
+import { UserRole } from '../enums/user-role.enum';
 
 /**
  * DTO pour filtrer les utilisateurs (ADMIN)

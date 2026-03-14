@@ -1,4 +1,4 @@
-import { UserRole } from '../../users/entity/user.entity';
+import { UserRole } from '../../users/enums/user-role.enum';
 
 /**
  * DTO pour la réponse d'authentification

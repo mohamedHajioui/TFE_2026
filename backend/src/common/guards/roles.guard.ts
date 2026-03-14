@@ -1,7 +1,8 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
-import { UserRole } from '../../modules/users/entity/user.entity';
+import { UserRole } from '../../modules/users/enums/user-role.enum';
+
 
 /**
  * Guard pour vérifier que l'utilisateur connecté a le bon rôle

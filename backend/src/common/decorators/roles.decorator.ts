@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import { UserRole } from '../../modules/users/entity/user.entity';
+import { UserRole } from '../../modules/users/enums/user-role.enum';
 
 /**
  * Clé de métadonnée pour stocker les rôles requis
