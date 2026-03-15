@@ -1,11 +1,13 @@
 import { MenuModel } from '@/models/menu.model';
 import { formatPrice } from '@/utils/format';
 
+
 interface MenuCardProps {
     menu: MenuModel;
+    onSelect?: (menu: MenuModel) => void;
 }
 
-export function MenuCard({ menu }: MenuCardProps) {
+export function MenuCard({ menu, onSelect }: MenuCardProps) {
     const sandwiches = menu.allowedProducts?.filter(p => p.category === 'SANDWICH') ?? [];
     const drinks     = menu.allowedProducts?.filter(p => p.category === 'DRINK') ?? [];
     const desserts   = menu.allowedProducts?.filter(p => p.category === 'DESSERT') ?? [];
@@ -16,89 +18,129 @@ export function MenuCard({ menu }: MenuCardProps) {
     ) ?? 0;
     const savings = totalSeparate - Number(menu.price);
 
-    return (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col gap-4">
+    // Cherche une image dans les produits du menu (du sandwich en priorité)
+    const menuImage =
+        menu.allowedProducts?.find(p => p.category === 'SANDWICH' && p.imageUrl)?.imageUrl ??
+        menu.allowedProducts?.find(p => p.imageUrl)?.imageUrl ??
+        null;
 
-            {/* Header */}
-            <div className="flex items-start justify-between gap-3">
-                <div>
-                    <h3 className="text-lg font-semibold text-slate-900">{menu.name}</h3>
-                    {menu.description && (
-                        <p className="text-sm text-slate-500 mt-0.5">{menu.description}</p>
-                    )}
+    return (
+        <div className="card-dark" style={{ display: 'flex', flexDirection: 'column' }}>
+
+            {/* Image */}
+            <div style={{ height: '180px', position: 'relative', overflow: 'hidden' }}>
+                {menuImage ? (
+                    <img
+                        src={menuImage}
+                        alt={menu.name}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                ) : (
+                    <div style={{
+                        height: '100%',
+                        background: '#1A1A1A',
+                        borderBottom: '1px solid #2A2A2A',
+                    }} />
+                )}
+
+                <div style={{ position: 'absolute', top: '12px', left: '12px' }}>
+                    <span className="badge-category">Menu</span>
                 </div>
-                <div className="text-right shrink-0">
-                    <div className="text-2xl font-bold text-slate-900">
+
+                {savings > 0 && (
+                    <div style={{
+                        position: 'absolute', top: '12px', right: '12px',
+                        background: '#16a34a', color: 'white',
+                        fontFamily: '"Nunito", sans-serif', fontWeight: 700,
+                        fontSize: '0.72rem', padding: '3px 10px', borderRadius: '2px',
+                    }}>
+                        -{formatPrice(savings)}
+                    </div>
+                )}
+            </div>
+
+            {/* Contenu */}
+            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
+
+                {/* Titre + prix */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                    <div>
+                        <h3 style={{
+                            fontFamily: '"Oswald", sans-serif', fontWeight: 600,
+                            fontSize: '1.15rem', color: '#FFFFFF',
+                            textTransform: 'uppercase', letterSpacing: '0.04em', margin: 0,
+                        }}>
+                            {menu.name}
+                        </h3>
+                        {menu.description && (
+                            <p style={{ color: '#888', fontSize: '0.8rem', margin: '4px 0 0' }}>
+                                {menu.description}
+                            </p>
+                        )}
+                    </div>
+                    <div className="price-tag" style={{ whiteSpace: 'nowrap' }}>
                         {formatPrice(Number(menu.price))}
                     </div>
-                    {savings > 0 && (
-                        <div className="text-xs text-emerald-600 font-medium mt-0.5">
-                            Économie de {formatPrice(savings)}
-                        </div>
+                </div>
+
+                <div className="divider-orange" />
+
+                {/* Composition */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {sandwiches.length > 0 && (
+                        <MenuRow label="Sandwich" items={sandwiches.map(p => p.name)} required={menu.configuration?.sandwich?.required} />
+                    )}
+                    {drinks.length > 0 && (
+                        <MenuRow label="Boisson" items={drinks.map(p => p.name)} required={menu.configuration?.drink?.required} />
+                    )}
+                    {desserts.length > 0 && (
+                        <MenuRow label="Dessert" items={desserts.map(p => p.name)} required={menu.configuration?.dessert?.required} />
+                    )}
+                    {sides.length > 0 && (
+                        <MenuRow label="Accompagnement" items={sides.map(p => p.name)} required={menu.configuration?.side?.required} />
                     )}
                 </div>
+
+                {/* Disponibilité */}
+                {(menu.availableFrom || menu.availableTo) && (
+                    <div style={{ fontSize: '0.72rem', color: '#555', paddingTop: '8px', borderTop: '1px solid #2A2A2A' }}>
+                        {menu.availableFrom && menu.availableTo
+                            ? `Du ${menu.availableFrom} au ${menu.availableTo}`
+                            : menu.availableFrom
+                                ? `À partir du ${menu.availableFrom}`
+                                : `Jusqu'au ${menu.availableTo}`}
+                    </div>
+                )}
+
+                {/* Bouton */}
+                <button
+                    className="btn-primary"
+                    style={{ width: '100%', marginTop: 'auto' }}
+                    onClick={() => onSelect?.(menu)}
+                >
+                    Composer ce menu
+                </button>
             </div>
-
-            {/* Contenu du menu */}
-            <div className="flex flex-col gap-2">
-                {sandwiches.length > 0 && (
-                    <MenuSection
-                        icon="🥖"
-                        label={menu.configuration?.sandwich?.required ? '1 sandwich' : '1 sandwich (optionnel)'}
-                        items={sandwiches.map(p => p.name)}
-                    />
-                )}
-                {drinks.length > 0 && (
-                    <MenuSection
-                        icon="🥤"
-                        label={menu.configuration?.drink?.required ? '1 boisson' : '1 boisson (optionnelle)'}
-                        items={drinks.map(p => p.name)}
-                    />
-                )}
-                {desserts.length > 0 && (
-                    <MenuSection
-                        icon="🍮"
-                        label={menu.configuration?.dessert?.required ? '1 dessert' : '1 dessert (optionnel)'}
-                        items={desserts.map(p => p.name)}
-                    />
-                )}
-                {sides.length > 0 && (
-                    <MenuSection
-                        icon="🍟"
-                        label={menu.configuration?.side?.required ? '1 accompagnement' : '1 accompagnement (optionnel)'}
-                        items={sides.map(p => p.name)}
-                    />
-                )}
-            </div>
-
-            {/* Disponibilité */}
-            {(menu.availableFrom || menu.availableTo) && (
-                <div className="text-xs text-slate-400 border-t border-slate-100 pt-3">
-                    {menu.availableFrom && menu.availableTo
-                        ? `Disponible du ${menu.availableFrom} au ${menu.availableTo}`
-                        : menu.availableFrom
-                            ? `Disponible à partir du ${menu.availableFrom}`
-                            : `Disponible jusqu'au ${menu.availableTo}`}
-                </div>
-            )}
-
-            {/* Bouton */}
-            <button className="mt-auto w-full bg-slate-900 hover:bg-slate-700 text-white text-sm font-medium py-2.5 rounded-lg transition-colors">
-                Composer ce menu
-            </button>
         </div>
     );
 }
 
-function MenuSection({ icon, label, items }: { icon: string; label: string; items: string[] }) {
+function MenuRow({ label, items, required }: { label: string; items: string[]; required?: boolean }) {
     return (
-        <div className="flex gap-2 text-sm">
-            <span className="text-base leading-none mt-0.5">{icon}</span>
-            <div>
-                <span className="font-medium text-slate-700">{label}</span>
-                <span className="text-slate-400 mx-1">—</span>
-                <span className="text-slate-500">{items.join(', ')}</span>
-            </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', fontSize: '0.83rem' }}>
+            <span style={{
+                fontFamily: '"Oswald", sans-serif',
+                fontWeight: 500,
+                fontSize: '0.78rem',
+                color: '#FF8C00',
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+                minWidth: '100px',
+                flexShrink: 0,
+            }}>
+                {label}{required === false ? ' *' : ''}
+            </span>
+            <span style={{ color: '#AAA' }}>{items.join(', ')}</span>
         </div>
     );
 }

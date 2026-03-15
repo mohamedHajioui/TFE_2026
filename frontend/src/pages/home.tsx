@@ -1,88 +1,89 @@
 import { useActiveMenus } from '@/hooks/useMenus';
+import { MenuModel } from '@/models/menu.model';
 import {MenuCard} from "@/components/menus/menu-card.tsx";
-
+import {AppLayout} from "@/components/ui/appLayouth.tsx";
 
 export default function Home() {
     const { menus, isLoading, error } = useActiveMenus();
 
+    const handleSelectMenu = (menu: MenuModel) => {
+        console.log('Menu sélectionné :', menu.name);
+    };
+
     return (
-        <div className="min-h-screen bg-slate-50">
-
-            {/* Navbar simple */}
-            <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <span className="text-2xl">🥖</span>
-                    <span className="text-xl font-bold text-slate-900">La Sandwicherie</span>
+        <AppLayout>
+            <section style={{ background: '#0D0D0D', padding: '80px 24px', textAlign: 'center', borderBottom: '1px solid #1A1A1A', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 20% 50%, #FF8C0010 0%, transparent 60%), radial-gradient(circle at 80% 50%, #FF8C0008 0%, transparent 60%)', pointerEvents: 'none' }} />
+                <div style={{ position: 'relative', maxWidth: '700px', margin: '0 auto' }}>
+                    <div style={{ marginBottom: '16px' }}>
+                        <span className="badge-category" style={{ fontSize: '0.8rem', padding: '4px 16px' }}>Sandwicherie · Pasta Bar</span>
+                    </div>
+                    <h1 style={{ fontFamily: '"Oswald", sans-serif', fontWeight: 700, fontSize: 'clamp(2.2rem, 5vw, 3.5rem)', color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: 1.1, marginBottom: '20px' }}>
+                        Commandez en ligne,<br />
+                        <span style={{ color: '#FF8C00' }}>récupérez en 15 minutes</span>
+                    </h1>
+                    <p style={{ color: '#888', fontSize: '1rem', maxWidth: '480px', margin: '0 auto 32px', lineHeight: 1.6, fontFamily: '"Nunito", sans-serif' }}>
+                        Des sandwichs frais préparés à la commande, avec retrait en boutique ou livraison à domicile.
+                    </p>
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <button className="btn-primary" style={{ fontSize: '1rem', padding: '12px 32px' }}>Voir la carte</button>
+                        <button className="btn-outline" style={{ fontSize: '1rem', padding: '12px 32px' }}>Nos menus</button>
+                    </div>
                 </div>
-                <nav className="flex items-center gap-6 text-sm font-medium text-slate-600">
-                    <a href="#menus" className="hover:text-slate-900 transition-colors">Menus</a>
-                    <a href="#products" className="hover:text-slate-900 transition-colors">Produits</a>
-                    <button className="bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors">
-                        Commander
-                    </button>
-                </nav>
-            </header>
-
-            {/* Hero */}
-            <section className="bg-slate-900 text-white px-6 py-20 text-center">
-                <h1 className="text-4xl font-bold mb-4">Commandez en ligne,<br />récupérez en 15 minutes</h1>
-                <p className="text-slate-400 text-lg mb-8 max-w-xl mx-auto">
-                    Des sandwichs frais préparés à la commande, avec retrait en boutique ou livraison.
-                </p>
-                <button className="bg-white text-slate-900 font-semibold px-8 py-3 rounded-lg hover:bg-slate-100 transition-colors text-lg">
-                    Voir le catalogue
-                </button>
             </section>
+
+            {/* Bannière infos */}
+            <div style={{ background: '#FF8C00', padding: '12px 24px', display: 'flex', justifyContent: 'center', gap: '48px', flexWrap: 'wrap' }}>
+                {[{ icon: '🕐', text: 'Lun–Ven 8h–21h · Sam 9h–22h' }, { icon: '📍', text: 'Retrait en boutique' }, { icon: '🛵', text: 'Livraison disponible' }].map((item, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '1rem' }}>{item.icon}</span>
+                        <span style={{ fontFamily: '"Oswald", sans-serif', fontWeight: 500, fontSize: '0.85rem', color: '#0D0D0D', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{item.text}</span>
+                    </div>
+                ))}
+            </div>
 
             {/* Section Menus */}
-            <section id="menus" className="max-w-6xl mx-auto px-6 py-16">
-                <div className="mb-10">
-                    <h2 className="text-3xl font-bold text-slate-900 mb-2">Nos menus du jour</h2>
-                    <p className="text-slate-500">
-                        Des formules avantageuses pour composer votre repas complet.
-                    </p>
+            <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '60px 24px' }}>
+                <div style={{ marginBottom: '40px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div className="section-header" style={{ display: 'inline-block' }}>Nos menus du jour</div>
+                        {!isLoading && !error && menus.length > 0 && (
+                            <span style={{ color: '#555', fontSize: '0.85rem' }}>{menus.length} menu{menus.length > 1 ? 's' : ''} disponible{menus.length > 1 ? 's' : ''}</span>
+                        )}
+                    </div>
+                    <p style={{ color: '#666', fontSize: '0.9rem', margin: 0 }}>Des formules avantageuses pour composer votre repas complet.</p>
                 </div>
 
-                {/* État chargement */}
                 {isLoading && (
-                    <div className="flex justify-center py-20">
-                        <div className="flex flex-col items-center gap-3 text-slate-400">
-                            <div className="w-8 h-8 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin" />
-                            <span className="text-sm">Chargement des menus...</span>
-                        </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '80px 0' }}>
+                        <div className="spinner" />
+                        <span style={{ color: '#555', fontSize: '0.9rem' }}>Chargement des menus...</span>
                     </div>
                 )}
 
-                {/* Erreur */}
                 {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-                        <p className="text-red-600 font-medium mb-1">Impossible de charger les menus</p>
-                        <p className="text-red-400 text-sm">{error}</p>
+                    <div style={{ background: '#1A0A0A', border: '1px solid #5A1A1A', borderRadius: '8px', padding: '24px', textAlign: 'center' }}>
+                        <p style={{ color: '#FF6B6B', fontWeight: 600, margin: '0 0 4px' }}>Impossible de charger les menus</p>
+                        <p style={{ color: '#AA4444', fontSize: '0.85rem', margin: 0 }}>{error}</p>
                     </div>
                 )}
 
-                {/* Aucun menu */}
                 {!isLoading && !error && menus.length === 0 && (
-                    <div className="bg-slate-100 rounded-xl p-12 text-center text-slate-400">
-                        <p className="text-lg font-medium mb-1">Aucun menu disponible aujourd'hui</p>
-                        <p className="text-sm">Revenez bientôt ou consultez notre catalogue de produits.</p>
+                    <div style={{ background: '#1A1A1A', border: '1px solid #2A2A2A', borderRadius: '12px', padding: '60px 24px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🍽️</div>
+                        <p style={{ color: '#888', fontFamily: '"Oswald", sans-serif', fontSize: '1.1rem', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' }}>Aucun menu disponible aujourd'hui</p>
+                        <p style={{ color: '#555', fontSize: '0.85rem', margin: 0 }}>Consultez notre carte pour commander à la pièce.</p>
                     </div>
                 )}
 
-                {/* Grille de menus */}
                 {!isLoading && !error && menus.length > 0 && (
-                    <>
-                        <p className="text-sm text-slate-400 mb-6">
-                            {menus.length} menu{menus.length > 1 ? 's' : ''} disponible{menus.length > 1 ? 's' : ''} aujourd'hui
-                        </p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {menus.map(menu => (
-                                <MenuCard key={menu.id} menu={menu} />
-                            ))}
-                        </div>
-                    </>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                        {menus.map(menu => (
+                            <MenuCard key={menu.id} menu={menu} onSelect={handleSelectMenu} />
+                        ))}
+                    </div>
                 )}
             </section>
-        </div>
+        </AppLayout>
     );
 }
