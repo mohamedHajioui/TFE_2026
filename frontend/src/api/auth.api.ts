@@ -1,5 +1,5 @@
 import { apiClient } from './axios.config';
-import { LoginCredentials, RegisterData, AuthResponse } from '../types/auth.types';
+import type {LoginCredentials, RegisterData, AuthResponse} from '../types/auth.types';
 
 export const authApi = {
 

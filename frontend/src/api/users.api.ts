@@ -38,7 +38,7 @@ export const usersApi = {
         return response.data;
     },
 
-    // ─── ADMIN ─────────────────────────────────────────────
+    // ADMIN--------------------------------------------------------------------------------------------
 
 
     findAll: async (params?: QueryUsersParams): Promise<UserModel[]> => {

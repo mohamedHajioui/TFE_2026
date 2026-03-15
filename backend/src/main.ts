@@ -11,7 +11,7 @@ async function bootstrap() {
 
   // Activer CORS (pour que le frontend puisse communiquer)
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:4200', // Vite par défaut
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     credentials: true,
   });
 

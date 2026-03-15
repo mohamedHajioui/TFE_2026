@@ -1,7 +1,6 @@
 import { apiClient } from './axios.config';
 import { toModel, toModels } from './transform.helper';
-import { MenuModel } from '../models';
-import { MenuConfiguration } from '../models/menu.model';
+import {type MenuConfiguration, MenuModel} from "../models/menu.model.ts";
 
 export interface CreateMenuData {
     name: string;
