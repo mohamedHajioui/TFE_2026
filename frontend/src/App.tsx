@@ -1,6 +1,11 @@
 import Home from "@/pages/home.tsx";
+import { BrowserRouter } from 'react-router-dom';
 
 
 export default function App() {
-    return <Home />;
+    return (
+        <BrowserRouter>
+            <Home />
+        </BrowserRouter>
+    );
 }
