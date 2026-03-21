@@ -34,9 +34,9 @@ export default function Home() {
 
             {/* Bannière infos */}
             <div style={{ background: '#FF8C00', padding: '12px 24px', display: 'flex', justifyContent: 'center', gap: '48px', flexWrap: 'wrap' }}>
-                {[{ icon: '🕐', text: 'Lun–Ven 8h–21h · Sam 9h–22h' }, { icon: '📍', text: 'Retrait en boutique' }, { icon: '🛵', text: 'Livraison disponible' }].map((item, i) => (
+                {[{text: 'Lun–Ven 8h–21h · Sam 9h–22h' }, { text: 'Retrait en boutique' }, { text: 'Livraison disponible' }].map((item, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '1rem' }}>{item.icon}</span>
+                        <span style={{ fontSize: '1rem' }}></span>
                         <span style={{ fontFamily: '"Oswald", sans-serif', fontWeight: 500, fontSize: '0.85rem', color: '#0D0D0D', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{item.text}</span>
                     </div>
                 ))}
