@@ -1,6 +1,6 @@
 import { apiClient } from './axios.config';
 import { toModel, toModels } from './transform.helper';
-import type {AddressModel} from "@/models/address.model.ts";
+import {AddressModel} from "@/models/address.model.ts";
 
 export interface CreateAddressData {
     street: string;
