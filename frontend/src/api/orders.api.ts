@@ -1,7 +1,6 @@
 import { apiClient } from './axios.config';
 import { toModel, toModels } from './transform.helper';
-import { OrderModel, OrderStatus, OrderType, PaymentStatus } from '../models';
-import type {ProductCustomization} from '../models/order.model';
+import {OrderModel, OrderStatus, OrderType, PaymentStatus, type ProductCustomization} from '../models/order.model';
 
 export interface CreateOrderItemData {
     productId: number;
