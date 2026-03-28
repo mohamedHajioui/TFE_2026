@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, useCallback, type ReactNode, useMemo } from 'react';
 import { ProductModel } from '@/models/product.model';
 import { MenuModel } from '@/models/menu.model';
-import { MenuChoices, ProductCustomization } from '@/models/order.model';
+import type {MenuChoices, ProductCustomization} from '@/models/order.model';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+//  Types
 
 export interface CartProductItem {
     type: 'product';
