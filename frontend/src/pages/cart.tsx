@@ -103,7 +103,7 @@ export default function Cart() {
     );
 }
 
-// ─── Ligne de panier ──────────────────────────────────────────────────────────
+// Ligne de panier
 
 function CartItemRow({ item, index, onUpdateQuantity, onRemove }: {
     item: CartProductItem | CartMenuItem;
