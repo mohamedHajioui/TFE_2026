@@ -685,7 +685,12 @@ async function createOrders() {
       deliveryFee: orderType === OrderType.DELIVERY ? 3.5 : 0,
       total: 0,
       customerNote: faker.helpers.maybe(
-        () => faker.helpers.arrayElement(['Sans oignons SVP', 'Bien cuit', 'Livrer après 13h']),
+        () =>
+          faker.helpers.arrayElement([
+            'Sans oignons SVP',
+            'Bien cuit',
+            'Livrer après 13h',
+          ]),
         { probability: 0.3 },
       ),
     });
@@ -699,7 +704,7 @@ async function createOrders() {
     for (let j = 0; j < numItems; j++) {
       const product = faker.helpers.arrayElement(products);
       const quantity = faker.number.int({ min: 1, max: 2 });
-      const unitPrice = product.basePrice;
+      const unitPrice = Number(product.basePrice);
 
       let customization: ProductCustomization | undefined = undefined;
       let totalPrice = unitPrice * quantity;
@@ -737,7 +742,7 @@ async function createOrders() {
     }
 
     order.subtotal = subtotal;
-    order.total = subtotal + order.deliveryFee;
+    order.total = subtotal + Number(order.deliveryFee);
     await orderRepo.save(order);
 
     timeSlot.currentBookings += 1;
