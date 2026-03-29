@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AppLayout } from '@/components/common/AppLayout';
+import { AppLayout } from '@/components/ui/appLayouth';
 import { useMyOrders } from '@/hooks/useOrders';
 import { ordersApi } from '@/api/orders.api';
 import { OrderModel, OrderStatus, OrderType } from '@/models/order.model';
