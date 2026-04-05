@@ -1,0 +1,227 @@
+/* Overlay */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+/* Modal */
+
+.modal {
+    background: #13131A;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header modal */
+
+.modalHeader {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid #FFFFFF08;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: sticky;
+    top: 0;
+    background: #13131A;
+    z-index: 1;
+}
+
+.modalTitle {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #F4F4F5;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0;
+}
+
+.modalBadge {
+    margin-bottom: 8px;
+}
+
+.closeBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #52525B;
+    padding: 4px;
+    transition: color 0.15s;
+}
+
+.closeBtn:hover {
+    color: #A1A1AA;
+}
+
+/* Body modal */
+
+.modalBody {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Footer modal */
+
+.modalFooter {
+    padding: 16px 20px;
+    border-top: 1px solid #FFFFFF08;
+    position: sticky;
+    bottom: 0;
+    background: #13131A;
+}
+
+.addBtn {
+    width: 100%;
+    font-size: 1rem;
+    padding: 12px;
+}
+
+/* Section catégorie */
+
+.category {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.categoryHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.categoryLabel {
+    font-family: "Oswald", sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--sg-amber);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.categoryOptional {
+    color: #3F3F46;
+    font-size: 0.72rem;
+    font-family: "Nunito", sans-serif;
+}
+
+.productList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Bouton produit */
+
+.productBtn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #0A0A0C;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    text-align: left;
+    width: 100%;
+}
+
+.productBtn:hover {
+    border-color: #FFFFFF20;
+    background: #13131A;
+}
+
+.productBtnSelected {
+    background: #FFAA0010;
+    border-color: var(--sg-amber);
+}
+
+.productBtnSelected:hover {
+    background: #FFAA0015;
+    border-color: var(--sg-amber);
+}
+
+.productInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.productImage {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.productImagePlaceholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    background: #1C1C26;
+    flex-shrink: 0;
+}
+
+.productName {
+    font-family: "Nunito", sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #F4F4F5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.productNameSelected {
+    color: var(--sg-amber);
+}
+
+.productDesc {
+    color: #52525B;
+    font-size: 0.75rem;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: "Nunito", sans-serif;
+}
+
+/* Checkmark */
+
+.checkmark {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid #FFFFFF20;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+}
+
+.checkmarkSelected {
+    border-color: var(--sg-amber);
+    background: var(--sg-amber);
+}

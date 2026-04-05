@@ -1,0 +1,182 @@
+/* Page */
+
+.page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 48px 24px;
+}
+
+/* Header */
+
+.header {
+    margin-bottom: 36px;
+}
+
+.headerSub {
+    color: #71717A;
+    font-size: 0.9rem;
+    margin: 0;
+    font-family: "Nunito", sans-serif;
+}
+
+/* États */
+
+.loading {
+    display: flex;
+    justify-content: center;
+    padding: 60px 0;
+}
+
+.errorBox {
+    background: #1C1015;
+    border: 1px solid #4A1A1A;
+    border-radius: 8px;
+    padding: 20px;
+    color: #F87171;
+    font-family: "Nunito", sans-serif;
+}
+
+.emptyBox {
+    background: #13131A;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 16px;
+    padding: 60px 24px;
+    text-align: center;
+}
+
+.emptyTitle {
+    font-family: "Oswald", sans-serif;
+    font-size: 1.1rem;
+    color: #71717A;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 8px;
+}
+
+.emptyText {
+    color: #52525B;
+    font-size: 0.85rem;
+    margin: 0 0 24px;
+    font-family: "Nunito", sans-serif;
+}
+
+/* Liste commandes */
+
+.orderList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Card commande */
+
+.orderCard {
+    padding: 20px;
+}
+
+.orderCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.orderMeta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.orderNumber {
+    font-family: "Oswald", sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #F4F4F5;
+    letter-spacing: 0.04em;
+}
+
+.orderStatusBadge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.orderTypeBadge {
+    background: #1C1C26;
+    color: #71717A;
+    font-size: 0.72rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.orderDate {
+    color: #52525B;
+    font-size: 0.8rem;
+    margin-top: 4px;
+    font-family: "Nunito", sans-serif;
+}
+
+/* Items */
+
+.orderItems {
+    color: #A1A1AA;
+    font-size: 0.85rem;
+    margin-bottom: 14px;
+    font-family: "Nunito", sans-serif;
+}
+
+.orderItem {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+}
+
+.orderItemNote {
+    color: #52525B;
+    font-size: 0.75rem;
+    margin-left: 6px;
+}
+
+.showMoreBtn {
+    background: none;
+    border: none;
+    color: var(--sg-amber);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 4px 0;
+    font-family: "Nunito", sans-serif;
+    transition: opacity 0.15s;
+}
+
+.showMoreBtn:hover {
+    opacity: 0.8;
+}
+
+.deliveryFeeRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    color: #52525B;
+    border-top: 1px solid #FFFFFF08;
+    margin-top: 6px;
+}
+
+/* Actions */
+
+.orderActions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.cancelBtn {
+    border-color: #EF4444 !important;
+    color: #EF4444 !important;
+}
