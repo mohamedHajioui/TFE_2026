@@ -131,7 +131,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                         </div>
                     )}
 
-                    {/* ── Mobile : panier + burger ── */}
+                    {/* Mobile : panier + burger */}
                     <div style={{ display: 'none', alignItems: 'center', gap: '8px', marginLeft: '8px' }} className="show-mobile">
                         <CartBtn size={20} />
                         <button onClick={() => setMobileMenuOpen(p => !p)}
