@@ -117,155 +117,199 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-    }
-  body {
-    @apply bg-background text-foreground;
-    }
-  html {
-    @apply font-sans;
-    }
+    * { @apply border-border outline-ring/50; }
+    body { @apply bg-background text-foreground; }
+    html { @apply font-sans; }
 }
 
+/* SPOT GOURMAND — Design System v2 */
 
+/* Couleurs */
+:root {
+    --sg-amber: #FFAA00;          /* amber doré — plus chaud et moins "panneau stop" */
+    --sg-amber-dim: #CC8800;      /* version foncée pour hover */
+    --sg-amber-glow: #FFAA0018;   /* halo subtil */
+    --sg-amber-soft: #FFAA0030;   /* fond teinté */
+    --sg-bg: #0A0A0C;             /* presque noir avec légère teinte bleue */
+    --sg-surface: #13131A;        /* surface cards */
+    --sg-surface-2: #1C1C26;      /* surface cards hover */
+    --sg-border: #FFFFFF0F;       /* bordure ultra-fine */
+    --sg-border-hover: #FFFFFF20;
+    --sg-text-1: #F4F4F5;
+    --sg-text-2: #A1A1AA;
+    --sg-text-3: #52525B;
+}
 
-/*  Reset & Base */
 * { box-sizing: border-box; }
 
 body {
-    background-color: #0D0D0D;
-    color: #FFFFFF;
+    background-color: var(--sg-bg);
+    color: var(--sg-text-1);
     font-family: "Nunito", sans-serif;
     margin: 0;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* Utility classes custom  */
+/* Typographie */
+
 .font-display { font-family: "Oswald", sans-serif; }
 .font-body    { font-family: "Nunito", sans-serif; }
 
-/* Badge catégorie style Spot Gourmand */
+/* Badge */
+
 .badge-category {
-    display: inline-block;
-    background-color: #FF8C00;
-    color: #0D0D0D;
-    font-family: "Oswald", sans-serif;
-    font-weight: 700;
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 2px 10px;
-    border-radius: 2px;
-}
-
-/* Section header style panneau Spot Gourmand */
-.section-header {
-    background-color: #FF8C00;
-    color: #0D0D0D;
-    font-family: "Oswald", sans-serif;
-    font-weight: 700;
-    font-size: 1.1rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    text-align: center;
-    padding: 8px 24px;
-    border-radius: 4px;
-}
-
-/* Card produit/menu sombre */
-.card-dark {
-    background-color: #1A1A1A;
-    border: 1px solid #333;
-    border-radius: 12px;
-    overflow: hidden;
-    transition: border-color 0.2s, transform 0.2s;
-}
-.card-dark:hover {
-    border-color: #FF8C00;
-    transform: translateY(-2px);
-}
-
-/* Bouton principal orange */
-.btn-primary {
-    background-color: #FF8C00;
-    color: #0D0D0D;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--sg-amber-soft);
+    color: var(--sg-amber);
+    border: 1px solid var(--sg-amber-soft);
     font-family: "Oswald", sans-serif;
     font-weight: 600;
-    font-size: 0.95rem;
-    letter-spacing: 0.05em;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;  /* pill moderne */
+}
+
+/* Section header */
+
+.section-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--sg-text-1);
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 7px 18px;
+    border-radius: 8px;
+    border-left: 3px solid var(--sg-amber);
+    background: var(--sg-amber-glow);
+}
+
+/* Cards */
+
+.card-dark {
+    background: var(--sg-surface);
+    border: 1px solid var(--sg-border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card-dark:hover {
+    border-color: var(--sg-amber);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px #FFAA0012;
+}
+
+/* Boutons */
+
+.btn-primary {
+    background: var(--sg-amber);
+    color: #0A0A0C;
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 0.88rem;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     padding: 10px 24px;
-    border-radius: 6px;
+    border-radius: 10px;
     border: none;
     cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
 }
 .btn-primary:hover {
-    background-color: #FFA733;
+    background: #FFB833;
     transform: translateY(-1px);
+    box-shadow: 0 4px 16px #FFAA0040;
 }
-.btn-primary:active {
-    transform: translateY(0);
-}
+.btn-primary:active { transform: translateY(0); box-shadow: none; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-/* Bouton outline */
 .btn-outline {
-    background-color: transparent;
-    color: #FF8C00;
+    background: transparent;
+    color: var(--sg-amber);
     font-family: "Oswald", sans-serif;
     font-weight: 600;
-    font-size: 0.95rem;
-    letter-spacing: 0.05em;
+    font-size: 0.88rem;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     padding: 10px 24px;
-    border-radius: 6px;
-    border: 1.5px solid #FF8C00;
+    border-radius: 10px;
+    border: 1.5px solid var(--sg-amber);
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background 0.2s, box-shadow 0.2s;
 }
 .btn-outline:hover {
-    background-color: #FF8C0015;
+    background: var(--sg-amber-glow);
+    box-shadow: 0 0 0 3px var(--sg-amber-glow);
 }
 
-/* Prix stylisé */
+/* Prix */
+
 .price-tag {
     font-family: "Oswald", sans-serif;
     font-weight: 700;
-    color: #FF8C00;
+    color: var(--sg-amber);
     font-size: 1.4rem;
     letter-spacing: -0.02em;
 }
 
-/* Divider orange */
+/* Divider */
+
 .divider-orange {
-    height: 3px;
-    background: linear-gradient(90deg, #FF8C00, #FFA73360);
+    height: 1px;
+    background: linear-gradient(90deg, var(--sg-amber) 0%, transparent 100%);
     border: none;
-    border-radius: 2px;
-    margin: 16px 0;
+    margin: 14px 0;
+    opacity: 0.4;
 }
 
-/* Image placeholder sombre */
+/* Image placeholder */
+
 .img-placeholder {
-    background: linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%);
+    background: linear-gradient(135deg, var(--sg-surface) 0%, var(--sg-surface-2) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #444;
-    font-size: 2.5rem;
+    color: var(--sg-text-3);
 }
 
 /* Spinner */
+
 .spinner {
     width: 36px;
     height: 36px;
-    border: 3px solid #333;
-    border-top-color: #FF8C00;
+    border: 2px solid var(--sg-border-hover);
+    border-top-color: var(--sg-amber);
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Responsive navbar */
+
+.hide-mobile { display: flex; }
+.show-mobile { display: none !important; }
+
+@media (max-width: 768px) {
+    .hide-mobile { display: none !important; }
+    .show-mobile { display: flex !important; }
+}
+
+/* Admin responsive */
+
+@media (max-width: 768px) {
+    .admin-main {
+        margin-left: 0 !important;
+        padding: 72px 16px 24px !important;
+    }
+}

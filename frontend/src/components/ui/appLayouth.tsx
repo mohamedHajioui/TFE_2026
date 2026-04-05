@@ -1,4 +1,4 @@
-import {type ReactNode, useState, useRef, useEffect } from 'react';
+import { type ReactNode, useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
@@ -24,6 +24,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => { setMobileMenuOpen(false); }, [location.pathname]);
 
     const handleLogout = async () => {
@@ -39,12 +40,23 @@ export function AppLayout({ children }: AppLayoutProps) {
 
     const isActive = (href: string) => location.pathname === href;
 
-    // Panier bouton
     const CartBtn = ({ size = 18 }: { size?: number }) => (
-        <Link to="/cart" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '8px', background: totalItems > 0 ? '#2A1A00' : '#111', border: `1px solid ${totalItems > 0 ? '#FF8C00' : '#222'}`, transition: 'all 0.2s', flexShrink: 0 }}>
-            <ShoppingBag size={size} color={totalItems > 0 ? '#FF8C00' : '#666'} />
+        <Link to="/cart" style={{
+            position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: '36px', height: '36px', borderRadius: '10px',
+            background: totalItems > 0 ? '#FFAA0015' : '#13131A',
+            border: `1px solid ${totalItems > 0 ? '#FFAA0040' : '#FFFFFF0F'}`,
+            transition: 'all 0.2s', flexShrink: 0,
+        }}>
+            <ShoppingBag size={size} color={totalItems > 0 ? '#FFAA00' : '#52525B'} />
             {totalItems > 0 && (
-                <span style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#FF8C00', color: '#0D0D0D', fontFamily: '"Oswald", sans-serif', fontWeight: 700, fontSize: '0.62rem', width: '17px', height: '17px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{
+                    position: 'absolute', top: '-6px', right: '-6px',
+                    background: '#FFAA00', color: '#0A0A0C',
+                    fontFamily: '"Oswald", sans-serif', fontWeight: 700,
+                    fontSize: '0.6rem', width: '17px', height: '17px',
+                    borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
                     {totalItems > 9 ? '9+' : totalItems}
                 </span>
             )}
@@ -52,126 +64,128 @@ export function AppLayout({ children }: AppLayoutProps) {
     );
 
     return (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#0D0D0D' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#0A0A0C' }}>
 
-            {/* Navbar */}
-            <header style={{ background: '#0D0D0D', borderBottom: '2px solid #FF8C00', padding: '0 20px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
-
-                {/* Logo */}
-                <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                    <div style={{ width: '34px', height: '34px', background: '#FF8C00', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <span style={{ fontFamily: '"Oswald", sans-serif', fontWeight: 700, fontSize: '0.85rem', color: '#0D0D0D' }}>SG</span>
+            <header style={{
+                background: 'rgba(10,10,12,0.85)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                borderBottom: '1px solid #FFFFFF0A',
+                padding: '0 20px',
+                height: '60px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                position: 'sticky',
+                top: 0,
+                zIndex: 100,
+            }}>
+                <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                    <div style={{ width: '32px', height: '32px', background: '#FFAA00', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <span style={{ fontFamily: '"Oswald", sans-serif', fontWeight: 700, fontSize: '0.82rem', color: '#0A0A0C' }}>SG</span>
                     </div>
                     <div>
-                        <div style={{ fontFamily: '"Oswald", sans-serif', fontWeight: 700, fontSize: 'clamp(0.85rem, 2.5vw, 1.1rem)', color: '#FFF', letterSpacing: '0.05em', textTransform: 'uppercase', lineHeight: 1 }}>
-                            Spot<span style={{ color: '#FF8C00' }}> Gourmand</span>
+                        <div style={{ fontFamily: '"Oswald", sans-serif', fontWeight: 700, fontSize: 'clamp(0.88rem, 2.5vw, 1.05rem)', color: '#F4F4F5', letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1 }}>
+                            Spot<span style={{ color: '#FFAA00' }}> Gourmand</span>
                         </div>
-                        <div style={{ fontFamily: '"Nunito", sans-serif', fontSize: '0.58rem', color: '#555', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                        <div style={{ fontFamily: '"Nunito", sans-serif', fontSize: '0.58rem', color: '#3F3F46', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                             Sandwicherie · Pasta Bar
                         </div>
                     </div>
                 </Link>
 
-                {/* ── Desktop nav (≥ 769px) ── */}
-                <nav style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-
-                    {/* Links */}
+                <nav style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                     {navLinks.map(link => (
-                        <Link key={link.href} to={link.href} style={{ fontFamily: '"Oswald", sans-serif', fontWeight: 500, fontSize: '0.88rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: isActive(link.href) ? '#FF8C00' : '#AAA', textDecoration: 'none', padding: '6px 12px', borderBottom: isActive(link.href) ? '2px solid #FF8C00' : '2px solid transparent', transition: 'color 0.2s' }}
-                              className="hide-mobile">
+                        <Link key={link.href} to={link.href} className="hide-mobile"
+                              style={{ fontFamily: '"Nunito", sans-serif', fontWeight: 600, fontSize: '0.88rem', color: isActive(link.href) ? '#FFAA00' : '#71717A', textDecoration: 'none', padding: '6px 14px', borderRadius: '8px', background: isActive(link.href) ? '#FFAA0012' : 'transparent', transition: 'all 0.15s' }}>
                             {link.label}
                         </Link>
                     ))}
 
-                    {/* Panier */}
-                    <div className="hide-mobile" style={{ marginLeft: '4px' }}>
-                        <CartBtn />
-                    </div>
+                    <div className="hide-mobile" style={{ width: '1px', height: '20px', background: '#FFFFFF0A', margin: '0 6px' }} />
+                    <div className="hide-mobile"><CartBtn /></div>
 
-                    {/* User connecté */}
                     {isAuthenticated && user ? (
                         <div ref={dropdownRef} style={{ position: 'relative', marginLeft: '6px' }} className="hide-mobile">
                             <button onClick={() => setDropdownOpen(p => !p)}
-                                    style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#1A1A1A', border: '1px solid #333', borderRadius: '8px', padding: '5px 10px', cursor: 'pointer' }}
-                                    onMouseEnter={e => (e.currentTarget.style.borderColor = '#FF8C00')}
-                                    onMouseLeave={e => (e.currentTarget.style.borderColor = '#333')}>
-                                <div style={{ width: '26px', height: '26px', background: '#FF8C00', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Oswald", sans-serif', fontWeight: 700, fontSize: '0.75rem', color: '#0D0D0D', flexShrink: 0 }}>
+                                    style={{ display: 'flex', alignItems: 'center', gap: '7px', background: '#13131A', border: '1px solid #FFFFFF0F', borderRadius: '10px', padding: '5px 10px 5px 6px', cursor: 'pointer' }}
+                                    onMouseEnter={e => (e.currentTarget.style.borderColor = '#FFAA0040')}
+                                    onMouseLeave={e => (e.currentTarget.style.borderColor = '#FFFFFF0F')}>
+                                <div style={{ width: '26px', height: '26px', background: '#FFAA00', borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Oswald", sans-serif', fontWeight: 700, fontSize: '0.75rem', color: '#0A0A0C', flexShrink: 0 }}>
                                     {user.displayName.charAt(0).toUpperCase()}
                                 </div>
-                                <span style={{ fontFamily: '"Nunito", sans-serif', fontWeight: 600, fontSize: '0.85rem', color: '#FFF', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                <span style={{ fontFamily: '"Nunito", sans-serif', fontWeight: 600, fontSize: '0.85rem', color: '#F4F4F5', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                     {user.displayName}
                                 </span>
-                                <ChevronDown size={13} color="#888" style={{ transform: dropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                                <ChevronDown size={12} color="#52525B" style={{ transform: dropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                             </button>
                             {dropdownOpen && (
-                                <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: '#1A1A1A', border: '1px solid #2A2A2A', borderRadius: '10px', minWidth: '190px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
-                                    <div style={{ padding: '10px 14px', borderBottom: '1px solid #222' }}>
-                                        <div style={{ fontFamily: '"Oswald", sans-serif', fontWeight: 600, color: '#FFF', fontSize: '0.9rem' }}>{user.displayName}</div>
-                                        <div style={{ color: '#555', fontSize: '0.72rem', marginTop: '2px' }}>{user.email}</div>
+                                <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: '#13131A', border: '1px solid #FFFFFF0F', borderRadius: '14px', minWidth: '200px', overflow: 'hidden', boxShadow: '0 16px 48px rgba(0,0,0,0.6)' }}>
+                                    <div style={{ padding: '12px 14px', borderBottom: '1px solid #FFFFFF08' }}>
+                                        <div style={{ fontFamily: '"Nunito", sans-serif', fontWeight: 700, color: '#F4F4F5', fontSize: '0.88rem' }}>{user.displayName}</div>
+                                        <div style={{ color: '#52525B', fontSize: '0.72rem', marginTop: '2px' }}>{user.email}</div>
                                     </div>
                                     <Link to="/orders" onClick={() => setDropdownOpen(false)}
-                                          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', color: '#CCC', textDecoration: 'none', fontSize: '0.85rem', fontFamily: '"Nunito", sans-serif' }}
-                                          onMouseEnter={e => (e.currentTarget.style.background = '#222')}
+                                          style={{ display: 'flex', alignItems: 'center', gap: '9px', padding: '10px 14px', color: '#A1A1AA', textDecoration: 'none', fontSize: '0.85rem', fontFamily: '"Nunito", sans-serif' }}
+                                          onMouseEnter={e => (e.currentTarget.style.background = '#1C1C26')}
                                           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                                        <ClipboardList size={15} color="#FF8C00" /> Mes commandes
+                                        <ClipboardList size={14} color="#FFAA00" /> Mes commandes
                                     </Link>
                                     <button onClick={handleLogout}
-                                            style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '10px 14px', background: 'none', border: 'none', borderTop: '1px solid #222', color: '#F87171', fontSize: '0.85rem', fontFamily: '"Nunito", sans-serif', cursor: 'pointer', textAlign: 'left' }}
-                                            onMouseEnter={e => (e.currentTarget.style.background = '#220000')}
+                                            style={{ display: 'flex', alignItems: 'center', gap: '9px', width: '100%', padding: '10px 14px', background: 'none', border: 'none', borderTop: '1px solid #FFFFFF08', color: '#EF4444', fontSize: '0.85rem', fontFamily: '"Nunito", sans-serif', cursor: 'pointer', textAlign: 'left' }}
+                                            onMouseEnter={e => (e.currentTarget.style.background = '#1C1015')}
                                             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                                        <LogOut size={15} /> Se déconnecter
+                                        <LogOut size={14} /> Se déconnecter
                                     </button>
                                 </div>
                             )}
                         </div>
                     ) : (
                         <div style={{ display: 'flex', gap: '8px', marginLeft: '8px' }} className="hide-mobile">
-                            <Link to="/login"><button className="btn-outline" style={{ padding: '5px 14px', fontSize: '0.82rem' }}>Connexion</button></Link>
-                            <Link to="/register"><button className="btn-primary" style={{ padding: '5px 14px', fontSize: '0.82rem' }}>S'inscrire</button></Link>
+                            <Link to="/login"><button className="btn-outline" style={{ padding: '6px 16px', fontSize: '0.82rem' }}>Connexion</button></Link>
+                            <Link to="/register"><button className="btn-primary" style={{ padding: '6px 16px', fontSize: '0.82rem' }}>S'inscrire</button></Link>
                         </div>
                     )}
 
-                    {/* Mobile : panier + burger */}
                     <div style={{ display: 'none', alignItems: 'center', gap: '8px', marginLeft: '8px' }} className="show-mobile">
                         <CartBtn size={20} />
                         <button onClick={() => setMobileMenuOpen(p => !p)}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: '#FFF', display: 'flex', alignItems: 'center' }}>
-                            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: '#A1A1AA', display: 'flex', alignItems: 'center' }}>
+                            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
                         </button>
                     </div>
                 </nav>
             </header>
 
-            {/* Menu mobile overlay */}
             {mobileMenuOpen && (
-                <div style={{ position: 'fixed', top: '60px', left: 0, right: 0, bottom: 0, background: '#0D0D0D', zIndex: 99, borderTop: '1px solid #222', display: 'flex', flexDirection: 'column', padding: '24px 20px', gap: '8px', overflowY: 'auto' }}>
+                <div style={{ position: 'fixed', top: '60px', left: 0, right: 0, bottom: 0, background: 'rgba(10,10,12,0.97)', backdropFilter: 'blur(16px)', zIndex: 99, display: 'flex', flexDirection: 'column', padding: '24px 20px', gap: '4px', overflowY: 'auto' }}>
                     {navLinks.map(link => (
-                        <Link key={link.href} to={link.href} style={{ fontFamily: '"Oswald", sans-serif', fontWeight: 600, fontSize: '1.4rem', textTransform: 'uppercase', color: isActive(link.href) ? '#FF8C00' : '#FFF', textDecoration: 'none', padding: '12px 0', borderBottom: '1px solid #1A1A1A' }}>
+                        <Link key={link.href} to={link.href} style={{ fontFamily: '"Oswald", sans-serif', fontWeight: 700, fontSize: '1.5rem', textTransform: 'uppercase', color: isActive(link.href) ? '#FFAA00' : '#F4F4F5', textDecoration: 'none', padding: '14px 0', borderBottom: '1px solid #FFFFFF08' }}>
                             {link.label}
                         </Link>
                     ))}
                     {isAuthenticated && user ? (
                         <>
-                            <div style={{ padding: '12px 0', borderBottom: '1px solid #1A1A1A', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <div style={{ width: '32px', height: '32px', background: '#FF8C00', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Oswald", sans-serif', fontWeight: 700, fontSize: '0.9rem', color: '#0D0D0D' }}>
+                            <div style={{ padding: '14px 0', borderBottom: '1px solid #FFFFFF08', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: '36px', height: '36px', background: '#FFAA00', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Oswald", sans-serif', fontWeight: 700, fontSize: '1rem', color: '#0A0A0C' }}>
                                     {user.displayName.charAt(0).toUpperCase()}
                                 </div>
                                 <div>
-                                    <div style={{ color: '#FFF', fontWeight: 600, fontFamily: '"Nunito", sans-serif' }}>{user.displayName}</div>
-                                    <div style={{ color: '#555', fontSize: '0.75rem' }}>{user.email}</div>
+                                    <div style={{ color: '#F4F4F5', fontWeight: 600, fontFamily: '"Nunito", sans-serif' }}>{user.displayName}</div>
+                                    <div style={{ color: '#52525B', fontSize: '0.75rem' }}>{user.email}</div>
                                 </div>
                             </div>
-                            <Link to="/orders" style={{ fontFamily: '"Oswald", sans-serif', fontWeight: 600, fontSize: '1.2rem', textTransform: 'uppercase', color: '#CCC', textDecoration: 'none', padding: '12px 0', borderBottom: '1px solid #1A1A1A' }}>
+                            <Link to="/orders" style={{ fontFamily: '"Oswald", sans-serif', fontWeight: 600, fontSize: '1.2rem', textTransform: 'uppercase', color: '#A1A1AA', textDecoration: 'none', padding: '14px 0', borderBottom: '1px solid #FFFFFF08' }}>
                                 Mes commandes
                             </Link>
-                            <button onClick={handleLogout} style={{ fontFamily: '"Oswald", sans-serif', fontWeight: 600, fontSize: '1.2rem', textTransform: 'uppercase', color: '#F87171', background: 'none', border: 'none', cursor: 'pointer', padding: '12px 0', textAlign: 'left' }}>
+                            <button onClick={handleLogout} style={{ fontFamily: '"Oswald", sans-serif', fontWeight: 600, fontSize: '1.2rem', textTransform: 'uppercase', color: '#EF4444', background: 'none', border: 'none', cursor: 'pointer', padding: '14px 0', textAlign: 'left' }}>
                                 Se déconnecter
                             </button>
                         </>
                     ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
-                            <Link to="/login"><button className="btn-outline" style={{ width: '100%', fontSize: '1rem', padding: '12px' }}>Connexion</button></Link>
-                            <Link to="/register"><button className="btn-primary" style={{ width: '100%', fontSize: '1rem', padding: '12px' }}>S'inscrire</button></Link>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '20px' }}>
+                            <Link to="/login"><button className="btn-outline" style={{ width: '100%', fontSize: '1rem', padding: '13px' }}>Connexion</button></Link>
+                            <Link to="/register"><button className="btn-primary" style={{ width: '100%', fontSize: '1rem', padding: '13px' }}>S'inscrire</button></Link>
                         </div>
                     )}
                 </div>
@@ -179,13 +193,13 @@ export function AppLayout({ children }: AppLayoutProps) {
 
             <main style={{ flex: 1 }}>{children}</main>
 
-            <footer style={{ background: '#111', borderTop: '1px solid #1A1A1A', padding: '24px 16px' }}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <footer style={{ background: '#13131A', borderTop: '1px solid #FFFFFF08', padding: '28px 20px' }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
                     <div>
-                        <div style={{ fontFamily: '"Oswald", sans-serif', fontWeight: 700, fontSize: '1rem', color: '#FF8C00', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Spot Gourmand</div>
-                        <div style={{ color: '#555', fontSize: '0.75rem', marginTop: '2px' }}>Sandwicherie · Pasta Bar · Coffee Room</div>
+                        <div style={{ fontFamily: '"Oswald", sans-serif', fontWeight: 700, fontSize: '0.95rem', color: '#FFAA00', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Spot Gourmand</div>
+                        <div style={{ color: '#3F3F46', fontSize: '0.75rem', marginTop: '3px', fontFamily: '"Nunito", sans-serif' }}>Sandwicherie · Pasta Bar · Coffee Room</div>
                     </div>
-                    <div style={{ color: '#444', fontSize: '0.75rem', textAlign: 'right' }}>
+                    <div style={{ color: '#3F3F46', fontSize: '0.75rem', textAlign: 'right', fontFamily: '"Nunito", sans-serif' }}>
                         <div>Lun–Ven : 8h – 21h · Sam : 9h – 22h</div>
                         <div style={{ marginTop: '2px' }}>© {new Date().getFullYear()} Spot Gourmand</div>
                     </div>
