@@ -1,4 +1,4 @@
-/* ── Header ──────────────────────────────────────────────────────────────── */
+/* Header */
 
 .header {
     display: flex;
@@ -29,7 +29,7 @@
     white-space: nowrap;
 }
 
-/* ── Grille menus ────────────────────────────────────────────────────────── */
+/* Grille menus */
 
 .grid {
     display: grid;
@@ -37,7 +37,7 @@
     gap: 16px;
 }
 
-/* ── Card menu ───────────────────────────────────────────────────────────── */
+/* Card menu */
 
 .card {
     padding: 18px;
@@ -86,7 +86,7 @@
     font-family: "Nunito", sans-serif;
 }
 
-/* ── Composition ─────────────────────────────────────────────────────────── */
+/* Composition */
 
 .composition {
     display: flex;
@@ -117,7 +117,7 @@
     font-family: "Nunito", sans-serif;
 }
 
-/* ── Footer card ─────────────────────────────────────────────────────────── */
+/* Footer card */
 
 .cardFooter {
     display: flex;
@@ -174,7 +174,7 @@
     background: #1C0808;
 }
 
-/* ── États ───────────────────────────────────────────────────────────────── */
+/* États */
 
 .loading {
     display: flex;
@@ -192,7 +192,7 @@
     font-family: "Nunito", sans-serif;
 }
 
-/* ── Modal overlay ───────────────────────────────────────────────────────── */
+/* Modal overlay */
 
 .overlay {
     position: fixed;
@@ -205,7 +205,7 @@
     padding: 16px;
 }
 
-/* ── Modal ───────────────────────────────────────────────────────────────── */
+/* Modal */
 
 .modal {
     background: #13131A;
@@ -256,7 +256,7 @@
     color: #A1A1AA;
 }
 
-/* ── Formulaire modal ────────────────────────────────────────────────────── */
+/* Formulaire modal */
 
 .modalBody {
     padding: 20px;
@@ -315,7 +315,7 @@
     min-height: 72px;
 }
 
-/* ── Toggle actif ────────────────────────────────────────────────────────── */
+/* Toggle actif */
 
 .toggleRow {
     display: flex;
@@ -364,7 +364,7 @@
     transform: translateX(18px);
 }
 
-/* ── Section produits ────────────────────────────────────────────────────── */
+/* Section produits */
 
 .sectionTitle {
     font-family: "Oswald", sans-serif;
@@ -443,7 +443,7 @@
     border-radius: 10px;
 }
 
-/* ── Config section ──────────────────────────────────────────────────────── */
+/* Config section */
 
 .configGrid {
     display: grid;
@@ -467,7 +467,7 @@
     color: #A1A1AA;
 }
 
-/* ── Footer modal ────────────────────────────────────────────────────────── */
+/* Footer modal */
 
 .modalFooter {
     padding: 16px 20px;
