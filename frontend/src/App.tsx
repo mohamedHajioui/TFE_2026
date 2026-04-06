@@ -7,6 +7,7 @@ import Register from '@/pages/register';
 import Orders from '@/pages/orders';
 import {UserRole} from "@/models";
 import AdminDashboard from "@/pages/admin/AdminDashboard.tsx";
+import AdminMenus from "@/pages/admin/AdminMenus.tsx";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, isLoading } = useAuth();
@@ -39,6 +40,7 @@ function AppRoutes() {
             <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
             {/* Admin */}
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+            <Route path="/admin/menus" element={<AdminRoute><AdminMenus /></AdminRoute>} />
             <Route path="*" element={<Navigate to="/" replace />} />
 
         </Routes>
