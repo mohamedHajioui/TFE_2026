@@ -38,9 +38,6 @@ export class Ingredient {
   @Column('decimal', { precision: 10, scale: 2 })
   minStock: number; // Seuil d'alerte
 
-  @Column('decimal', { precision: 10, scale: 2 })
-  maxStock: number; // Stock maximum
-
   @Column({ length: 50 })
   unit: string; // 'kg', 'litres', 'unités', 'tranches'
 

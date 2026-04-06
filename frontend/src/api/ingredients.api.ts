@@ -8,7 +8,6 @@ export interface CreateIngredientData {
     category: IngredientCategory;
     currentStock: number;
     minStock: number;
-    maxStock: number;
     unit: string;
     costPerUnit?: number;
     isAvailable?: boolean;

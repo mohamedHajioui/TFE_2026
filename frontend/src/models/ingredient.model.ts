@@ -39,10 +39,6 @@ export class IngredientModel {
     minStock: number;
 
     @Expose()
-    @Transform(({ value }) => parseFloat(value))
-    maxStock: number;
-
-    @Expose()
     unit: string;
 
     @Expose()
@@ -73,10 +69,6 @@ export class IngredientModel {
         return this.currentStock <= 0;
     }
 
-    get stockPercent(): number {
-        if (this.maxStock === 0) return 0;
-        return Math.round((this.currentStock / this.maxStock) * 100);
-    }
 
     get stockStatus(): 'ok' | 'low' | 'empty' {
         if (this.isOutOfStock) return 'empty';

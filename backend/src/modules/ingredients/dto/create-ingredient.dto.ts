@@ -33,11 +33,6 @@ export class CreateIngredientDto {
   @Min(0, { message: 'Le stock minimum doit être positif ou nul' })
   minStock: number;
 
-  @IsNumber({ maxDecimalPlaces: 2 }, { message: 'Stock maximum invalide' })
-  @IsNotEmpty({ message: 'Stock maximum requis' })
-  @Min(0, { message: 'Le stock maximum doit être positif ou nul' })
-  maxStock: number;
-
   @IsString({ message: "L'unité doit être une chaîne de caractères" })
   @IsNotEmpty({ message: 'Unité requise' })
   @MaxLength(50, { message: 'Unité trop longue (max 50 caractères)' })
