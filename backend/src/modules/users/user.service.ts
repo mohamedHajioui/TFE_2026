@@ -170,4 +170,13 @@ export class UserService {
 
     await this.userRepository.remove(user);
   }
+
+  /** Réinitialiser le mot de passe par un admin */
+  async adminResetPassword(id: number, newPassword: string): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
+    user.passwordHash = await CryptoUtil.hashPassword(newPassword);
+    await this.userRepository.save(user);
+    return { message: 'Mot de passe réinitialisé avec succès' };
+  }
 }

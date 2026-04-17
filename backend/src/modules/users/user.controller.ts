@@ -60,6 +60,15 @@ export class UserController {
   ): Promise<{ message: string }> {
     return await this.userService.changePassword(user.id, changePasswordDto);
   }
+  /** Réinitialiser le mot de passe — PUT /api/users/:id/reset-password (ADMIN) */
+  @Roles(UserRole.ADMIN)
+  @Put(':id/reset-password')
+  async adminResetPassword(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { newPassword: string },
+  ): Promise<{ message: string }> {
+    return await this.userService.adminResetPassword(id, body.newPassword);
+  }
 
   /**
    * Liste des utilisateurs (ADMIN)
