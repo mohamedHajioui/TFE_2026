@@ -12,6 +12,7 @@ import { UserModule } from './modules/users/user.module';
 import { AddressModule } from './modules/adress/address.module';
 import { MenuModule } from './modules/menus/menu.module';
 import { OrderModule } from './modules/order/order.module';
+import { SettingsModule } from './modules/settings/settings.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { OrderModule } from './modules/order/order.module';
     UserModule,
     AddressModule,
     OrderModule,
+    SettingsModule,
   ],
   providers: [
     // Validation globale des DTOs
