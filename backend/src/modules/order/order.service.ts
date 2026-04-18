@@ -1,20 +1,34 @@
 import {
-  Injectable,
-  NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Order, OrderStatus, OrderType, PaymentStatus } from './entity/order.entity';
+import {
+  Order,
+  OrderStatus,
+  OrderType,
+  PaymentStatus,
+} from './entity/order.entity';
 import { OrderItem } from '../order-item/entity/order-item.entity';
 import { Product } from '../products/entity/product.entity';
+import { Menu } from '../menus/entity/menu.entity';
 import { User } from '../users/entity/user.entity';
-import { CreateOrderDto } from './dto/create-order.dto';
+import {
+  CreateOrderDto,
+  CreateOrderItemDto,
+  GuestInfoDto,
+  GuestAddressDto,
+} from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { TimeSlot } from '../time-slot/entity/time-slot.entity';
 import { Address } from '../adress/entity/address.entity';
+import { SettingsService } from '../settings/settings.service';
+import { SETTING_KEYS } from '../settings/entity/setting.entity';
+import { NotificationService } from '../../common/services/notification.service';
 
 @Injectable()
 export class OrderService {
@@ -25,310 +39,479 @@ export class OrderService {
     private readonly orderItemRepository: Repository<OrderItem>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    @InjectRepository(Menu) private readonly menuRepository: Repository<Menu>,
     @InjectRepository(TimeSlot)
     private readonly timeSlotRepository: Repository<TimeSlot>,
     @InjectRepository(Address)
     private readonly addressRepository: Repository<Address>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private readonly settingsService: SettingsService,
+    private readonly notificationService: NotificationService,
   ) {}
 
-  /**
-   * Générer un numéro de commande unique
-   * Format: CMD-YYYYMMDD-XXX
-   */
+  /* Utilitaires */
+
+  /** Format: CMD-YYYYMMDD-XXX */
   private async generateOrderNumber(): Promise<string> {
     const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
-
-    // Compter les commandes du jour
     const count = await this.orderRepository
       .createQueryBuilder('order')
       .where('order.orderNumber LIKE :pattern', { pattern: `CMD-${today}-%` })
       .getCount();
-
     const sequence = String(count + 1).padStart(3, '0');
     return `CMD-${today}-${sequence}`;
   }
 
-  /**
-   * Créer une commande
-   */
-  async create(userId: number, createOrderDto: CreateOrderDto): Promise<Order> {
-    // 1. Vérifier l'utilisateur
+  /* CRÉATION — USER CONNECTÉ */
+
+  async create(userId: number, dto: CreateOrderDto): Promise<Order> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new NotFoundException('Utilisateur introuvable');
-    }
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
 
-    // 2. Vérifier le créneau horaire
-    const timeSlot = await this.timeSlotRepository.findOne({
-      where: { id: createOrderDto.timeSlotId },
-    });
-
-    if (!timeSlot) {
-      throw new NotFoundException('Créneau horaire introuvable');
-    }
-
-    if (!timeSlot.isAvailable) {
-      throw new BadRequestException("Ce créneau n'est pas disponible");
-    }
-
-    if (timeSlot.currentBookings >= timeSlot.maxCapacity) {
-      throw new BadRequestException('Ce créneau est complet');
-    }
-
-    // 3. Vérifier l'adresse (si livraison)
-    let deliveryAddress: Address | null = null;
-    let deliveryFee = 0;
-
-    if (createOrderDto.type === OrderType.DELIVERY) {
-      if (!createOrderDto.deliveryAddressId) {
-        throw new BadRequestException('Une adresse de livraison est requise pour une livraison');
+    // Livraison autorisée ?
+    if (dto.type === OrderType.DELIVERY) {
+      await this.assertDeliveryEnabled();
+      if (!dto.deliveryAddressId) {
+        throw new BadRequestException(
+          'Une adresse de livraison est requise pour une commande en livraison',
+        );
       }
+    }
 
+    // Créneau
+    const timeSlot = await this.resolveAndCheckTimeSlot(dto.timeSlotId);
+
+    // Adresse (user connecté)
+    let deliveryAddress: Address | null = null;
+    if (dto.deliveryAddressId) {
       deliveryAddress = await this.addressRepository.findOne({
-        where: { id: createOrderDto.deliveryAddressId },
+        where: { id: dto.deliveryAddressId },
         relations: ['user'],
       });
-
-      if (!deliveryAddress) {
-        throw new NotFoundException('Adresse de livraison introuvable');
+      if (!deliveryAddress) throw new NotFoundException('Adresse introuvable');
+      if (deliveryAddress.user?.id !== userId) {
+        throw new ForbiddenException("Cette adresse n'est pas la vôtre");
       }
-
-      if (deliveryAddress.user.id !== userId) {
-        throw new ForbiddenException('Cette adresse ne vous appartient pas');
-      }
-
-      // Frais de livraison (vous pouvez les calculer selon la distance)
-      deliveryFee = 3.5; // Exemple: 3.50€ fixe
     }
 
-    // 4. Vérifier et calculer les items
-    const orderItems: OrderItem[] = [];
-    let subtotal = 0;
+    // Items
+    const { items, subtotal } = await this.buildItems(dto.items);
 
-    for (const itemDto of createOrderDto.items) {
-      const product = await this.productRepository.findOne({
-        where: { id: itemDto.productId },
-        relations: ['productIngredients', 'productIngredients.ingredient'],
-      });
-
-      if (!product) {
-        throw new NotFoundException(`Produit avec l'ID ${itemDto.productId} introuvable`);
-      }
-
-      if (!product.isActive) {
-        throw new BadRequestException(`Le produit "${product.name}" n'est plus disponible`);
-      }
-
-      // Calculer le prix unitaire (basePrice + suppléments)
-      let unitPrice = Number(product.basePrice);
-
-      // Ajouter les suppléments (ingrédients extra)
-      if (itemDto.customization?.extra) {
-        for (const ingredientId of itemDto.customization.extra) {
-          const productIngredient = product.productIngredients.find(
-            (pi) => pi.ingredient.id === ingredientId,
-          );
-
-          if (productIngredient && productIngredient.extraPrice) {
-            unitPrice += Number(productIngredient.extraPrice);
-          }
-        }
-      }
-
-      const totalPrice = unitPrice * itemDto.quantity;
-      subtotal += totalPrice;
-
-      // Créer l'OrderItem (pas encore sauvegardé)
-      const orderItem = this.orderItemRepository.create({
-        itemType: 'product',
-        product,
-        menu: null,
-        menuChoices: null,
-        quantity: itemDto.quantity,
-        unitPrice,
-        totalPrice,
-        customization: itemDto.customization || null,
-        specialInstructions: itemDto.specialInstructions || null,
-      } as Partial<OrderItem>);
-
-      orderItems.push(orderItem);
-    }
-
-    // 5. Créer la commande
-    const orderNumber = await this.generateOrderNumber();
+    // Delivery fee (setting)
+    const deliveryFee =
+      dto.type === OrderType.DELIVERY
+        ? await this.settingsService.getNumber(SETTING_KEYS.DELIVERY_FEE, 3.5)
+        : 0;
     const total = subtotal + deliveryFee;
 
+    // Commande (PENDING / PENDING, pas de réservation créneau)
+    const orderNumber = await this.generateOrderNumber();
     const order = this.orderRepository.create({
       orderNumber,
       user,
-      type: createOrderDto.type,
+      type: dto.type,
       status: OrderStatus.PENDING,
       paymentStatus: PaymentStatus.PENDING,
       timeSlot,
-      deliveryAddress,
+      deliveryAddress: deliveryAddress ?? undefined,
       subtotal,
       deliveryFee,
       total,
-      customerNote: createOrderDto.customerNote || null,
+      customerNote: dto.customerNote ?? null,
     } as Partial<Order>);
 
-    // 6. Sauvegarder la commande
-    const savedOrder = await this.orderRepository.save(order);
+    const saved = await this.orderRepository.save(order);
 
-    // 7. Sauvegarder les OrderItems
-    for (const orderItem of orderItems) {
-      orderItem.order = savedOrder as Order;
-      await this.orderItemRepository.save(orderItem);
+    for (const item of items) {
+      item.order = saved as Order;
+      await this.orderItemRepository.save(item);
     }
 
-    // 8. Réserver le créneau
-    timeSlot.currentBookings += 1;
-    await this.timeSlotRepository.save(timeSlot);
-
-    // 9. Recharger la commande complète
-    return await this.findOne((savedOrder as Order).id, userId);
+    return await this.findOne((saved as Order).id, userId);
   }
 
-  /**
-   * Récupérer toutes les commandes avec filtres
-   */
-  async findAll(queryDto: QueryOrderDto, userId?: number): Promise<Order[]> {
-    const { status, type, paymentStatus, date, userId: filterUserId } = queryDto;
+  /* CRÉATION — INVITÉ */
 
-    const queryBuilder = this.orderRepository
+  async createGuest(dto: CreateOrderDto): Promise<Order> {
+    if (!dto.guest) {
+      throw new BadRequestException(
+        'Informations invité requises (email, nom, téléphone)',
+      );
+    }
+
+    if (dto.type === OrderType.DELIVERY) {
+      await this.assertDeliveryEnabled();
+      if (!dto.guestAddress) {
+        throw new BadRequestException(
+          'Adresse de livraison requise pour une commande invité en livraison',
+        );
+      }
+    }
+
+    const timeSlot = await this.resolveAndCheckTimeSlot(dto.timeSlotId);
+
+    const { items, subtotal } = await this.buildItems(dto.items);
+
+    const deliveryFee =
+      dto.type === OrderType.DELIVERY
+        ? await this.settingsService.getNumber(SETTING_KEYS.DELIVERY_FEE, 3.5)
+        : 0;
+    const total = subtotal + deliveryFee;
+
+    const orderNumber = await this.generateOrderNumber();
+
+    const order = this.orderRepository.create({
+      orderNumber,
+      user: null,
+      type: dto.type,
+      status: OrderStatus.PENDING,
+      paymentStatus: PaymentStatus.PENDING,
+      timeSlot,
+      deliveryAddress: null,
+      subtotal,
+      deliveryFee,
+      total,
+      customerNote: dto.customerNote ?? null,
+      // Infos invité
+      guestEmail: dto.guest.email,
+      guestName: dto.guest.name,
+      guestPhone: dto.guest.phone,
+      // Adresse inline (si DELIVERY)
+      ...(dto.guestAddress ? this.flattenGuestAddress(dto.guestAddress) : {}),
+    } as Partial<Order>);
+
+    const saved = await this.orderRepository.save(order);
+
+    for (const item of items) {
+      item.order = saved as Order;
+      await this.orderItemRepository.save(item);
+    }
+
+    return await this.findOneById((saved as Order).id);
+  }
+
+  private flattenGuestAddress(addr: GuestAddressDto): Partial<Order> {
+    return {
+      guestStreet: addr.street,
+      guestNumber: addr.number,
+      guestBox: addr.box ?? null,
+      guestPostalCode: addr.postalCode,
+      guestCity: addr.city,
+      guestCountry: addr.country ?? 'Belgium',
+      guestAddressComplement: addr.complement ?? null,
+    };
+  }
+
+  /* Helpers partagés */
+
+  private async assertDeliveryEnabled(): Promise<void> {
+    const enabled = await this.settingsService.getBool(
+      SETTING_KEYS.DELIVERY_ENABLED,
+      true,
+    );
+    if (!enabled) {
+      throw new BadRequestException(
+        'Les livraisons sont temporairement désactivées. Choisissez un retrait en boutique.',
+      );
+    }
+  }
+
+  private async resolveAndCheckTimeSlot(timeSlotId: number): Promise<TimeSlot> {
+    const slot = await this.timeSlotRepository.findOne({
+      where: { id: timeSlotId },
+    });
+    if (!slot) throw new NotFoundException('Créneau horaire introuvable');
+    if (!slot.isAvailable) {
+      throw new BadRequestException("Ce créneau n'est pas disponible");
+    }
+    if (slot.currentBookings >= slot.maxCapacity) {
+      throw new BadRequestException('Ce créneau est complet');
+    }
+    return slot;
+  }
+
+  private async buildItems(
+    itemsDto: CreateOrderItemDto[],
+  ): Promise<{ items: OrderItem[]; subtotal: number }> {
+    const items: OrderItem[] = [];
+    let subtotal = 0;
+    for (const dto of itemsDto) {
+      const item = await this.buildOrderItem(dto);
+      subtotal += Number(item.totalPrice);
+      items.push(item);
+    }
+    return { items, subtotal };
+  }
+
+  private async buildOrderItem(dto: CreateOrderItemDto): Promise<OrderItem> {
+    if (dto.itemType === 'product') return this.buildProductOrderItem(dto);
+    if (dto.itemType === 'menu') return this.buildMenuOrderItem(dto);
+    throw new BadRequestException(`itemType inconnu : ${String(dto.itemType)}`);
+  }
+
+  private async buildProductOrderItem(
+    dto: CreateOrderItemDto,
+  ): Promise<OrderItem> {
+    if (!dto.productId) throw new BadRequestException('productId requis');
+
+    const product = await this.productRepository.findOne({
+      where: { id: dto.productId },
+      relations: ['productIngredients', 'productIngredients.ingredient'],
+    });
+    if (!product)
+      throw new NotFoundException(`Produit #${dto.productId} introuvable`);
+    if (!product.isActive) {
+      throw new BadRequestException(
+        `Le produit "${product.name}" n'est plus disponible`,
+      );
+    }
+
+    let unitPrice = Number(product.basePrice);
+    if (dto.customization?.extra) {
+      for (const ingredientId of dto.customization.extra) {
+        const pi = product.productIngredients.find(
+          (p) => p.ingredient.id === ingredientId,
+        );
+        if (pi?.extraPrice) unitPrice += Number(pi.extraPrice);
+      }
+    }
+    const totalPrice = unitPrice * dto.quantity;
+
+    return this.orderItemRepository.create({
+      itemType: 'product',
+      product,
+      menu: null,
+      menuChoices: null,
+      quantity: dto.quantity,
+      unitPrice,
+      totalPrice,
+      customization: dto.customization ?? null,
+      specialInstructions: dto.specialInstructions ?? null,
+    } as Partial<OrderItem>);
+  }
+
+  private async buildMenuOrderItem(
+    dto: CreateOrderItemDto,
+  ): Promise<OrderItem> {
+    if (!dto.menuId) throw new BadRequestException('menuId requis');
+
+    const menu = await this.menuRepository.findOne({
+      where: { id: dto.menuId },
+      relations: ['allowedProducts'],
+    });
+    if (!menu) throw new NotFoundException(`Menu #${dto.menuId} introuvable`);
+    if (!menu.isActive) {
+      throw new BadRequestException(
+        `Le menu "${menu.name}" n'est plus disponible`,
+      );
+    }
+
+    if (dto.menuChoices) {
+      const allowedIds = menu.allowedProducts?.map((p) => p.id) ?? [];
+      for (const [role, id] of Object.entries(dto.menuChoices)) {
+        if (id && !allowedIds.includes(id)) {
+          throw new BadRequestException(
+            `Produit #${id} (${role}) ne fait pas partie du menu "${menu.name}"`,
+          );
+        }
+      }
+    }
+
+    const unitPrice = Number(menu.price);
+    const totalPrice = unitPrice * dto.quantity;
+
+    return this.orderItemRepository.create({
+      itemType: 'menu',
+      product: null,
+      menu,
+      menuChoices: dto.menuChoices ?? null,
+      quantity: dto.quantity,
+      unitPrice,
+      totalPrice,
+      customization: null,
+      specialInstructions: dto.specialInstructions ?? null,
+    } as Partial<OrderItem>);
+  }
+
+  /* LECTURE */
+
+  async findAll(
+    queryDto: QueryOrderDto,
+    userId?: number,
+    onlyPaid = false,
+  ): Promise<Order[]> {
+    const qb = this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.user', 'user')
       .leftJoinAndSelect('order.timeSlot', 'timeSlot')
       .leftJoinAndSelect('order.deliveryAddress', 'deliveryAddress')
       .leftJoinAndSelect('order.items', 'items')
-      .leftJoinAndSelect('items.product', 'product');
+      .leftJoinAndSelect('items.product', 'product')
+      .leftJoinAndSelect('items.menu', 'menu');
 
-    // Si userId fourni (client normal), filtrer par ses commandes
-    if (userId) {
-      queryBuilder.andWhere('order.user.id = :userId', { userId });
-    }
-
-    // Filtres admin
-    if (filterUserId) {
-      queryBuilder.andWhere('order.user.id = :filterUserId', { filterUserId });
-    }
-
-    if (status) {
-      queryBuilder.andWhere('order.status = :status', { status });
-    }
-
-    if (type) {
-      queryBuilder.andWhere('order.type = :type', { type });
-    }
-
-    if (paymentStatus) {
-      queryBuilder.andWhere('order.paymentStatus = :paymentStatus', {
-        paymentStatus,
+    if (userId) qb.andWhere('order.user.id = :userId', { userId });
+    if (onlyPaid) {
+      qb.andWhere('order.paymentStatus = :paidStatus', {
+        paidStatus: PaymentStatus.PAID,
       });
     }
-
-    if (date) {
-      queryBuilder.andWhere('timeSlot.date = :date', { date });
+    if (queryDto.userId) {
+      qb.andWhere('order.user.id = :filterUserId', {
+        filterUserId: queryDto.userId,
+      });
     }
+    if (queryDto.status)
+      qb.andWhere('order.status = :status', { status: queryDto.status });
+    if (queryDto.type)
+      qb.andWhere('order.type = :type', { type: queryDto.type });
+    if (queryDto.paymentStatus) {
+      qb.andWhere('order.paymentStatus = :paymentStatus', {
+        paymentStatus: queryDto.paymentStatus,
+      });
+    }
+    if (queryDto.date)
+      qb.andWhere('timeSlot.date = :date', { date: queryDto.date });
 
-    queryBuilder.orderBy('order.createdAt', 'DESC');
-
-    return await queryBuilder.getMany();
+    qb.orderBy('order.createdAt', 'DESC');
+    return await qb.getMany();
   }
 
-  /**
-   * Récupérer une commande par ID
-   */
   async findOne(id: number, userId?: number): Promise<Order> {
-    const order = await this.orderRepository.findOne({
-      where: { id },
-      relations: ['user', 'timeSlot', 'deliveryAddress', 'items', 'items.product'],
-    });
-
-    if (!order) {
-      throw new NotFoundException(`Commande avec l'ID ${id} introuvable`);
-    }
-
-    // Vérifier que l'utilisateur a accès à cette commande
-    if (userId && order.user.id !== userId) {
+    const order = await this.findOneById(id);
+    if (userId && order.user?.id !== userId) {
       throw new ForbiddenException("Vous n'avez pas accès à cette commande");
     }
-
     return order;
   }
 
-  /**
-   * Mes commandes (client)
-   */
-  async getMyOrders(userId: number): Promise<Order[]> {
-    return await this.findAll({}, userId);
+  private async findOneById(id: number): Promise<Order> {
+    const order = await this.orderRepository.findOne({
+      where: { id },
+      relations: [
+        'user',
+        'timeSlot',
+        'deliveryAddress',
+        'items',
+        'items.product',
+        'items.menu',
+      ],
+    });
+    if (!order) throw new NotFoundException(`Commande #${id} introuvable`);
+    return order;
   }
 
+  async getMyOrders(userId: number): Promise<Order[]> {
+    return await this.findAll({}, userId, false);
+  }
+
+  /* GUEST — dernière adresse */
+
   /**
-   * Changer le statut d'une commande (ADMIN/EMPLOYEE)
+   * Retourne la dernière adresse utilisée par un invité avec cet email.
+   * Utilisé pour préremplir le formulaire lors d'une nouvelle commande.
    */
-  async updateStatus(id: number, updateStatusDto: UpdateOrderStatusDto): Promise<Order> {
-    const order = await this.findOne(id);
+  async getLastGuestAddress(email: string): Promise<{
+    street: string | null;
+    number: string | null;
+    box: string | null;
+    postalCode: string | null;
+    city: string | null;
+    country: string | null;
+    complement: string | null;
+    name: string | null;
+    phone: string | null;
+  } | null> {
+    const lastOrder = await this.orderRepository.findOne({
+      where: { guestEmail: email, type: OrderType.DELIVERY },
+      order: { createdAt: 'DESC' },
+    });
+    if (!lastOrder) return null;
+    if (!lastOrder.guestStreet) return null;
 
-    order.status = updateStatusDto.status;
+    return {
+      street: lastOrder.guestStreet,
+      number: lastOrder.guestNumber,
+      box: lastOrder.guestBox,
+      postalCode: lastOrder.guestPostalCode,
+      city: lastOrder.guestCity,
+      country: lastOrder.guestCountry,
+      complement: lastOrder.guestAddressComplement,
+      name: lastOrder.guestName,
+      phone: lastOrder.guestPhone,
+    };
+  }
 
-    if (updateStatusDto.internalNote) {
-      order.internalNote = updateStatusDto.internalNote;
-    }
+  /* MISE À JOUR DE STATUT (ADMIN/EMPLOYEE) */
 
-    // Si complétée, définir la date de complétion
-    if (updateStatusDto.status === OrderStatus.COMPLETED) {
-      order.completedAt = new Date();
-    }
+  async updateStatus(id: number, dto: UpdateOrderStatusDto): Promise<Order> {
+    const order = await this.findOneById(id);
+    const previousStatus = order.status;
 
-    // Si annulée, libérer le créneau
-    if (updateStatusDto.status === OrderStatus.CANCELLED) {
-      const timeSlot = await this.timeSlotRepository.findOne({
+    order.status = dto.status;
+    if (dto.internalNote) order.internalNote = dto.internalNote;
+    if (dto.status === OrderStatus.COMPLETED) order.completedAt = new Date();
+
+    // Libérer le créneau si annulation ET commande déjà payée (donc créneau réservé)
+    if (
+      dto.status === OrderStatus.CANCELLED &&
+      order.paymentStatus === PaymentStatus.PAID &&
+      order.timeSlot
+    ) {
+      const slot = await this.timeSlotRepository.findOne({
         where: { id: order.timeSlot.id },
       });
-
-      if (timeSlot && timeSlot.currentBookings > 0) {
-        timeSlot.currentBookings -= 1;
-        await this.timeSlotRepository.save(timeSlot);
+      if (slot && slot.currentBookings > 0) {
+        slot.currentBookings -= 1;
+        await this.timeSlotRepository.save(slot);
       }
     }
 
-    return await this.orderRepository.save(order);
+    const saved = await this.orderRepository.save(order);
+
+    // Hook notification : CONFIRMED → IN_PREPARATION = "l'employé la prend"
+    if (
+      previousStatus === OrderStatus.CONFIRMED &&
+      dto.status === OrderStatus.IN_PREPARATION
+    ) {
+      await this.notificationService.notifyOrderTakenInCharge(saved);
+    }
+
+    return saved;
   }
 
-  /**
-   * Annuler une commande (CLIENT)
-   */
+  /* ANNULATION CLIENT */
+
   async cancel(id: number, userId: number): Promise<Order> {
     const order = await this.findOne(id, userId);
 
-    // Vérifier que la commande peut être annulée
     if (order.status === OrderStatus.COMPLETED) {
       throw new BadRequestException('Cette commande est déjà terminée');
     }
-
     if (order.status === OrderStatus.CANCELLED) {
       throw new BadRequestException('Cette commande est déjà annulée');
     }
-
     if (order.status === OrderStatus.IN_DELIVERY) {
       throw new BadRequestException(
-        'Cette commande est en cours de livraison et ne peut plus être annulée',
+        'Commande en cours de livraison, annulation impossible',
+      );
+    }
+    if (
+      order.paymentStatus === PaymentStatus.PAID &&
+      order.status === OrderStatus.IN_PREPARATION
+    ) {
+      throw new BadRequestException(
+        'Commande déjà en préparation, contactez la sandwicherie',
       );
     }
 
-    // Annuler
     return await this.updateStatus(id, {
       status: OrderStatus.CANCELLED,
       internalNote: 'Annulée par le client',
     });
   }
 
-  /**
-   * Statistiques pour admin
-   */
+  /* STATISTIQUES */
+
   async getStatistics(): Promise<{
     totalOrders: number;
     pendingOrders: number;
@@ -337,10 +520,15 @@ export class OrderService {
   }> {
     const today = new Date().toISOString().split('T')[0];
 
-    const totalOrders = await this.orderRepository.count();
+    const totalOrders = await this.orderRepository.count({
+      where: { paymentStatus: PaymentStatus.PAID },
+    });
 
     const pendingOrders = await this.orderRepository.count({
-      where: { status: OrderStatus.PENDING },
+      where: {
+        paymentStatus: PaymentStatus.PAID,
+        status: OrderStatus.CONFIRMED,
+      },
     });
 
     const completedToday = await this.orderRepository
@@ -357,15 +545,10 @@ export class OrderService {
       .andWhere('order.paymentStatus = :paymentStatus', {
         paymentStatus: PaymentStatus.PAID,
       })
-      .getRawOne();
+      .getRawOne<{ revenue: string | null }>();
 
-    const revenueToday = parseFloat(revenueResult?.revenue || '0');
+    const revenueToday = parseFloat(revenueResult?.revenue ?? '0');
 
-    return {
-      totalOrders,
-      pendingOrders,
-      completedToday,
-      revenueToday,
-    };
+    return { totalOrders, pendingOrders, completedToday, revenueToday };
   }
 }

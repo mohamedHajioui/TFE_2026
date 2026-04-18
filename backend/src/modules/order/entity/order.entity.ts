@@ -38,6 +38,7 @@ export enum PaymentStatus {
 @Entity()
 @Index(['orderNumber'])
 @Index(['user', 'status'])
+@Index(['guestEmail']) // pour retrouver rapidement les commandes d'un invité revenant
 export class Order {
   @PrimaryGeneratedColumn()
   id: number;
@@ -45,24 +46,13 @@ export class Order {
   @Column({ unique: true, length: 50 })
   orderNumber: string;
 
-  @Column({
-    type: 'enum',
-    enum: OrderType,
-  })
+  @Column({ type: 'enum', enum: OrderType })
   type: OrderType;
 
-  @Column({
-    type: 'enum',
-    enum: OrderStatus,
-    default: OrderStatus.PENDING,
-  })
+  @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.PENDING })
   status: OrderStatus;
 
-  @Column({
-    type: 'enum',
-    enum: PaymentStatus,
-    default: PaymentStatus.PENDING,
-  })
+  @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING })
   paymentStatus: PaymentStatus;
 
   @Column('decimal', { precision: 10, scale: 2 })
@@ -89,17 +79,19 @@ export class Order {
   @Column({ nullable: true, type: 'timestamp' })
   completedAt: Date;
 
+  // ─── Relations (user connecté) ───
+
   @ManyToOne(() => User, (user) => user.orders, {
     onDelete: 'SET NULL',
     nullable: true,
   })
-  user: User;
+  user: User | null;
 
   @ManyToOne(() => Address, (address) => address.orders, {
     nullable: true,
     onDelete: 'SET NULL',
   })
-  deliveryAddress: Address;
+  deliveryAddress: Address | null;
 
   @ManyToOne(() => TimeSlot, (timeSlot) => timeSlot.orders, {
     onDelete: 'SET NULL',
@@ -107,8 +99,41 @@ export class Order {
   })
   timeSlot: TimeSlot;
 
-  @OneToMany(() => OrderItem, (orderItem) => orderItem.order, {
-    cascade: true,
-  })
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.order, { cascade: true })
   items: OrderItem[];
+
+  // Champs INVITÉ (guest checkout)
+  // Renseignés uniquement si `user` est null (commande sans compte).
+  // On stocke tout sur la commande elle-même pour qu'elle soit autosuffisante.
+
+  @Column({ length: 255, nullable: true })
+  guestEmail: string | null;
+
+  @Column({ length: 100, nullable: true })
+  guestName: string | null;
+
+  @Column({ length: 30, nullable: true })
+  guestPhone: string | null;
+
+  // Adresse de livraison inline pour invités (si DELIVERY).
+  @Column({ length: 255, nullable: true })
+  guestStreet: string | null;
+
+  @Column({ length: 10, nullable: true })
+  guestNumber: string | null;
+
+  @Column({ length: 10, nullable: true })
+  guestBox: string | null;
+
+  @Column({ length: 10, nullable: true })
+  guestPostalCode: string | null;
+
+  @Column({ length: 100, nullable: true })
+  guestCity: string | null;
+
+  @Column({ length: 100, nullable: true })
+  guestCountry: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  guestAddressComplement: string | null;
 }

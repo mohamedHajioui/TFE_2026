@@ -4,7 +4,10 @@ import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // rawBody: true → nécessaire pour vérifier la signature des webhooks Stripe.
+  // Sans ça, le body est parsé en JSON et la signature calculée par Stripe
+  // ne correspond plus au body reçu.
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   // Activer le parsing des cookies
   app.use(cookieParser());
