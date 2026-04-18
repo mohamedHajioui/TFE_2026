@@ -10,7 +10,9 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import Stripe from 'stripe';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import Stripe = require('stripe');
+
 import {
   Order,
   OrderStatus,
@@ -20,23 +22,19 @@ import { TimeSlot } from '../time-slot/entity/time-slot.entity';
 import { OrderItem } from '../order-item/entity/order-item.entity';
 
 /**
- * Service de paiement Stripe.
- *
- * Compatible avec stripe@22.x (API version 2026-03-25.dahlia).
- * Si tu upgrades stripe plus tard, mets à jour la version d'API ci-dessous
- * pour qu'elle corresponde à celle du SDK.
+ * Service de paiement Stripe (compatible stripe@22.x, nodenext CJS).
  *
  * Flow :
  *  1. Commande créée (PENDING/PENDING, créneau non réservé)
- *  2. POST /payments/checkout-session → crée une Stripe Checkout Session
- *  3. User payé sur Stripe → webhook checkout.session.completed
+ *  2. POST /payments/checkout-session → Stripe Checkout Session
+ *  3. User paye → webhook checkout.session.completed
  *  4. onPaymentSuccess() → réserve le créneau + PAID + CONFIRMED
  *  5. Échec/expire → FAILED + CANCELLED
  */
 @Injectable()
 export class PaymentService implements OnModuleInit {
   private readonly logger = new Logger(PaymentService.name);
-  private stripe: Stripe;
+  private stripe!: Stripe.Stripe;
 
   constructor(
     private readonly config: ConfigService,
@@ -55,11 +53,10 @@ export class PaymentService implements OnModuleInit {
       );
       return;
     }
-    // apiVersion fixée à celle de stripe@22.x
     this.stripe = new Stripe(key, { apiVersion: '2026-03-25.dahlia' });
   }
 
-  private ensureStripe(): Stripe {
+  private ensureStripe(): Stripe.Stripe {
     if (!this.stripe) {
       throw new InternalServerErrorException(
         'Stripe non configuré. Définissez STRIPE_SECRET_KEY dans le .env.',
@@ -124,20 +121,18 @@ export class PaymentService implements OnModuleInit {
   ): Promise<{ url: string; sessionId: string }> {
     const stripe = this.ensureStripe();
 
-    // Typage explicite via StripeSdk namespace import
-    const lineItems: StripeSdk.Checkout.SessionCreateParams.LineItem[] =
-      order.items.map((item) => {
-        const name =
-          item.menu?.name ?? item.product?.name ?? `Article #${item.id}`;
-        return {
-          price_data: {
-            currency: 'eur',
-            product_data: { name },
-            unit_amount: Math.round(Number(item.unitPrice) * 100),
-          },
-          quantity: item.quantity,
-        };
-      });
+    const lineItems = order.items.map((item) => {
+      const name =
+        item.menu?.name ?? item.product?.name ?? `Article #${item.id}`;
+      return {
+        price_data: {
+          currency: 'eur',
+          product_data: { name },
+          unit_amount: Math.round(Number(item.unitPrice) * 100),
+        },
+        quantity: item.quantity,
+      };
+    });
 
     if (Number(order.deliveryFee) > 0) {
       lineItems.push({
@@ -150,8 +145,7 @@ export class PaymentService implements OnModuleInit {
       });
     }
 
-    const frontendUrl =
-      this.config.get<string>('FRONTEND_URL') ?? 'http://localhost:5173';
+    const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'http://localhost:5173';
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -167,9 +161,7 @@ export class PaymentService implements OnModuleInit {
     });
 
     if (!session.url) {
-      throw new InternalServerErrorException(
-        "Stripe n'a pas retourné d'URL de checkout",
-      );
+      throw new InternalServerErrorException("Stripe n'a pas retourné d'URL de checkout");
     }
 
     order.internalNote = `stripe_session:${session.id}`;
@@ -178,8 +170,14 @@ export class PaymentService implements OnModuleInit {
     return { url: session.url, sessionId: session.id };
   }
 
-  /** Vérifie la signature du webhook à partir du raw body. */
-  verifyWebhookSignature(rawBody: Buffer, signature: string): StripeSdk.Event {
+  /**
+   * Vérifie la signature du webhook depuis le raw body.
+   * Le type de retour est inféré depuis stripe.webhooks.constructEvent.
+   */
+  verifyWebhookSignature(
+    rawBody: Buffer,
+    signature: string,
+  ): ReturnType<Stripe.Stripe['webhooks']['constructEvent']> {
     const stripe = this.ensureStripe();
     const secret = this.config.get<string>('STRIPE_WEBHOOK_SECRET');
     if (!secret) {
@@ -197,30 +195,28 @@ export class PaymentService implements OnModuleInit {
     }
   }
 
-  async handleWebhookEvent(event: StripeSdk.Event): Promise<void> {
+  async handleWebhookEvent(
+    event: ReturnType<Stripe.Stripe['webhooks']['constructEvent']>,
+  ): Promise<void> {
     this.logger.log(`Webhook Stripe reçu : ${event.type}`);
 
     switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as StripeSdk.Checkout.Session;
-        await this.onPaymentSuccess(session);
+      case 'checkout.session.completed':
+        await this.onPaymentSuccess(event.data.object);
         break;
-      }
       case 'checkout.session.expired':
-      case 'checkout.session.async_payment_failed': {
-        const session = event.data.object as StripeSdk.Checkout.Session;
-        await this.onPaymentFailed(session);
+      case 'checkout.session.async_payment_failed':
+        await this.onPaymentFailed(event.data.object);
         break;
-      }
       default:
         this.logger.debug(`Event Stripe ignoré : ${event.type}`);
     }
   }
 
-  private async onPaymentSuccess(
-    session: StripeSdk.Checkout.Session,
-  ): Promise<void> {
-    const orderId = Number(session.metadata?.orderId);
+  private async onPaymentSuccess(session: unknown): Promise<void> {
+    const s = session as Record<string, unknown>;
+    const metadata = s['metadata'] as Record<string, string> | null;
+    const orderId = Number(metadata?.['orderId']);
     if (!orderId) {
       this.logger.error('Webhook success sans metadata.orderId');
       return;
@@ -241,7 +237,7 @@ export class PaymentService implements OnModuleInit {
       return;
     }
 
-    // Réserver le créneau maintenant (option B)
+    // Réserver le créneau après confirmation paiement
     if (order.timeSlot) {
       const slot = await this.timeSlotRepo.findOne({
         where: { id: order.timeSlot.id },
@@ -253,7 +249,7 @@ export class PaymentService implements OnModuleInit {
         );
       } else if (slot.currentBookings >= slot.maxCapacity) {
         this.logger.error(
-          `Créneau ${slot.id} complet pour ${order.orderNumber} ALORS QU'ON EST PAYÉ — remboursement à faire`,
+          `Créneau ${slot.id} complet pour ${order.orderNumber} — remboursement requis`,
         );
         order.paymentStatus = PaymentStatus.PAID;
         order.status = OrderStatus.CANCELLED;
@@ -268,9 +264,10 @@ export class PaymentService implements OnModuleInit {
       }
     }
 
+    const sessionId = String(s['id'] ?? '');
     order.paymentStatus = PaymentStatus.PAID;
     order.status = OrderStatus.CONFIRMED;
-    order.internalNote = `stripe_session:${session.id} · paid`;
+    order.internalNote = `stripe_session:${sessionId} · paid`;
     await this.orderRepo.save(order);
 
     this.logger.log(
@@ -278,10 +275,10 @@ export class PaymentService implements OnModuleInit {
     );
   }
 
-  private async onPaymentFailed(
-    session: StripeSdk.Checkout.Session,
-  ): Promise<void> {
-    const orderId = Number(session.metadata?.orderId);
+  private async onPaymentFailed(session: unknown): Promise<void> {
+    const s = session as Record<string, unknown>;
+    const metadata = s['metadata'] as Record<string, string> | null;
+    const orderId = Number(metadata?.['orderId']);
     if (!orderId) return;
 
     const order = await this.orderRepo.findOne({ where: { id: orderId } });
