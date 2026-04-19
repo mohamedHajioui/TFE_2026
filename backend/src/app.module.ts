@@ -13,6 +13,7 @@ import { AddressModule } from './modules/adress/address.module';
 import { MenuModule } from './modules/menus/menu.module';
 import { OrderModule } from './modules/order/order.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import {PaymentModule} from "./modules/payment/payment.module";
 
 @Module({
   imports: [
@@ -28,8 +29,9 @@ import { SettingsModule } from './modules/settings/settings.module';
     MenuModule,
     UserModule,
     AddressModule,
-    OrderModule,
     SettingsModule,
+    OrderModule,
+    PaymentModule,
   ],
   providers: [
     // Validation globale des DTOs

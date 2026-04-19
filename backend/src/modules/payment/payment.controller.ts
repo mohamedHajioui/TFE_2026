@@ -5,11 +5,10 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  RawBodyRequest,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import type { Request } from 'express';
+import { Request } from 'express';
 import { PaymentService } from './payment.service';
 import { CreateCheckoutSessionDto } from './dto/create-checkout-session.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -55,7 +54,7 @@ export class PaymentController {
   @Post('webhook')
   @HttpCode(HttpStatus.OK)
   async webhook(
-    @Req() req: RawBodyRequest<Request>,
+    @Req() req: Request & { rawBody?: Buffer },
     @Headers('stripe-signature') signature: string,
   ): Promise<{ received: boolean }> {
     if (!req.rawBody) {

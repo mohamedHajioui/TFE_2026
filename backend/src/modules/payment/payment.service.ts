@@ -22,7 +22,7 @@ import { TimeSlot } from '../time-slot/entity/time-slot.entity';
 import { OrderItem } from '../order-item/entity/order-item.entity';
 
 /**
- * Service de paiement Stripe (compatible stripe@22.x, nodenext CJS).
+ * Service de paiement Stripe.
  *
  * Flow :
  *  1. Commande créée (PENDING/PENDING, créneau non réservé)
@@ -231,7 +231,6 @@ export class PaymentService implements OnModuleInit {
       return;
     }
 
-    // Idempotence
     if (order.paymentStatus === PaymentStatus.PAID) {
       this.logger.log(`Commande ${order.orderNumber} déjà PAID — skip`);
       return;
