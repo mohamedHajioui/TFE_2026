@@ -20,6 +20,7 @@ import {
 } from '../order/entity/order.entity';
 import { TimeSlot } from '../time-slot/entity/time-slot.entity';
 import { OrderItem } from '../order-item/entity/order-item.entity';
+import { NotificationService} from '../../common/services/notification.service';
 
 /**
  * Service de paiement Stripe.
@@ -43,6 +44,7 @@ export class PaymentService implements OnModuleInit {
     private readonly timeSlotRepo: Repository<TimeSlot>,
     @InjectRepository(OrderItem)
     private readonly orderItemRepo: Repository<OrderItem>,
+    private readonly notificationService: NotificationService,
   ) {}
 
   onModuleInit(): void {
@@ -272,6 +274,16 @@ export class PaymentService implements OnModuleInit {
     this.logger.log(
       `Commande ${order.orderNumber} marquée PAID + CONFIRMED, créneau réservé.`,
     );
+
+    // Notifier l'admin par SMS
+    try {
+      await this.notificationService.notifyAdminNewOrder(order);
+    } catch (err) {
+      // Ne jamais faire échouer le webhook pour une erreur de notif
+      this.logger.error(
+        `Erreur notification SMS admin : ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
   }
 
   private async onPaymentFailed(session: unknown): Promise<void> {
