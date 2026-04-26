@@ -1,28 +1,33 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { Public } from '../../common/decorators/public.decorator';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ConfigService } from '@nestjs/config';
+import { User } from '../users/entity/user.entity';
 import express from 'express';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly config: ConfigService,
+  ) {}
 
-  /**
-   * Endpoint pour l'inscription (register)
-   * @param registerDto
-   * @param response
-   */
+  /* Register */
+
   @Public()
   @Post('register')
   async register(
@@ -30,36 +35,70 @@ export class AuthController {
     @Res({ passthrough: true }) response: express.Response,
   ) {
     const result = await this.authService.register(registerDto);
-
-    //Stocker les tokens dans des cookies HttpOnly
     this.setAuthCookies(response, result.accessToken, result.refreshToken);
-    return {
-      user: result.user,
-    };
+    return { user: result.user };
   }
 
-  /**
-   * Endpoint pour l'authentification (login)
-   * @param loginDto
-   * @param response
-   */
+  /* Login */
+
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) response: express.Response) {
+  async login(
+    @Body() loginDto: LoginDto,
+    @Res({ passthrough: true }) response: express.Response,
+  ) {
     const result = await this.authService.login(loginDto);
     this.setAuthCookies(response, result.accessToken, result.refreshToken);
+    return { user: result.user };
+  }
 
-    return {
-      user: result.user,
-    };
+  /* Google OAuth */
+
+  /**
+   * Étape 1 : redirige vers la page de consentement Google.
+   * Le navigateur est redirigé vers accounts.google.com.
+   */
+  @Public()
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  googleLogin() {
+    // Passport gère la redirection, cette méthode ne s'exécute pas
   }
 
   /**
-   * Endpoint pour rafraîchir le token d'accès à l'aide du refresh token
-   * @param request
-   * @param response
+   * Étape 2 : Google redirige ici après consentement.
+   * Passport valide le code, appelle GoogleStrategy.validate(),
+   * qui appelle authService.findOrCreateGoogleUser().
+   * On pose les cookies JWT et on redirige vers le frontend.
    */
+  @Public()
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(
+    @Req() req: express.Request & { user?: User },
+    @Res() res: express.Response,
+  ) {
+    const frontendUrl =
+      this.config.get<string>('FRONTEND_URL') ?? 'http://localhost:5173';
+
+    if (!req.user) {
+      return res.redirect(`${frontendUrl}/login?error=google_failed`);
+    }
+
+    try {
+      const result = this.authService['buildAuthResponse'](req.user);
+      this.setAuthCookies(res, result.accessToken, result.refreshToken);
+
+      // Redirection vers le frontend après connexion Google réussie
+      return res.redirect(`${frontendUrl}/`);
+    } catch {
+      return res.redirect(`${frontendUrl}/login?error=google_failed`);
+    }
+  }
+
+  /* Refresh */
+
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
@@ -67,70 +106,52 @@ export class AuthController {
     @Req() request: express.Request,
     @Res({ passthrough: true }) response: express.Response,
   ) {
-    // Lire le refresh token depuis le cookie
-    const refreshToken = request.cookies?.refreshToken;
+    const refreshToken = request.cookies?.refreshToken as string | undefined;
 
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token manquant');
     }
-    const result = await this.authService.refreshToken(refreshToken);
 
+    const result = await this.authService.refreshToken(refreshToken);
     this.setAuthCookies(response, result.accessToken, result.refreshToken);
-    return {
-      user: result.user,
-    };
+    return { user: result.user };
   }
 
-  /**
-   * Endpoint pour la déconnexion (logout)
-   * @param response
-   */
+  /* Logout */
+
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(@Res({ passthrough: true }) response: express.Response) {
-    // Supprimer les cookies d'authentification
     this.clearAuthCookies(response);
-    return {
-      message: 'Déconnexion réussie',
-    };
+    return { message: 'Déconnexion réussie' };
   }
 
-  /**
-   * Stocke les tokens d'authentification dans des cookies HttpOnly pour une meilleure sécurité
-   * @param response
-   * @param accessToken
-   * @param refreshToken
-   * @private
-   */
+  /* Helpers cookies */
+
   private setAuthCookies(
     response: express.Response,
     accessToken: string,
     refreshToken: string,
   ): void {
-    // Access Token
+    const isProduction = process.env.NODE_ENV === 'production';
+
     response.cookie('accessToken', accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Sécurisé en production
-      sameSite: 'strict', // Protection CSRF
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      secure: isProduction,
+      sameSite: 'lax', // 'lax' nécessaire pour que le cookie soit posé après redirect OAuth
+      maxAge: 15 * 60 * 1000,
       path: '/',
     });
 
-    // Refresh Token
     response.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Sécurisé en production
-      sameSite: 'strict', // Protection CSRF
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/',
     });
   }
 
-  /**
-   * Supprime les cookies d'authentification (logout)
-   * @param response
-   * @private
-   */
   private clearAuthCookies(response: express.Response): void {
     response.clearCookie('accessToken', { path: '/' });
     response.clearCookie('refreshToken', { path: '/' });
