@@ -6,39 +6,20 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
 import { User } from '../users/entity/user.entity';
 import { JwtUtil } from '../../common/utils/jwt.util';
 
-/**
- * Module d'authentification
- *
- * Gère:
- * - Inscription / Connexion
- * - Génération et validation des JWT
- * - Protection des routes via guards
- */
 @Module({
   imports: [
-    // Importer l'entité User pour pouvoir l'utiliser dans le service
     TypeOrmModule.forFeature([User]),
-
-    // Configuration de Passport (stratégie JWT par défaut)
     PassportModule.register({ defaultStrategy: 'jwt' }),
-
-    // Configuration du module JWT
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
         const secret = configService.get<string>('JWT_SECRET');
-        if (!secret) {
-          throw new Error('JWT_SECRET is not defined in environment variables');
-        }
-        return {
-          secret,
-          signOptions: {
-            expiresIn: '15m' as const,
-          },
-        };
+        if (!secret) throw new Error('JWT_SECRET is not defined');
+        return { secret, signOptions: { expiresIn: '15m' } };
       },
       inject: [ConfigService],
     }),
@@ -47,11 +28,9 @@ import { JwtUtil } from '../../common/utils/jwt.util';
   providers: [
     AuthService,
     JwtStrategy,
+    GoogleStrategy,
     JwtUtil,
   ],
-  exports: [
-    AuthService,
-    JwtUtil,
-  ],
+  exports: [AuthService, JwtUtil],
 })
 export class AuthModule {}

@@ -114,6 +114,13 @@ export class UserService {
       throw new NotFoundException('Utilisateur introuvable');
     }
 
+    // Compte Google : pas de mot de passe
+    if (!user.passwordHash) {
+      throw new BadRequestException(
+        "Ce compte utilise la connexion Google et n'a pas de mot de passe.",
+      );
+    }
+
     // Vérifier le mot de passe actuel
     const isValid = await CryptoUtil.comparePasswords(
       changePasswordDto.currentPassword,
@@ -172,11 +179,24 @@ export class UserService {
   }
 
   /** Réinitialiser le mot de passe par un admin */
-  async adminResetPassword(id: number, newPassword: string): Promise<{ message: string }> {
+  async adminResetPassword(
+    id: number,
+    newPassword: string,
+  ): Promise<{ message: string }> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) throw new NotFoundException('Utilisateur introuvable');
     user.passwordHash = await CryptoUtil.hashPassword(newPassword);
     await this.userRepository.save(user);
     return { message: 'Mot de passe réinitialisé avec succès' };
+  }
+
+  /**
+   * Modifier un utilisateur par un admin (rôle, displayName, téléphone)
+   * PUT /api/users/:id/update
+   */
+  async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.findOne(id);
+    Object.assign(user, updateUserDto);
+    return await this.userRepository.save(user);
   }
 }

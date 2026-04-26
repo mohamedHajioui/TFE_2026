@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/entity/user.entity';
 import { Repository } from 'typeorm';
@@ -8,6 +12,12 @@ import { RegisterDto } from './dto/register.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { LoginDto } from './dto/login.dto';
 
+export interface GoogleUserData {
+  email: string;
+  displayName: string;
+  googleId: string;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -16,12 +26,9 @@ export class AuthService {
     private readonly jwtUtil: JwtUtil,
   ) {}
 
-  /**
-   * Enregistre un nouvel utilisateur avec email, displayName, password, etc.
-   * @param registerDto
-   */
+  /* Register */
+
   async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
-    // Vérifier si l'email existe déjà
     const existingEmail = await this.userRepository.findOne({
       where: { email: registerDto.email },
     });
@@ -30,49 +37,22 @@ export class AuthService {
       throw new ConflictException('Cet email est déjà utilisé');
     }
 
-    // Hacher le mot de passe
     const passwordHash = await CryptoUtil.hashPassword(registerDto.password);
 
-    // Créer l'utilisateur
     const user = this.userRepository.create({
       email: registerDto.email,
       displayName: registerDto.displayName,
       passwordHash,
       phoneNumber: registerDto.phoneNumber,
-      // role: UserRole.CLIENT par défaut (défini dans l'entité)
-      // isActive: true par défaut (défini dans l'entité)
     });
 
-    // Sauvegarder en base de données
     const savedUser = await this.userRepository.save(user);
-
-    // Générer les tokens JWT
-    const payload: JwtPayload = {
-      sub: savedUser.id,
-      email: savedUser.email,
-      role: savedUser.role,
-    };
-
-    const tokens = this.jwtUtil.generateTokenPair(payload);
-
-    // Retourner la réponse
-    return {
-      ...tokens,
-      user: {
-        id: savedUser.id,
-        email: savedUser.email,
-        displayName: savedUser.displayName,
-        role: savedUser.role,
-      },
-    };
+    return this.buildAuthResponse(savedUser);
   }
 
-  /**
-   * Authentifie un utilisateur avec son email et mot de passe
-   * @param loginDto
-   */
+  /* Login */
+
   async login(loginDto: LoginDto): Promise<AuthResponseDto> {
-    // Trouver l'utilisateur par email
     const user = await this.userRepository.findOne({
       where: { email: loginDto.email },
     });
@@ -81,14 +61,19 @@ export class AuthService {
       throw new UnauthorizedException('Email ou mot de passe incorrect');
     }
 
-    // Vérifier si le compte est actif
     if (!user.isActive) {
       throw new UnauthorizedException(
         'Votre compte est désactivé. Contactez un administrateur.',
       );
     }
 
-    // Vérifier le mot de passe
+    // Compte Google sans mot de passe
+    if (!user.passwordHash) {
+      throw new UnauthorizedException(
+        'Ce compte utilise la connexion Google. Cliquez sur "Continuer avec Google".',
+      );
+    }
+
     const isPasswordValid = await CryptoUtil.comparePasswords(
       loginDto.password,
       user.passwordHash,
@@ -98,7 +83,85 @@ export class AuthService {
       throw new UnauthorizedException('Email ou mot de passe incorrect');
     }
 
-    // Générer les tokens JWT
+    return this.buildAuthResponse(user);
+  }
+
+  /* Google OAuth */
+
+  /**
+   * Trouve ou crée un utilisateur depuis les données Google OAuth.
+   *
+   * Logique :
+   *  1. Si un user avec ce googleId existe → connexion directe
+   *  2. Sinon si un user avec cet email existe → on lie le googleId au compte
+   *  3. Sinon → on crée un nouveau compte (sans mot de passe)
+   */
+  async findOrCreateGoogleUser(data: GoogleUserData): Promise<User> {
+    // 1. Chercher par googleId
+    let user = await this.userRepository.findOne({
+      where: { googleId: data.googleId },
+    });
+    if (user) {
+      if (!user.isActive) throw new UnauthorizedException('Compte désactivé');
+      return user;
+    }
+
+    // 2. Chercher par email (lier le googleId au compte existant)
+    user = await this.userRepository.findOne({
+      where: { email: data.email },
+    });
+    if (user) {
+      if (!user.isActive) throw new UnauthorizedException('Compte désactivé');
+      user.googleId = data.googleId;
+      return await this.userRepository.save(user);
+    }
+
+    // 3. Créer un nouveau compte Google (pas de mot de passe)
+    const newUser = this.userRepository.create({
+      email: data.email,
+      displayName: data.displayName,
+      googleId: data.googleId,
+      passwordHash: null,
+      isActive: true,
+    });
+
+    return await this.userRepository.save(newUser);
+  }
+
+  /* Refresh */
+
+  async refreshToken(refreshToken: string): Promise<AuthResponseDto> {
+    try {
+      const payload = this.jwtUtil.verifyRefreshToken(refreshToken);
+
+      const user = await this.userRepository.findOne({
+        where: { id: payload.sub },
+      });
+
+      if (!user || !user.isActive) {
+        throw new UnauthorizedException('Utilisateur introuvable ou inactif');
+      }
+
+      return this.buildAuthResponse(user);
+    } catch {
+      throw new UnauthorizedException('Refresh token invalide ou expiré');
+    }
+  }
+
+  /* Validate (JWT Guard) */
+
+  async validateUser(payload: JwtPayload): Promise<User | null> {
+    const user = await this.userRepository.findOne({
+      where: { id: payload.sub },
+    });
+
+    if (!user || !user.isActive) return null;
+    return user;
+  }
+
+  /* Helper */
+
+  private buildAuthResponse(user: User): AuthResponseDto {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
@@ -107,7 +170,6 @@ export class AuthService {
 
     const tokens = this.jwtUtil.generateTokenPair(payload);
 
-    // Retourner la réponse
     return {
       ...tokens,
       user: {
@@ -117,63 +179,5 @@ export class AuthService {
         role: user.role,
       },
     };
-  }
-
-  /**
-   * Génère un nouveau access token à partir d'un refresh token valide
-   * @param refreshToken
-   */
-
-  async refreshToken(refreshToken: string): Promise<AuthResponseDto> {
-    try {
-      // Vérifier et décoder le refresh token
-      const payload = this.jwtUtil.verifyRefreshToken(refreshToken);
-
-      // Récupérer l'user
-      const user = await this.userRepository.findOne({
-        where: { id: payload.sub },
-      });
-
-      if (!user || !user.isActive) {
-        throw new UnauthorizedException('Utilisateur introuvable ou inactif');
-      }
-
-      // Générer un nouveau access token
-      const newPayload: JwtPayload = {
-        sub: user.id,
-        email: user.email,
-        role: user.role,
-      };
-
-      const tokens = this.jwtUtil.generateTokenPair(newPayload);
-
-      // Retourner la réponse
-      return {
-        ...tokens,
-        user: {
-          id: user.id,
-          email: user.email,
-          displayName: user.displayName,
-          role: user.role,
-        },
-      };
-    } catch (error) {
-      throw new UnauthorizedException('Refresh token invalide ou expiré');
-    }
-  }
-
-  /**
-   * Valide le payload du JWT et retourne l'utilisateur correspondant
-   * @param payload
-   */
-  async validateUser(payload: JwtPayload): Promise<User | null> {
-    const user = await this.userRepository.findOne({
-      where: { id: payload.sub },
-    });
-
-    if (!user || !user.isActive) {
-      return null;
-    }
-    return user;
   }
 }

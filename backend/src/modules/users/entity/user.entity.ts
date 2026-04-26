@@ -21,8 +21,8 @@ export class User {
   @Column({ length: 100 })
   displayName: string;
 
-  @Column()
-  passwordHash: string;
+  @Column({ type: 'varchar', nullable: true })
+  passwordHash: string | null;
 
   @Column({ nullable: true })
   phoneNumber: string;
@@ -48,4 +48,7 @@ export class User {
 
   @OneToMany(() => Order, (order) => order.user)
   orders: Order[];
+
+  @Column({ type: 'varchar', length: 100, nullable: true, unique: true })
+  googleId: string | null;
 }

@@ -71,6 +71,19 @@ export class UserController {
   }
 
   /**
+   * Modifier un utilisateur (ADMIN)
+   * PUT /api/users/:id/update
+   */
+  @Roles(UserRole.ADMIN)
+  @Put(':id/update')
+  async updateUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<User> {
+    return await this.userService.updateUser(id, updateUserDto);
+  }
+
+  /**
    * Liste des utilisateurs (ADMIN)
    * GET /api/users/list
    */
