@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { DeliveryEstimateDto } from './dto/delivery-estimate.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { Order } from './entity/order.entity';
@@ -25,6 +26,20 @@ import { UserRole } from '../users/enums/user-role.enum';
 @UseGuards(RolesGuard)
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
+
+  /**
+   * Estimer le prix de livraison depuis lat/lng.
+   */
+  @Public()
+  @Post('delivery-estimate')
+  estimateDelivery(@Body() dto: DeliveryEstimateDto): {
+    fee: number;
+    distanceKm: number;
+    outOfRange: boolean;
+    label: string;
+  } {
+    return this.orderService.estimateDelivery(dto.customerLat, dto.customerLng);
+  }
 
   /**
    * Créer une commande — USER CONNECTÉ.

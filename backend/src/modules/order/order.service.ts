@@ -19,7 +19,6 @@ import { User } from '../users/entity/user.entity';
 import {
   CreateOrderDto,
   CreateOrderItemDto,
-  GuestInfoDto,
   GuestAddressDto,
 } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
@@ -29,6 +28,7 @@ import { Address } from '../adress/entity/address.entity';
 import { SettingsService } from '../settings/settings.service';
 import { SETTING_KEYS } from '../settings/entity/setting.entity';
 import { NotificationService } from '../../common/services/notification.service';
+import { calculateDeliveryFee } from '../../common/utils/delivery.util';
 
 @Injectable()
 export class OrderService {
@@ -60,6 +60,26 @@ export class OrderService {
       .getCount();
     const sequence = String(count + 1).padStart(3, '0');
     return `CMD-${today}-${sequence}`;
+  }
+
+  /* ESTIMATION LIVRAISON (public) */
+
+  estimateDelivery(
+    lat: number,
+    lng: number,
+  ): {
+    fee: number;
+    distanceKm: number;
+    outOfRange: boolean;
+    label: string;
+  } {
+    const result = calculateDeliveryFee(lat, lng);
+    const label = result.outOfRange
+      ? `Hors zone (max 10 km)`
+      : result.fee === 0
+        ? 'Gratuit'
+        : `${result.fee.toFixed(2)} €`;
+    return { ...result, label };
   }
 
   /* CRÉATION — USER CONNECTÉ */
@@ -97,11 +117,26 @@ export class OrderService {
     // Items
     const { items, subtotal } = await this.buildItems(dto.items);
 
-    // Delivery fee (setting)
-    const deliveryFee =
-      dto.type === OrderType.DELIVERY
-        ? await this.settingsService.getNumber(SETTING_KEYS.DELIVERY_FEE, 3.5)
-        : 0;
+    // Delivery fee calculé côté backend à partir des coordonnées GPS
+    // Le frontend envoie lat/lng, le backend décide du prix — non falsifiable
+    let deliveryFee = 0;
+    if (dto.type === OrderType.DELIVERY) {
+      if (dto.customerLat && dto.customerLng) {
+        const result = calculateDeliveryFee(dto.customerLat, dto.customerLng);
+        if (result.outOfRange) {
+          throw new BadRequestException(
+            `Adresse hors zone de livraison (${result.distanceKm.toFixed(1)} km). Maximum ${10} km.`,
+          );
+        }
+        deliveryFee = result.fee;
+      } else {
+        // Fallback si pas de coords (adresse existante sans coords)
+        deliveryFee = await this.settingsService.getNumber(
+          SETTING_KEYS.DELIVERY_FEE,
+          3.5,
+        );
+      }
+    }
     const total = subtotal + deliveryFee;
 
     // Commande (PENDING / PENDING, pas de réservation créneau)
@@ -152,10 +187,24 @@ export class OrderService {
 
     const { items, subtotal } = await this.buildItems(dto.items);
 
-    const deliveryFee =
-      dto.type === OrderType.DELIVERY
-        ? await this.settingsService.getNumber(SETTING_KEYS.DELIVERY_FEE, 3.5)
-        : 0;
+    // Delivery fee calculé côté backend à partir des coordonnées GPS
+    let deliveryFee = 0;
+    if (dto.type === OrderType.DELIVERY) {
+      if (dto.customerLat && dto.customerLng) {
+        const result = calculateDeliveryFee(dto.customerLat, dto.customerLng);
+        if (result.outOfRange) {
+          throw new BadRequestException(
+            `Adresse hors zone de livraison (${result.distanceKm.toFixed(1)} km). Maximum ${10} km.`,
+          );
+        }
+        deliveryFee = result.fee;
+      } else {
+        deliveryFee = await this.settingsService.getNumber(
+          SETTING_KEYS.DELIVERY_FEE,
+          3.5,
+        );
+      }
+    }
     const total = subtotal + deliveryFee;
 
     const orderNumber = await this.generateOrderNumber();

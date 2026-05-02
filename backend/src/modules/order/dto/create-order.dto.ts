@@ -165,4 +165,15 @@ export class CreateOrderDto {
   @IsString({ message: 'Note client invalide' })
   @IsOptional()
   customerNote?: string;
+
+  /**
+   * Coordonnées GPS du client pour le calcul du prix de livraison.
+   */
+  @IsNumber({}, { message: 'Latitude invalide' })
+  @IsOptional()
+  customerLat?: number;
+
+  @IsNumber({}, { message: 'Longitude invalide' })
+  @IsOptional()
+  customerLng?: number;
 }
