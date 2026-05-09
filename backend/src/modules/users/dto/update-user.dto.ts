@@ -1,10 +1,12 @@
 import {
   IsString,
   IsOptional,
+  IsEnum,
   MinLength,
   MaxLength,
   Matches,
 } from 'class-validator';
+import { UserRole } from '../enums/user-role.enum';
 
 /**
  * DTO pour modifier un utilisateur
@@ -22,4 +24,8 @@ export class UpdateUserDto {
     message: 'Numéro de téléphone belge invalide',
   })
   phoneNumber?: string;
+
+  @IsEnum(UserRole)
+  @IsOptional()
+  role?: UserRole;
 }

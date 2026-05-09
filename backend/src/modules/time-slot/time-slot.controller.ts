@@ -145,7 +145,7 @@ export class TimeSlotController {
    * Supprimer un créneau
    * DELETE /api/time-slots/:id/delete
    */
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.EMPLOYEE)
   @Delete(':id/delete')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
