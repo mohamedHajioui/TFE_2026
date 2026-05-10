@@ -35,32 +35,39 @@ export class TimeSlotCleanupService {
     const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
     try {
-      // Supprimer tous les créneaux des jours passés
+      // Désactiver (au lieu de supprimer) les créneaux des jours passés
       const pastResult = await this.timeSlotRepo
         .createQueryBuilder()
-        .delete()
-        .from(TimeSlot)
-        .where('date < :today', { today: todayStr })
+        .update(TimeSlot)
+        .set({ isAvailable: false })
+        .where('date < :today AND "isAvailable" = true', { today: todayStr })
         .execute();
 
-      // Supprimer les créneaux du jour dont l'heure de fin est passée
+      // Désactiver les créneaux du jour dont l'heure de fin est passée
       const todayResult = await this.timeSlotRepo
         .createQueryBuilder()
-        .delete()
-        .from(TimeSlot)
-        .where('date = :today AND "endTime" <= :currentTime', {
-          today: todayStr,
-          currentTime,
-        })
+        .update(TimeSlot)
+        .set({ isAvailable: false })
+        .where(
+          'date = :today AND "endTime" <= :currentTime AND "isAvailable" = true',
+          {
+            today: todayStr,
+            currentTime,
+          },
+        )
         .execute();
 
       const total = (pastResult.affected ?? 0) + (todayResult.affected ?? 0);
 
       if (total > 0) {
-        this.logger.log(`[Cleanup] ${total} créneau(x) expiré(s) supprimé(s).`);
+        this.logger.log(
+          `[Cleanup] ${total} créneau(x) expiré(s) désactivé(s).`,
+        );
       }
     } catch (err) {
-      this.logger.error(`[Cleanup] Erreur : ${err instanceof Error ? err.message : String(err)}`);
+      this.logger.error(
+        `[Cleanup] Erreur : ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 }

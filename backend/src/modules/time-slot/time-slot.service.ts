@@ -53,6 +53,17 @@ export class TimeSlotService {
       queryBuilder.andWhere('timeSlot.isAvailable = :isAvailable', {
         isAvailable,
       });
+
+      // Si on filtre les créneaux disponibles, exclure aussi ceux dont l'heure est passée aujourd'hui
+      if (isAvailable) {
+        const today = new Date().toISOString().split('T')[0];
+        const now = new Date();
+        const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        queryBuilder.andWhere(
+          '(timeSlot.date > :today OR (timeSlot.date = :today AND timeSlot.startTime > :currentTime))',
+          { today, currentTime },
+        );
+      }
     }
 
     // Filtrer les créneaux complets
@@ -126,7 +137,10 @@ export class TimeSlotService {
   /**
    * Mettre à jour un créneau
    */
-  async update(id: number, updateTimeSlotDto: UpdateTimeSlotDto): Promise<TimeSlot> {
+  async update(
+    id: number,
+    updateTimeSlotDto: UpdateTimeSlotDto,
+  ): Promise<TimeSlot> {
     const timeSlot = await this.findOne(id);
 
     // Valider endTime > startTime si modifiés
@@ -220,15 +234,27 @@ export class TimeSlotService {
 
   /**
    * Récupérer les créneaux disponibles pour une date
+   * Filtre automatiquement les créneaux dont l'heure est déjà passée pour aujourd'hui
    */
   async getAvailableSlots(date: string): Promise<TimeSlot[]> {
-    return await this.timeSlotRepository
+    const today = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    const qb = this.timeSlotRepository
       .createQueryBuilder('timeSlot')
       .where('timeSlot.date = :date', { date })
       .andWhere('timeSlot.isAvailable = true')
-      .andWhere('timeSlot.currentBookings < timeSlot.maxCapacity')
-      .orderBy('timeSlot.startTime', 'ASC')
-      .getMany();
+      .andWhere('timeSlot.currentBookings < timeSlot.maxCapacity');
+
+    // Si la date demandée est aujourd'hui, exclure les créneaux dont l'heure de début est déjà passée
+    if (date === today) {
+      qb.andWhere('timeSlot.startTime > :currentTime', { currentTime });
+    }
+
+    qb.orderBy('timeSlot.startTime', 'ASC');
+
+    return await qb.getMany();
   }
 
   /**
