@@ -92,4 +92,8 @@ export class CreateMenuDto {
   @IsBoolean({ message: 'isActive doit être un booléen' })
   @IsOptional()
   isActive?: boolean;
+
+  @IsString()
+  @IsOptional()
+  imageUrl?: string;
 }

@@ -141,6 +141,7 @@ export class MenuService {
     menu.name = createMenuDto.name;
     menu.description = createMenuDto.description ?? null;
     menu.price = createMenuDto.price;
+    menu.imageUrl = createMenuDto.imageUrl ?? null;
     menu.availableFrom = createMenuDto.availableFrom ?? null;
     menu.availableTo = createMenuDto.availableTo ?? null;
     menu.isActive = createMenuDto.isActive ?? true;
@@ -190,6 +191,7 @@ export class MenuService {
     if (updateMenuDto.name) menu.name = updateMenuDto.name;
     if (updateMenuDto.description !== undefined) menu.description = updateMenuDto.description;
     if (updateMenuDto.price !== undefined) menu.price = updateMenuDto.price;
+    if (updateMenuDto.imageUrl !== undefined) menu.imageUrl = updateMenuDto.imageUrl;
     if (updateMenuDto.isActive !== undefined) menu.isActive = updateMenuDto.isActive;
     if (updateMenuDto.availableFrom) menu.availableFrom = updateMenuDto.availableFrom;
     if (updateMenuDto.availableTo) menu.availableTo = updateMenuDto.availableTo;

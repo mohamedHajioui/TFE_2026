@@ -13,8 +13,17 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // Activer CORS (pour que le frontend puisse communiquer)
+  // Accepte plusieurs origines : la valeur de FRONTEND_URL + les origines locales de dev
+  const allowedOrigins = new Set<string>(['http://localhost:5173', 'http://localhost']);
+  if (process.env.FRONTEND_URL) allowedOrigins.add(process.env.FRONTEND_URL);
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      // Autoriser les requêtes sans origine (curl, Postman, mobile…)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.has(origin)) return callback(null, true);
+      callback(new Error(`CORS : origine non autorisée → ${origin}`));
+    },
     credentials: true,
   });
 

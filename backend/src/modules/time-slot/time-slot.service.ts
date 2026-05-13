@@ -56,8 +56,8 @@ export class TimeSlotService {
 
       // Si on filtre les créneaux disponibles, exclure aussi ceux dont l'heure est passée aujourd'hui
       if (isAvailable) {
-        const today = new Date().toISOString().split('T')[0];
         const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
         queryBuilder.andWhere(
           '(timeSlot.date > :today OR (timeSlot.date = :today AND timeSlot.startTime > :currentTime))',
@@ -237,8 +237,8 @@ export class TimeSlotService {
    * Filtre automatiquement les créneaux dont l'heure est déjà passée pour aujourd'hui
    */
   async getAvailableSlots(date: string): Promise<TimeSlot[]> {
-    const today = new Date().toISOString().split('T')[0];
     const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
     const qb = this.timeSlotRepository

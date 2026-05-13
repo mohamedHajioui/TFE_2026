@@ -23,6 +23,9 @@ export class Menu {
   @Column('decimal', { precision: 6, scale: 2 })
   price: number;
 
+  @Column({ type: 'varchar', nullable: true })
+  imageUrl: string | null;
+
   @ManyToMany(() => Product, (product) => product.menus)
   @JoinTable({
     name: 'menu_products',

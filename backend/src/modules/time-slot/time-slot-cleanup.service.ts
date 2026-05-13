@@ -28,8 +28,8 @@ export class TimeSlotCleanupService {
   async cleanupExpiredSlots(): Promise<void> {
     const now = new Date();
 
-    // Date du jour au format YYYY-MM-DD
-    const todayStr = now.toISOString().split('T')[0];
+    // Date du jour au format YYYY-MM-DD (locale, pas UTC)
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
     // Heure actuelle au format HH:MM
     const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;

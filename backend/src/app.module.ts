@@ -1,6 +1,8 @@
 import { Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 import { typeOrmConfig } from './config/database.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { APP_GUARD, APP_PIPE } from '@nestjs/core';
@@ -13,7 +15,8 @@ import { AddressModule } from './modules/adress/address.module';
 import { MenuModule } from './modules/menus/menu.module';
 import { OrderModule } from './modules/order/order.module';
 import { SettingsModule } from './modules/settings/settings.module';
-import {PaymentModule} from "./modules/payment/payment.module";
+import { PaymentModule } from './modules/payment/payment.module';
+import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [
@@ -22,6 +25,11 @@ import {PaymentModule} from "./modules/payment/payment.module";
       envFilePath: '.env',
     }),
     TypeOrmModule.forRootAsync(typeOrmConfig),
+    // Servir les fichiers uploadés (images produits/menus)
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
+    }),
     AuthModule,
     ProductModule,
     IngredientModule,
@@ -32,6 +40,7 @@ import {PaymentModule} from "./modules/payment/payment.module";
     SettingsModule,
     OrderModule,
     PaymentModule,
+    UploadModule,
   ],
   providers: [
     // Validation globale des DTOs

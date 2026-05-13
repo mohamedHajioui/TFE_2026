@@ -17,6 +17,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
 import { User } from '../users/entity/user.entity';
+import { GoogleCallbackGuard } from './google-callback.guard';
 import express from 'express';
 
 @Controller('auth')
@@ -74,7 +75,7 @@ export class AuthController {
    */
   @Public()
   @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleCallbackGuard)
   async googleCallback(
     @Req() req: express.Request & { user?: User },
     @Res() res: express.Response,
@@ -138,7 +139,7 @@ export class AuthController {
     response.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: 'lax', // 'lax' nécessaire pour que le cookie soit posé après redirect OAuth
+      sameSite: 'lax',
       maxAge: 15 * 60 * 1000,
       path: '/',
     });
@@ -153,7 +154,14 @@ export class AuthController {
   }
 
   private clearAuthCookies(response: express.Response): void {
-    response.clearCookie('accessToken', { path: '/' });
-    response.clearCookie('refreshToken', { path: '/' });
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieOptions = {
+      path: '/',
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax' as const,
+    };
+    response.clearCookie('accessToken', cookieOptions);
+    response.clearCookie('refreshToken', cookieOptions);
   }
 }

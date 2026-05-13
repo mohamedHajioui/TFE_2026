@@ -67,7 +67,7 @@ export class CreateProductDto {
   @Min(0, { message: 'Le prix doit être positif' })
   basePrice: number;
 
-  @IsUrl({}, { message: "URL d'image invalide" })
+  @IsString({ message: "L'image doit être une chaîne de caractères" })
   @IsOptional()
   imageUrl?: string;
 
