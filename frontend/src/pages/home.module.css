@@ -1,0 +1,240 @@
+/* Hero */
+
+.hero {
+    background: #0A0A0C;
+    padding: clamp(72px, 10vw, 120px) 24px clamp(64px, 8vw, 100px);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.heroGlow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+            radial-gradient(ellipse 60% 50% at 20% 60%, #FFAA0010 0%, transparent 70%),
+            radial-gradient(ellipse 50% 40% at 80% 40%, #FFAA0008 0%, transparent 70%);
+}
+
+.heroInner {
+    position: relative;
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+/* Pill tag */
+
+.pillWrapper {
+    margin-bottom: 28px;
+    display: flex;
+    justify-content: center;
+}
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #FFAA0015;
+    border: 1px solid #FFAA0035;
+    color: var(--sg-amber);
+    font-family: "Nunito", sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 100px;
+}
+
+.pillDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--sg-amber);
+    display: inline-block;
+}
+
+/* Titre */
+
+.heroTitle {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: clamp(2.2rem, 6vw, 4rem);
+    color: #F4F4F5;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    line-height: 1.05;
+    margin-bottom: 24px;
+}
+
+.heroTitleAccent {
+    color: var(--sg-amber);
+    display: block;
+}
+
+/* Sous-titre */
+
+.heroSub {
+    color: #71717A;
+    font-size: clamp(0.95rem, 2vw, 1.05rem);
+    max-width: 440px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+    font-family: "Nunito", sans-serif;
+    font-weight: 400;
+}
+
+/* CTA */
+
+.ctaGroup {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Bande infos */
+
+.infoBand {
+    background: #13131A;
+    border-top: 1px solid #FFFFFF0A;
+    border-bottom: 1px solid #FFFFFF0A;
+    padding: 14px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    row-gap: 8px;
+}
+
+.infoItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.infoDot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #3F3F46;
+    display: inline-block;
+    margin: 0 12px;
+}
+
+.infoText {
+    font-family: "Nunito", sans-serif;
+    font-weight: 600;
+    font-size: clamp(0.75rem, 1.8vw, 0.82rem);
+    color: #71717A;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+}
+
+/* Section menus */
+
+.menuSection {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: clamp(48px, 7vw, 80px) 20px;
+}
+
+.sectionHeader {
+    margin-bottom: 36px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.sectionTitle {
+    margin-bottom: 10px;
+}
+
+.sectionSub {
+    color: #52525B;
+    font-size: 0.88rem;
+    margin: 0;
+    font-family: "Nunito", sans-serif;
+}
+
+.countBadge {
+    background: #1C1C26;
+    border: 1px solid #FFFFFF0F;
+    color: #71717A;
+    font-size: 0.78rem;
+    font-family: "Nunito", sans-serif;
+    padding: 4px 12px;
+    border-radius: 100px;
+}
+
+/* États */
+
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 80px 0;
+}
+
+.loadingText {
+    color: #52525B;
+    font-size: 0.85rem;
+    font-family: "Nunito", sans-serif;
+}
+
+.errorBox {
+    background: #1C1015;
+    border: 1px solid #4A1A1A;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+}
+
+.errorTitle {
+    color: #F87171;
+    font-weight: 600;
+    margin: 0 0 4px;
+    font-family: "Nunito", sans-serif;
+}
+
+.errorMsg {
+    color: #7F1D1D;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.emptyBox {
+    background: #13131A;
+    border: 1px solid #FFFFFF0A;
+    border-radius: 16px;
+    padding: 60px 24px;
+    text-align: center;
+}
+
+.emptyTitle {
+    color: #52525B;
+    font-family: "Oswald", sans-serif;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 6px;
+}
+
+.emptyText {
+    color: #3F3F46;
+    font-size: 0.83rem;
+    margin: 0;
+}
+
+/* Grille menus */
+
+.menuGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    gap: 20px;
+}

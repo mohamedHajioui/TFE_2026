@@ -1,0 +1,61 @@
+/* Header */
+
+.header {
+    margin-bottom: 32px;
+}
+
+.headerSub {
+    color: #71717A;
+    font-size: 0.85rem;
+    font-family: "Nunito", sans-serif;
+    margin: 8px 0 0;
+}
+
+/* Grille */
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+/* Card lien */
+
+.cardLink {
+    text-decoration: none;
+}
+
+.card {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.cardIcon {
+    width: 44px;
+    height: 44px;
+    background: #FFAA0010;
+    border: 1px solid var(--sg-amber);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cardLabel {
+    font-family: "Oswald", sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #F4F4F5;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.cardDesc {
+    color: #52525B;
+    font-size: 0.8rem;
+    margin-top: 3px;
+    font-family: "Nunito", sans-serif;
+}

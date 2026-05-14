@@ -1,0 +1,4 @@
+database/migrations/**
+*.js
+dist/
+node_modules/
