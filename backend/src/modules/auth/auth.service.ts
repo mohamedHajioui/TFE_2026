@@ -94,10 +94,10 @@ export class AuthService {
    * Logique :
    *  1. Si un user avec ce googleId existe → connexion directe
    *  2. Sinon si un user avec cet email existe → on lie le googleId au compte
-   *  3. Sinon → on crée un nouveau compte (sans mot de passe)
+   *  3. Sinon on crée un nouveau compte (sans mot de passe)
    */
   async findOrCreateGoogleUser(data: GoogleUserData): Promise<User> {
-    // 1. Chercher par googleId
+    // Chercher par googleId
     let user = await this.userRepository.findOne({
       where: { googleId: data.googleId },
     });
@@ -106,7 +106,7 @@ export class AuthService {
       return user;
     }
 
-    // 2. Chercher par email (lier le googleId au compte existant)
+    // Chercher par email (lier le googleId au compte existant)
     user = await this.userRepository.findOne({
       where: { email: data.email },
     });
@@ -116,7 +116,7 @@ export class AuthService {
       return await this.userRepository.save(user);
     }
 
-    // 3. Créer un nouveau compte Google (pas de mot de passe)
+    // Créer un nouveau compte Google (pas de mot de passe)
     const newUser = this.userRepository.create({
       email: data.email,
       displayName: data.displayName,
