@@ -5,6 +5,7 @@ import {
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
+  AfterLoad,
 } from 'typeorm';
 import { Address } from '../../adress/entity/address.entity';
 import { Order } from '../../order/entity/order.entity';
@@ -51,4 +52,20 @@ export class User {
 
   @Column({ type: 'varchar', length: 100, nullable: true, unique: true })
   googleId: string | null;
+
+  hasPassword: boolean;
+
+  @AfterLoad()
+  setHasPassword() {
+    this.hasPassword = this.passwordHash !== null && this.passwordHash !== undefined;
+  }
+
+  /**
+   * Exclut passwordHash et googleId des réponses JSON.
+   */
+  toJSON() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash, googleId, ...rest } = this as Record<string, unknown>;
+    return rest;
+  }
 }

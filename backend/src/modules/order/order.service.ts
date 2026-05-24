@@ -29,6 +29,7 @@ import { SettingsService } from '../settings/settings.service';
 import { SETTING_KEYS } from '../settings/entity/setting.entity';
 import { NotificationService } from '../../common/services/notification.service';
 import { calculateDeliveryFee } from '../../common/utils/delivery.util';
+import { IngredientService } from '../ingredients/ingredient.service';
 
 @Injectable()
 export class OrderService {
@@ -47,6 +48,7 @@ export class OrderService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     private readonly settingsService: SettingsService,
     private readonly notificationService: NotificationService,
+    private readonly ingredientService: IngredientService,
   ) {}
 
   /* Utilitaires */
@@ -500,19 +502,23 @@ export class OrderService {
     if (dto.internalNote) order.internalNote = dto.internalNote;
     if (dto.status === OrderStatus.COMPLETED) order.completedAt = new Date();
 
-    // Libérer le créneau si annulation ET commande déjà payée (donc créneau réservé)
+    // Libérer le créneau et restaurer le stock si annulation ET commande déjà payée
     if (
       dto.status === OrderStatus.CANCELLED &&
-      order.paymentStatus === PaymentStatus.PAID &&
-      order.timeSlot
+      order.paymentStatus === PaymentStatus.PAID
     ) {
-      const slot = await this.timeSlotRepository.findOne({
-        where: { id: order.timeSlot.id },
-      });
-      if (slot && slot.currentBookings > 0) {
-        slot.currentBookings -= 1;
-        await this.timeSlotRepository.save(slot);
+      if (order.timeSlot) {
+        const slot = await this.timeSlotRepository.findOne({
+          where: { id: order.timeSlot.id },
+        });
+        if (slot && slot.currentBookings > 0) {
+          slot.currentBookings -= 1;
+          await this.timeSlotRepository.save(slot);
+        }
       }
+
+      // Restaurer le stock des ingrédients
+      await this.ingredientService.restoreOrderStock(order.id);
     }
 
     const saved = await this.orderRepository.save(order);
@@ -557,6 +563,51 @@ export class OrderService {
       status: OrderStatus.CANCELLED,
       internalNote: 'Annulée par le client',
     });
+  }
+
+  /* COMMANDE MANUELLE (ADMIN/EMPLOYEE — client sur place) */
+
+  async createManualOrder(
+    staffUserId: number,
+    dto: CreateOrderDto,
+  ): Promise<Order> {
+    // Créneau
+    const timeSlot = await this.resolveAndCheckTimeSlot(dto.timeSlotId);
+
+    // Items
+    const { items, subtotal } = await this.buildItems(dto.items);
+
+    // Réserver le créneau immédiatement
+    timeSlot.currentBookings += 1;
+    await this.timeSlotRepository.save(timeSlot);
+
+    // Commande directement PAID + CONFIRMED (paiement en caisse)
+    const orderNumber = await this.generateOrderNumber();
+    const order = this.orderRepository.create({
+      orderNumber,
+      user: null, // client sur place, pas de compte
+      type: OrderType.PICKUP,
+      status: OrderStatus.CONFIRMED,
+      paymentStatus: PaymentStatus.PAID,
+      timeSlot,
+      subtotal,
+      deliveryFee: 0,
+      total: subtotal,
+      customerNote: dto.customerNote ?? null,
+      internalNote: `Commande manuelle par employé #${staffUserId}`,
+    } as Partial<Order>);
+
+    const saved = await this.orderRepository.save(order);
+
+    for (const item of items) {
+      item.order = saved as Order;
+      await this.orderItemRepository.save(item);
+    }
+
+    // Déduire le stock immédiatement
+    await this.ingredientService.deductOrderStock((saved as Order).id);
+
+    return await this.findOneById((saved as Order).id);
   }
 
   /* STATISTIQUES */

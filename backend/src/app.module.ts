@@ -17,6 +17,7 @@ import { OrderModule } from './modules/order/order.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { UploadModule } from './modules/upload/upload.module';
+import { CartModule } from './modules/cart/cart.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { UploadModule } from './modules/upload/upload.module';
     OrderModule,
     PaymentModule,
     UploadModule,
+    CartModule,
   ],
   providers: [
     // Validation globale des DTOs

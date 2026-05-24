@@ -21,6 +21,7 @@ import {
 import { TimeSlot } from '../time-slot/entity/time-slot.entity';
 import { OrderItem } from '../order-item/entity/order-item.entity';
 import { NotificationService} from '../../common/services/notification.service';
+import { IngredientService } from '../ingredients/ingredient.service';
 
 /**
  * Service de paiement Stripe.
@@ -45,6 +46,7 @@ export class PaymentService implements OnModuleInit {
     @InjectRepository(OrderItem)
     private readonly orderItemRepo: Repository<OrderItem>,
     private readonly notificationService: NotificationService,
+    private readonly ingredientService: IngredientService,
   ) {}
 
   onModuleInit(): void {
@@ -274,6 +276,15 @@ export class PaymentService implements OnModuleInit {
     this.logger.log(
       `Commande ${order.orderNumber} marquée PAID + CONFIRMED, créneau réservé.`,
     );
+
+    // Déduire le stock des ingrédients
+    try {
+      await this.ingredientService.deductOrderStock(order.id);
+    } catch (err) {
+      this.logger.error(
+        `Erreur déduction stock pour ${order.orderNumber} : ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
 
     // Notifier l'admin par SMS
     try {
