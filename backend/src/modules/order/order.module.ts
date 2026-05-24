@@ -11,6 +11,7 @@ import { TimeSlot } from '../time-slot/entity/time-slot.entity';
 import { Address } from '../adress/entity/address.entity';
 import { SettingsModule } from '../settings/settings.module';
 import { NotificationService } from '../../common/services/notification.service';
+import { IngredientModule } from '../ingredients/ingredient.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { NotificationService } from '../../common/services/notification.service'
       User,
     ]),
     SettingsModule,
+    IngredientModule,
   ],
   controllers: [OrderController],
   providers: [OrderService, NotificationService],

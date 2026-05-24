@@ -6,9 +6,13 @@ import { Order } from '../order/entity/order.entity';
 import { TimeSlot } from '../time-slot/entity/time-slot.entity';
 import { OrderItem } from '../order-item/entity/order-item.entity';
 import { NotificationService } from '../../common/services/notification.service';
+import { IngredientModule } from '../ingredients/ingredient.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, TimeSlot, OrderItem])],
+  imports: [
+    TypeOrmModule.forFeature([Order, TimeSlot, OrderItem]),
+    IngredientModule,
+  ],
   controllers: [PaymentController],
   providers: [PaymentService, NotificationService],
   exports: [PaymentService],

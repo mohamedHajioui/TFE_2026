@@ -42,6 +42,20 @@ export class OrderController {
   }
 
   /**
+   * Créer une commande manuelle — ADMIN/EMPLOYEE (client sur place).
+   * POST /api/orders/manual
+   * Directement PAID + CONFIRMED, stock déduit immédiatement.
+   */
+  @Roles(UserRole.ADMIN, UserRole.EMPLOYEE)
+  @Post('manual')
+  async createManual(
+    @CurrentUser() user: User,
+    @Body() dto: CreateOrderDto,
+  ): Promise<Order> {
+    return await this.orderService.createManualOrder(user.id, dto);
+  }
+
+  /**
    * Créer une commande — USER CONNECTÉ.
    */
   @Post('create')
