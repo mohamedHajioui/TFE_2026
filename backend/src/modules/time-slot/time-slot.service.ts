@@ -60,7 +60,7 @@ export class TimeSlotService {
         const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
         queryBuilder.andWhere(
-          '(timeSlot.date > :today OR (timeSlot.date = :today AND timeSlot.startTime > :currentTime))',
+          '(timeSlot.date > :today OR (timeSlot.date = :today AND timeSlot.endTime > :currentTime))',
           { today, currentTime },
         );
       }
@@ -247,9 +247,9 @@ export class TimeSlotService {
       .andWhere('timeSlot.isAvailable = true')
       .andWhere('timeSlot.currentBookings < timeSlot.maxCapacity');
 
-    // Si la date demandée est aujourd'hui, exclure les créneaux dont l'heure de début est déjà passée
+    // Si la date demandée est aujourd'hui, exclure les créneaux dont l'heure de FIN est déjà passée
     if (date === today) {
-      qb.andWhere('timeSlot.startTime > :currentTime', { currentTime });
+      qb.andWhere('timeSlot.endTime > :currentTime', { currentTime });
     }
 
     qb.orderBy('timeSlot.startTime', 'ASC');
@@ -268,35 +268,62 @@ export class TimeSlotService {
     slotDuration: number, // en minutes
     maxCapacity: number,
   ): Promise<TimeSlot[]> {
+    if (endTime <= startTime) {
+      throw new BadRequestException(
+        "L'heure de fin doit être après l'heure de début",
+      );
+    }
+
     const slots: TimeSlot[] = [];
-    const start = new Date(dateFrom);
-    const end = new Date(dateTo);
+    const start = new Date(dateFrom + 'T00:00:00');
+    const end = new Date(dateTo + 'T00:00:00');
 
     // Pour chaque jour
-    for (let d = start; d <= end; d.setDate(d.getDate() + 1)) {
-      const dateStr = d.toISOString().split('T')[0];
+    const current = new Date(start);
+    while (current <= end) {
+      const dateStr = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
 
       // Générer les créneaux pour ce jour
-      let currentTime = startTime;
-      while (currentTime < endTime) {
-        const [hours, minutes] = currentTime.split(':').map(Number);
-        const slotEnd = new Date(0, 0, 0, hours, minutes + slotDuration);
-        const endTimeStr = `${String(slotEnd.getHours()).padStart(2, '0')}:${String(slotEnd.getMinutes()).padStart(2, '0')}`;
+      let slotStart = startTime;
+      while (slotStart < endTime) {
+        const [hours, minutes] = slotStart.split(':').map(Number);
+        const slotEndDate = new Date(0, 0, 0, hours, minutes + slotDuration);
+        const slotEndStr = `${String(slotEndDate.getHours()).padStart(2, '0')}:${String(slotEndDate.getMinutes()).padStart(2, '0')}`;
 
-        if (endTimeStr > endTime) break;
+        if (slotEndStr > endTime) break;
 
-        const slot = this.timeSlotRepository.create({
-          date: dateStr,
-          startTime: currentTime,
-          endTime: endTimeStr,
-          maxCapacity,
-          currentBookings: 0,
-          isAvailable: true,
-        });
+        // Vérifier qu'il n'y a pas déjà un créneau qui chevauche
+        const existing = await this.timeSlotRepository
+          .createQueryBuilder('ts')
+          .where('ts.date = :date', { date: dateStr })
+          .andWhere(
+            '(ts.startTime < :end AND ts.endTime > :start)',
+            { start: slotStart, end: slotEndStr },
+          )
+          .getOne();
 
-        slots.push(slot);
-        currentTime = endTimeStr;
+        if (!existing) {
+          const slot = this.timeSlotRepository.create({
+            date: dateStr,
+            startTime: slotStart,
+            endTime: slotEndStr,
+            maxCapacity,
+            currentBookings: 0,
+            isAvailable: true,
+          });
+          slots.push(slot);
+        }
+
+        slotStart = slotEndStr;
       }
+
+      current.setDate(current.getDate() + 1);
+    }
+
+    if (slots.length === 0) {
+      throw new ConflictException(
+        'Aucun créneau créé : tous les créneaux existent déjà pour cette période.',
+      );
     }
 
     return await this.timeSlotRepository.save(slots);

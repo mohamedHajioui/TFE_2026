@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateManualOrderDto } from './dto/create-manual-order.dto';
 import { DeliveryEstimateDto } from './dto/delivery-estimate.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
@@ -50,7 +51,7 @@ export class OrderController {
   @Post('manual')
   async createManual(
     @CurrentUser() user: User,
-    @Body() dto: CreateOrderDto,
+    @Body() dto: CreateManualOrderDto,
   ): Promise<Order> {
     return await this.orderService.createManualOrder(user.id, dto);
   }

@@ -21,6 +21,7 @@ import {
   CreateOrderItemDto,
   GuestAddressDto,
 } from './dto/create-order.dto';
+import { CreateManualOrderDto } from './dto/create-manual-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { TimeSlot } from '../time-slot/entity/time-slot.entity';
@@ -569,33 +570,28 @@ export class OrderService {
 
   async createManualOrder(
     staffUserId: number,
-    dto: CreateOrderDto,
+    dto: CreateManualOrderDto,
   ): Promise<Order> {
-    // Créneau
-    const timeSlot = await this.resolveAndCheckTimeSlot(dto.timeSlotId);
-
     // Items
     const { items, subtotal } = await this.buildItems(dto.items);
 
-    // Réserver le créneau immédiatement
-    timeSlot.currentBookings += 1;
-    await this.timeSlotRepository.save(timeSlot);
-
     // Commande directement PAID + CONFIRMED (paiement en caisse)
+    // Pas de créneau : les commandes manuelles sont pour les clients sur place
     const orderNumber = await this.generateOrderNumber();
     const order = this.orderRepository.create({
       orderNumber,
-      user: null, // client sur place, pas de compte
       type: OrderType.PICKUP,
       status: OrderStatus.CONFIRMED,
       paymentStatus: PaymentStatus.PAID,
-      timeSlot,
       subtotal,
       deliveryFee: 0,
       total: subtotal,
-      customerNote: dto.customerNote ?? null,
+      customerNote: dto.customerNote ?? undefined,
       internalNote: `Commande manuelle par employé #${staffUserId}`,
-    } as Partial<Order>);
+    });
+    // Pas de user (client sur place) ni de timeSlot (commande manuelle)
+    order.user = null as any;
+    order.timeSlot = null as any;
 
     const saved = await this.orderRepository.save(order);
 
