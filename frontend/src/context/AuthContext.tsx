@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { UserModel } from '@/models/user.model';
+import { UserModel, type LoginCredentials, type RegisterData } from '@/models/user.model';
 import { authApi } from '@/api/auth.api';
-import type {LoginCredentials, RegisterData} from '@/types/auth.types';
 
 interface AuthContextValue {
     user: UserModel | null;
@@ -19,7 +18,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<UserModel | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Vérifie la session au chargement via le cookie existant
     useEffect(() => {
         const checkSession = async () => {
             try {
@@ -45,7 +43,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const logout = useCallback(async () => {
-        await authApi.logout();
+        try {
+            await authApi.logout();
+        } catch {
+            // Même si le backend refuse (token expiré), on déconnecte côté client
+        }
         setUser(null);
     }, []);
 

@@ -3,7 +3,6 @@ import { menusApi } from '@/api';
 import type {MenuModel} from "@/models/menu.model.ts";
 
 
-//menus actifs pour les clients
 export function useActiveMenus() {
     const [menus, setMenus] = useState<MenuModel[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -28,7 +27,6 @@ export function useActiveMenus() {
     return { menus, isLoading, error };
 }
 
-//Detail d'un menu
 export function useMenu(id: number) {
     const [menu, setMenu] = useState<MenuModel | null>(null);
     const [isLoading, setIsLoading] = useState(true);

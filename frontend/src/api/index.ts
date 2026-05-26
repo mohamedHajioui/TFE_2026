@@ -6,3 +6,6 @@ export * from './products.api';
 export * from './menus.api';
 export * from './time-slots.api';
 export * from './orders.api';
+export * from './settings.api';
+export * from './payment.api';
+export * from './cart.api';

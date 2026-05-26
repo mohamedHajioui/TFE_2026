@@ -1,23 +1,22 @@
 import { apiClient } from './axios.config';
-import type {LoginCredentials, RegisterData, AuthResponse} from '../types/auth.types';
+import type {LoginCredentials, RegisterData, AuthResponse} from '@/models/user.model';
 
 export const authApi = {
 
     register: async (data: RegisterData): Promise<AuthResponse> => {
         const response = await apiClient.post('/auth/register', data);
-        return response.data; // { user: { id, email, displayName, role } }
+        return response.data;
     },
 
 
     login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
         const response = await apiClient.post('/auth/login', credentials);
-        return response.data; // { user: { id, email, displayName, role } }
+        return response.data;
     },
 
 
     logout: async (): Promise<void> => {
         await apiClient.post('/auth/logout');
-        window.location.href = '/login';
     },
 
 
