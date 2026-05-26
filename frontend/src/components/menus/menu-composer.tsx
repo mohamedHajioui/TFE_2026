@@ -42,7 +42,6 @@ export function MenuComposer({ menu, onClose }: MenuComposerProps) {
         <div className={styles.overlay} onClick={onClose}>
             <div className={styles.modal} onClick={e => e.stopPropagation()}>
 
-                {/* Header */}
                 <div className={styles.modalHeader}>
                     <div>
                         <div className={`badge-category ${styles.modalBadge}`}>Composer</div>
@@ -54,7 +53,6 @@ export function MenuComposer({ menu, onClose }: MenuComposerProps) {
                     </button>
                 </div>
 
-                {/* Body */}
                 <div className={styles.modalBody}>
                     {sandwiches.length > 0 && (
                         <CategorySection
@@ -94,7 +92,6 @@ export function MenuComposer({ menu, onClose }: MenuComposerProps) {
                     )}
                 </div>
 
-                {/* Footer */}
                 <div className={styles.modalFooter}>
                     <button
                         className={`btn-primary ${styles.addBtn}`}

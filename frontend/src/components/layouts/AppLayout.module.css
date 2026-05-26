@@ -1,3 +1,31 @@
+/* Page wrapper with background image */
+.pageWrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #0A0A0C;
+    position: relative;
+}
+
+.bgOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: url('/bg-restaurant.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.bgOverlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 10, 12, 0.88);
+}
+
 /* Navbar */
 
 .navbar {

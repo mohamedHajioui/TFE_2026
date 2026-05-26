@@ -1,0 +1,491 @@
+/* Layout */
+
+.layout {
+    min-height: 100vh;
+    display: flex;
+    background: #0A0A0C;
+}
+
+/* Sidebar desktop */
+
+.sidebar {
+    background: #13131A;
+    border-right: 1px solid #FFFFFF08;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 50;
+    transition: width 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebarInner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Logo sidebar */
+
+.sidebarLogo {
+    padding: 20px 16px;
+    border-bottom: 1px solid #FFFFFF08;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sidebarLogoIcon {
+    width: 34px;
+    height: 34px;
+    background: var(--sg-amber);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sidebarLogoIconText {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #0A0A0C;
+}
+
+.sidebarLogoName {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #F4F4F5;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+}
+
+.sidebarLogoAccent {
+    color: var(--sg-amber);
+}
+
+.sidebarLogoSub {
+    color: var(--sg-amber);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 2px;
+    font-family: "Nunito", sans-serif;
+}
+
+/* Nav sidebar */
+
+.sidebarNav {
+    flex: 1;
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.navItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: transparent;
+    border: 1px solid transparent;
+    text-decoration: none;
+    transition: all 0.15s;
+}
+
+.navItem:hover {
+    background: #1C1C26;
+}
+
+.navItemActive {
+    background: #FFAA0010;
+    border-color: var(--sg-amber);
+}
+
+.navItemActive:hover {
+    background: #FFAA0015;
+}
+
+.navItemCollapsed {
+    padding: 10px;
+    justify-content: center;
+}
+
+.navItemLabel {
+    font-family: "Nunito", sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: #71717A;
+    white-space: nowrap;
+    transition: color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.navItemLabelActive {
+    color: var(--sg-amber);
+}
+
+/* Badge rouge sur l'icône (sidebar collapsed ou expanded) */
+
+.navBadge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #EF4444;
+    color: #fff;
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 0.6rem;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #13131A;
+}
+
+/* Badge inline dans le label (sidebar expanded) */
+
+.navBadgeInline {
+    background: #EF4444;
+    color: #fff;
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 0.6rem;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    padding: 0 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+}
+
+/* Footer sidebar */
+
+.sidebarFooter {
+    padding: 12px 8px;
+    border-top: 1px solid #FFFFFF08;
+}
+
+.sidebarUserInfo {
+    padding: 8px 12px;
+    margin-bottom: 4px;
+}
+
+.sidebarUserName {
+    font-family: "Nunito", sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #F4F4F5;
+}
+
+.sidebarUserRole {
+    color: #52525B;
+    font-size: 0.72rem;
+    font-family: "Nunito", sans-serif;
+}
+
+.sidebarLink {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #71717A;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.85rem;
+    transition: background 0.15s;
+    background: transparent;
+}
+
+.sidebarLink:hover {
+    background: #1C1C26;
+}
+
+.sidebarLogoutBtn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #EF4444;
+    width: 100%;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.85rem;
+    transition: background 0.15s;
+    text-align: left;
+}
+
+.sidebarLogoutBtn:hover {
+    background: #1C1015;
+}
+
+/* Toggle collapse */
+
+.collapseBtn {
+    position: absolute;
+    top: 22px;
+    right: -12px;
+    width: 24px;
+    height: 24px;
+    background: var(--sg-amber);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+/* Header mobile */
+
+.mobileHeader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: #13131A;
+    border-bottom: 1px solid #FFFFFF08;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    z-index: 50;
+}
+
+.mobileTitle {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #F4F4F5;
+    text-transform: uppercase;
+}
+
+.mobileTitleAccent {
+    color: var(--sg-amber);
+}
+
+.mobileMenuBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #A1A1AA;
+    display: flex;
+    align-items: center;
+}
+
+/* Cloche mobile */
+
+.mobileBellBtn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #FFAA0015;
+    border: 1px solid #FFAA0040;
+    text-decoration: none;
+}
+
+.mobileBellBadge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #EF4444;
+    color: #fff;
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 0.6rem;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #13131A;
+}
+
+/* Overlay mobile */
+
+.mobileOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 49;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.mobileSidebar {
+    width: 240px;
+    height: 100%;
+    background: #13131A;
+    border-right: 1px solid #FFFFFF08;
+}
+
+/* Main content */
+
+.main {
+    flex: 1;
+    min-height: 100vh;
+    padding: 32px;
+    transition: margin-left 0.2s;
+    position: relative;
+    background-image: url('/bg-restaurant.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.main::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 10, 12, 0.92);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.main > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Toast nouvelle commande */
+
+.orderToast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 200;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #13131A;
+    border: 1px solid var(--sg-amber);
+    border-radius: 14px;
+    padding: 14px 16px;
+    min-width: 300px;
+    max-width: 380px;
+    box-shadow:
+            0 0 0 1px #FFAA0020,
+            0 20px 40px -10px rgba(0, 0, 0, 0.6);
+    text-decoration: none;
+    cursor: pointer;
+    animation: toastSlideIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: border-color 0.15s;
+}
+
+.orderToast:hover {
+    border-color: #FFB833;
+}
+
+@keyframes toastSlideIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.orderToastIcon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--sg-amber);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.orderToastBody {
+    flex: 1;
+    min-width: 0;
+}
+
+.orderToastTitle {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--sg-amber);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 3px;
+}
+
+.orderToastSub {
+    font-family: "Oswald", sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: #F4F4F5;
+    margin-bottom: 3px;
+}
+
+.orderToastMeta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #71717A;
+    font-size: 0.75rem;
+    font-family: "Nunito", sans-serif;
+    flex-wrap: wrap;
+}
+
+.orderToastClose {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #52525B;
+    padding: 2px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s;
+}
+
+.orderToastClose:hover {
+    color: #F4F4F5;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+    .sidebar { display: none; }
+    .mobileHeader { display: flex; }
+    .main {
+        margin-left: 0 !important;
+        padding: 72px 16px 24px !important;
+    }
+    .orderToast {
+        bottom: 80px; /* au-dessus de la bottom bar mobile */
+        right: 12px;
+        left: 12px;
+        min-width: 0;
+        max-width: none;
+    }
+}
+
+@media (min-width: 769px) {
+    .mobileHeader { display: none; }
+}
