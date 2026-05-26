@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Read(//c/Users/moham/Desktop/TFE/**)",
-      "Bash(python -c ' *)",
-      "Bash(npx tsc *)"
-    ]
-  }
-}
