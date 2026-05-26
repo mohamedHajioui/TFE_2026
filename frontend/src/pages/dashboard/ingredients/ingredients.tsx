@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { AdminLayout } from './AdminLayout';
+import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { ingredientsApi, type CreateIngredientData } from '@/api/ingredients.api';
 import { IngredientModel, IngredientCategory, IngredientCategoryLabel } from '@/models/ingredient.model';
+import { getApiErrorMessage } from '@/utils/validation';
 import { Plus, Minus, Search, AlertTriangle, X, Save, Pencil } from 'lucide-react';
-import styles from './AdminIngredients.module.css';
+import styles from './ingredients.module.css';
 
 type AdjustMode = 'add' | 'remove';
 
@@ -67,8 +68,6 @@ export default function AdminIngredients() {
         return 'ok';
     };
 
-    // Ajustement stock
-
     const openAdjust = (ingredient: IngredientModel, mode: AdjustMode) => {
         setModal({ ingredient, mode, quantity: '', reason: '', error: null, saving: false });
     };
@@ -90,8 +89,8 @@ export default function AdminIngredients() {
             );
             await load();
             setModal(null);
-        } catch (err: any) {
-            setModal(m => m ? { ...m, saving: false, error: err?.response?.data?.message ?? 'Erreur lors de l\'ajustement.' } : null);
+        } catch (err: unknown) {
+            setModal(m => m ? { ...m, saving: false, error: getApiErrorMessage(err, 'Erreur lors de l\'ajustement.') } : null);
         }
     };
 
@@ -100,8 +99,6 @@ export default function AdminIngredients() {
             ? Number(modal.ingredient.currentStock) + (Number(modal.quantity) || 0)
             : Number(modal.ingredient.currentStock) - (Number(modal.quantity) || 0)
         : 0;
-
-    // Création ingrédient
 
     const openCreate = () => {
         setForm(EMPTY_FORM);
@@ -141,8 +138,8 @@ export default function AdminIngredients() {
             await load();
             setEditOpen(false);
             setEditing(null);
-        } catch (err: any) {
-            setFormError(err?.response?.data?.message ?? 'Une erreur est survenue.');
+        } catch (err: unknown) {
+            setFormError(getApiErrorMessage(err));
         } finally {
             setSaving(false);
         }
@@ -170,8 +167,8 @@ export default function AdminIngredients() {
             await ingredientsApi.create(payload);
             await load();
             setCreateOpen(false);
-        } catch (err: any) {
-            setFormError(err?.response?.data?.message ?? 'Une erreur est survenue.');
+        } catch (err: unknown) {
+            setFormError(getApiErrorMessage(err));
         } finally {
             setSaving(false);
         }
@@ -181,8 +178,7 @@ export default function AdminIngredients() {
         setForm(prev => ({ ...prev, [key]: value }));
 
     return (
-        <AdminLayout>
-            {/* Header */}
+        <DashboardLayout>
             <div className={styles.header}>
                 <div className={styles.headerText}>
                     <div className="section-header">Stocks & Ingrédients</div>
@@ -200,7 +196,6 @@ export default function AdminIngredients() {
                 </button>
             </div>
 
-            {/* Filtres */}
             <div className={styles.filters}>
                 <div className={styles.searchWrapper}>
                     <Search size={15} color="#52525B" className={styles.searchIcon} />
@@ -237,7 +232,6 @@ export default function AdminIngredients() {
                             const status = getStockStatus(ing);
                             return (
                                 <div key={ing.id} className={styles.tableRow}>
-                                    {/* Nom */}
                                     <div>
                                         <div className={styles.ingredientName}>
                                             {status !== 'ok' && <span className={styles.alertDot} />}
@@ -246,10 +240,8 @@ export default function AdminIngredients() {
                                         <div className={styles.ingredientUnit}>{ing.unit}</div>
                                     </div>
 
-                                    {/* Catégorie */}
                                     <div><span className={styles.catBadge}>{ing.categoryLabel}</span></div>
 
-                                    {/* Stock — simple, sans barre */}
                                     <div>
                                         <div className={styles.stockCurrent}>
                                             {Number(ing.currentStock).toFixed(1)} {ing.unit}
@@ -259,14 +251,12 @@ export default function AdminIngredients() {
                                         </div>
                                     </div>
 
-                                    {/* Statut */}
                                     <div>
                                         <span className={`${styles.statusBadge} ${status === 'ok' ? styles.statusOk : status === 'alert' ? styles.statusAlert : styles.statusEmpty}`}>
                                             {status === 'ok' ? 'OK' : status === 'alert' ? 'Alerte' : 'Épuisé'}
                                         </span>
                                     </div>
 
-                                    {/* Actions */}
                                     <div className={styles.actions}>
                                         <button className={styles.actionBtn} title="Modifier" onClick={() => openEdit(ing)}>
                                             <Pencil size={13} color="#A1A1AA" />
@@ -285,7 +275,6 @@ export default function AdminIngredients() {
                 </>
             )}
 
-            {/* Modal ajustement stock */}
             {modal && (
                 <div className={styles.overlay} onClick={() => setModal(null)}>
                     <div className={styles.modal} onClick={e => e.stopPropagation()}>
@@ -341,7 +330,6 @@ export default function AdminIngredients() {
                 </div>
             )}
 
-            {/* Modal créer ingrédient */}
             {createOpen && (
                 <div className={styles.overlay} onClick={() => setCreateOpen(false)}>
                     <div className={styles.modal} style={{ maxWidth: '500px' }} onClick={e => e.stopPropagation()}>
@@ -407,7 +395,6 @@ export default function AdminIngredients() {
                     </div>
                 </div>
             )}
-            {/* Modal éditer ingrédient */}
             {editOpen && editing && (
                 <div className={styles.overlay} onClick={() => setEditOpen(false)}>
                     <div className={styles.modal} style={{ maxWidth: '500px' }} onClick={e => e.stopPropagation()}>
@@ -473,6 +460,6 @@ export default function AdminIngredients() {
                     </div>
                 </div>
             )}
-        </AdminLayout>
+        </DashboardLayout>
     );
 }

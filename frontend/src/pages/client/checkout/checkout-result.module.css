@@ -1,0 +1,125 @@
+.page {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: clamp(48px, 8vw, 80px) 20px;
+}
+
+.card {
+    padding: 48px 32px;
+    text-align: center;
+}
+
+.iconWrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.successIcon { color: #4ADE80; }
+.cancelIcon { color: #F87171; }
+
+.title {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.6rem, 4vw, 2rem);
+    color: #F4F4F5;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin: 0 0 12px;
+}
+
+.subtitle {
+    color: #A1A1AA;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0 0 24px;
+    font-family: "Nunito", sans-serif;
+}
+
+.note {
+    color: #71717A;
+    font-size: 0.88rem;
+    margin: 0 0 32px;
+    font-family: "Nunito", sans-serif;
+    line-height: 1.6;
+}
+
+.loadingRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #71717A;
+    font-size: 0.85rem;
+    font-family: "Nunito", sans-serif;
+    margin: 20px 0;
+}
+
+.orderBox {
+    background: #0A0A0C;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 24px 0;
+    text-align: left;
+}
+
+.orderRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    color: #A1A1AA;
+    font-size: 0.88rem;
+    font-family: "Nunito", sans-serif;
+}
+
+.orderRow + .orderRow { border-top: 1px solid #FFFFFF08; }
+
+.orderValue {
+    color: #F4F4F5;
+    font-family: "Oswald", sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+.statusBadge {
+    background: #FFAA0015;
+    color: var(--sg-amber);
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-family: "Oswald", sans-serif;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+}
+
+.guestNote {
+    background: #0A0A0C;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: #71717A;
+    font-size: 0.85rem;
+    margin: 20px 0;
+    font-family: "Nunito", sans-serif;
+    line-height: 1.6;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 16px;
+}
+
+.actionBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    padding: 11px 20px;
+    font-size: 0.88rem;
+}

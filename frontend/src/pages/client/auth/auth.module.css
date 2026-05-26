@@ -57,7 +57,31 @@
 }
 
 .cardTitle {
-    margin-bottom: 28px;
+    margin-bottom: 20px;
+}
+
+/* Séparateur "ou" entre Google et formulaire email */
+
+.separator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.separatorLine {
+    flex: 1;
+    height: 1px;
+    background: #FFFFFF0F;
+}
+
+.separatorText {
+    color: #52525B;
+    font-size: 0.78rem;
+    font-family: "Nunito", sans-serif;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 /* Erreur */

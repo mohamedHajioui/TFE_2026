@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AppLayout } from '@/components/ui/appLayouth';
+import { AppLayout } from '@/components/layouts/AppLayout';
 import { useMyOrders } from '@/hooks/useOrders';
 import { ordersApi } from '@/api/orders.api';
 import { OrderModel, OrderStatus, OrderType } from '@/models/order.model';
@@ -29,12 +29,24 @@ export default function Orders() {
                 type: order.type,
                 timeSlotId: order.timeSlot.id,
                 deliveryAddressId: order.deliveryAddress?.id,
-                items: order.items.map(item => ({
-                    productId: item.product!.id,
-                    quantity: item.quantity,
-                    customization: item.customization ?? undefined,
-                    specialInstructions: item.specialInstructions ?? undefined,
-                })),
+                items: order.items.map(item => {
+                    if (item.itemType === 'menu') {
+                        return {
+                            itemType: 'menu' as const,
+                            menuId: item.menu!.id,
+                            menuChoices: item.menuChoices ?? undefined,
+                            quantity: item.quantity,
+                            specialInstructions: item.specialInstructions ?? undefined,
+                        };
+                    }
+                    return {
+                        itemType: 'product' as const,
+                        productId: item.product!.id,
+                        quantity: item.quantity,
+                        customization: item.customization ?? undefined,
+                        specialInstructions: item.specialInstructions ?? undefined,
+                    };
+                }),
             });
             navigate(`/orders/${newOrder.id}`);
         } catch {
@@ -109,7 +121,6 @@ function OrderCard({ order, isReordering, onReorder, onCancel }: {
                 <div>
                     <div className={styles.orderMeta}>
                         <span className={styles.orderNumber}>{order.orderNumber}</span>
-                        {/* Couleurs de statut dynamiques — inline obligatoire */}
                         <span
                             className={styles.orderStatusBadge}
                             style={{ background: statusStyle.bg, color: statusStyle.color }}

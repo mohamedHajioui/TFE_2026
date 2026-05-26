@@ -3,12 +3,18 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { getApiErrorMessage, getPasswordErrors } from '@/utils/validation';
 import styles from './auth.module.css';
+import {GoogleButton} from "@/components/ui/google-button.tsx";
 
 export default function Register() {
     const { register } = useAuth();
     const navigate = useNavigate();
 
-    const [form, setForm] = useState({ email: '', displayName: '', password: '', phoneNumber: '' });
+    const [form, setForm] = useState({
+        email: '',
+        displayName: '',
+        password: '',
+        phoneNumber: '',
+    });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -53,6 +59,14 @@ export default function Register() {
 
                 <div className={styles.card}>
                     <div className={`section-header ${styles.cardTitle}`}>Créer un compte</div>
+
+                    <GoogleButton mode="register" />
+
+                    <div className={styles.separator}>
+                        <span className={styles.separatorLine} />
+                        <span className={styles.separatorText}>ou avec email</span>
+                        <span className={styles.separatorLine} />
+                    </div>
 
                     {error && <div className={styles.errorBox}>{error}</div>}
 

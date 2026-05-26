@@ -1,5 +1,3 @@
-/* Hero */
-
 .hero {
     background: #0A0A0C;
     padding: clamp(72px, 10vw, 120px) 24px clamp(64px, 8vw, 100px);
@@ -17,19 +15,9 @@
             radial-gradient(ellipse 50% 40% at 80% 40%, #FFAA0008 0%, transparent 70%);
 }
 
-.heroInner {
-    position: relative;
-    max-width: 680px;
-    margin: 0 auto;
-}
+.heroInner { position: relative; max-width: 680px; margin: 0 auto; }
 
-/* Pill tag */
-
-.pillWrapper {
-    margin-bottom: 28px;
-    display: flex;
-    justify-content: center;
-}
+.pillWrapper { margin-bottom: 28px; display: flex; justify-content: center; }
 
 .pill {
     display: inline-flex;
@@ -55,8 +43,6 @@
     display: inline-block;
 }
 
-/* Titre */
-
 .heroTitle {
     font-family: "Oswald", sans-serif;
     font-weight: 700;
@@ -68,12 +54,7 @@
     margin-bottom: 24px;
 }
 
-.heroTitleAccent {
-    color: var(--sg-amber);
-    display: block;
-}
-
-/* Sous-titre */
+.heroTitleAccent { color: var(--sg-amber); display: block; }
 
 .heroSub {
     color: #71717A;
@@ -85,16 +66,7 @@
     font-weight: 400;
 }
 
-/* CTA */
-
-.ctaGroup {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-/* Bande infos */
+.ctaGroup { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
 .infoBand {
     background: #13131A;
@@ -108,11 +80,7 @@
     row-gap: 8px;
 }
 
-.infoItem {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
+.infoItem { display: flex; align-items: center; gap: 12px; }
 
 .infoDot {
     width: 3px;
@@ -133,108 +101,86 @@
     white-space: nowrap;
 }
 
-/* Section menus */
+.teaserSection { max-width: 1100px; margin: 0 auto; padding: clamp(48px, 7vw, 80px) 20px; }
 
-.menuSection {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: clamp(48px, 7vw, 80px) 20px;
-}
-
-.sectionHeader {
-    margin-bottom: 36px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-
-.sectionTitle {
-    margin-bottom: 10px;
-}
-
-.sectionSub {
-    color: #52525B;
-    font-size: 0.88rem;
-    margin: 0;
-    font-family: "Nunito", sans-serif;
-}
-
-.countBadge {
-    background: #1C1C26;
-    border: 1px solid #FFFFFF0F;
-    color: #71717A;
-    font-size: 0.78rem;
-    font-family: "Nunito", sans-serif;
-    padding: 4px 12px;
-    border-radius: 100px;
-}
-
-/* États */
-
-.loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    padding: 80px 0;
-}
-
-.loadingText {
-    color: #52525B;
-    font-size: 0.85rem;
-    font-family: "Nunito", sans-serif;
-}
-
-.errorBox {
-    background: #1C1015;
-    border: 1px solid #4A1A1A;
-    border-radius: 12px;
-    padding: 24px;
-    text-align: center;
-}
-
-.errorTitle {
-    color: #F87171;
-    font-weight: 600;
-    margin: 0 0 4px;
-    font-family: "Nunito", sans-serif;
-}
-
-.errorMsg {
-    color: #7F1D1D;
-    font-size: 0.85rem;
-    margin: 0;
-}
-
-.emptyBox {
-    background: #13131A;
-    border: 1px solid #FFFFFF0A;
-    border-radius: 16px;
-    padding: 60px 24px;
-    text-align: center;
-}
-
-.emptyTitle {
-    color: #52525B;
-    font-family: "Oswald", sans-serif;
-    font-size: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin: 0 0 6px;
-}
-
-.emptyText {
-    color: #3F3F46;
-    font-size: 0.83rem;
-    margin: 0;
-}
-
-/* Grille menus */
-
-.menuGrid {
+.teaserGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
 }
+
+.teaserCard {
+    padding: 32px;
+    text-align: left;
+    cursor: pointer;
+    border: 1px solid #FFFFFF0F;
+    transition: border-color 0.2s, transform 0.2s;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    background: #13131A;
+    border-radius: 16px;
+    font-family: "Nunito", sans-serif;
+}
+
+.teaserCard:hover { border-color: #FFAA0040; transform: translateY(-2px); }
+
+.teaserIcon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: #FFAA0012;
+    border: 1px solid #FFAA0030;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sg-amber);
+    flex-shrink: 0;
+}
+
+.teaserContent { flex: 1; min-width: 0; }
+
+.teaserBadge {
+    font-family: "Oswald", sans-serif;
+    font-weight: 600;
+    font-size: 0.72rem;
+    color: var(--sg-amber);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+}
+
+.teaserTitle {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: #F4F4F5;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin: 0 0 10px;
+}
+
+.teaserText {
+    color: #A1A1AA;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    margin: 0 0 16px;
+}
+
+.teaserFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid #FFFFFF08;
+}
+
+.teaserCount {
+    font-family: "Nunito", sans-serif;
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: #71717A;
+}
+
+.teaserArrow { color: var(--sg-amber); transition: transform 0.2s; }
+.teaserCard:hover .teaserArrow { transform: translateX(4px); }

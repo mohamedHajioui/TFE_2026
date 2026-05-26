@@ -512,3 +512,39 @@
     font-size: 0.85rem;
     font-family: "Nunito", sans-serif;
 }
+
+/* Upload zone */
+.uploadZone {
+    width: 100%;
+    min-height: 100px;
+    background: #0A0A0C;
+    border: 2px dashed #FFFFFF15;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s;
+    overflow: hidden;
+}
+
+.uploadZone:hover {
+    border-color: var(--sg-amber);
+}
+
+.uploadPlaceholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: #52525B;
+    font-size: 0.78rem;
+    font-family: "Nunito", sans-serif;
+    padding: 16px;
+}
+
+.uploadPreview {
+    width: 100%;
+    max-height: 160px;
+    object-fit: cover;
+}

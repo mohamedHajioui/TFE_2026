@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import { AdminLayout } from './AdminLayout';
+import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { productsApi } from '@/api/products.api';
 import { ProductModel, ProductCategory, ProductCategoryLabel } from '@/models/product.model';
 import { formatPrice } from '@/utils/format';
-import { Plus, Pencil, Power, Trash2, X, Search, Save } from 'lucide-react';
-import styles from './AdminProducts.module.css';
+import { getApiErrorMessage } from '@/utils/validation';
+import { useImageUpload } from '@/hooks/useImageUpload';
+import { Plus, Pencil, Power, Trash2, X, Search, Save, Upload } from 'lucide-react';
+import { resolveImageUrl } from '@/utils/imageUrl';
+import styles from './products.module.css';
 
 interface ProductForm {
     name: string;
@@ -32,6 +35,7 @@ export default function AdminProducts() {
     const [saving, setSaving]= useState(false);
     const [formError, setFormError] = useState<string | null>(null);
     const [actionId, setActionId]  = useState<number | null>(null);
+    const { imagePreview, uploading, fileInputRef, handleFileChange, openFilePicker, resetImage, setPreviewFromUrl } = useImageUpload();
 
     const load = async () => {
         setIsLoading(true);
@@ -47,8 +51,9 @@ export default function AdminProducts() {
         return matchSearch && matchCat;
     });
 
+
     const openCreate = () => {
-        setEditing(null); setForm(EMPTY_FORM); setFormError(null); setModalOpen(true);
+        setEditing(null); setForm(EMPTY_FORM); setFormError(null); resetImage(); setModalOpen(true);
     };
 
     const openEdit = (p: ProductModel) => {
@@ -58,10 +63,21 @@ export default function AdminProducts() {
             category: p.category, isActive: p.isActive, isCustomizable: p.isCustomizable,
             imageUrl: p.imageUrl ?? '',
         });
+        setPreviewFromUrl(p.imageUrl);
         setFormError(null); setModalOpen(true);
     };
 
-    const closeModal = () => { setModalOpen(false); setEditing(null); };
+    const closeModal = () => { setModalOpen(false); setEditing(null); resetImage(); };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormError(null);
+        try {
+            const url = await handleFileChange(e);
+            if (url) setForm(prev => ({ ...prev, imageUrl: url }));
+        } catch (err) {
+            setFormError(err instanceof Error ? err.message : "Erreur lors de l'upload de l'image.");
+        }
+    };
 
     const handleSave = async () => {
         if (!form.name.trim()) { setFormError('Le nom est obligatoire.'); return; }
@@ -84,8 +100,8 @@ export default function AdminProducts() {
             if (editing) { await productsApi.update(editing.id, payload); }
             else { await productsApi.create(payload); }
             await load(); closeModal();
-        } catch (err: any) {
-            setFormError(err?.response?.data?.message ?? 'Une erreur est survenue.');
+        } catch (err: unknown) {
+            setFormError(getApiErrorMessage(err));
         } finally { setSaving(false); }
     };
 
@@ -106,8 +122,7 @@ export default function AdminProducts() {
     const f = (key: keyof ProductForm, value: any) => setForm(prev => ({ ...prev, [key]: value }));
 
     return (
-        <AdminLayout>
-            {/* Header */}
+        <DashboardLayout>
             <div className={styles.header}>
                 <div className={styles.headerText}>
                     <div className="section-header">Produits</div>
@@ -118,7 +133,6 @@ export default function AdminProducts() {
                 </button>
             </div>
 
-            {/* Filtres */}
             <div className={styles.filters}>
                 <div className={styles.searchWrapper}>
                     <Search size={15} color="#52525B" className={styles.searchIcon} />
@@ -155,7 +169,7 @@ export default function AdminProducts() {
                             <div key={product.id} className={`${styles.tableRow} ${!product.isActive ? styles.tableRowInactive : ''}`}>
                                 <div className={styles.productCell}>
                                     {product.imageUrl
-                                        ? <img src={product.imageUrl} alt={product.name} className={styles.productImage} />
+                                        ? <img src={resolveImageUrl(product.imageUrl) ?? ''} alt={product.name} className={styles.productImage} />
                                         : <div className={styles.productImagePlaceholder} />
                                     }
                                     <div>
@@ -187,7 +201,6 @@ export default function AdminProducts() {
                 </>
             )}
 
-            {/* Modal */}
             {modalOpen && (
                 <div className={styles.overlay} onClick={closeModal}>
                     <div className={styles.modal} onClick={e => e.stopPropagation()}>
@@ -221,8 +234,33 @@ export default function AdminProducts() {
                                     <input className={styles.input} type="number" step="0.01" min="0" placeholder="6.50" value={form.basePrice} onChange={e => f('basePrice', e.target.value)} />
                                 </div>
                                 <div className={styles.fieldGroup}>
-                                    <label className={styles.label}>URL image</label>
-                                    <input className={styles.input} placeholder="https://..." value={form.imageUrl} onChange={e => f('imageUrl', e.target.value)} />
+                                    <label className={styles.label}>Image du produit</label>
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/webp,image/gif"
+                                        style={{ display: 'none' }}
+                                        onChange={handleImageUpload}
+                                    />
+                                    <div
+                                        className={styles.uploadZone}
+                                        onClick={openFilePicker}
+                                    >
+                                        {imagePreview ? (
+                                            <img src={imagePreview} alt="Preview" className={styles.uploadPreview} />
+                                        ) : (
+                                            <div className={styles.uploadPlaceholder}>
+                                                {uploading ? (
+                                                    <div className="spinner" style={{ width: 24, height: 24 }} />
+                                                ) : (
+                                                    <>
+                                                        <Upload size={20} color="#52525B" />
+                                                        <span>Cliquez pour ajouter une image</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
@@ -256,6 +294,6 @@ export default function AdminProducts() {
                     </div>
                 </div>
             )}
-        </AdminLayout>
+        </DashboardLayout>
     );
 }

@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useCart, type CartProductItem, type CartMenuItem } from '@/context/CartContext';
-import { AppLayout } from '@/components/ui/appLayouth';
+import { AppLayout } from '@/components/layouts/AppLayout';
 import { formatPrice } from '@/utils/format';
+import { resolveImageUrl } from '@/utils/imageUrl';
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 import styles from './cart.module.css';
 
@@ -60,7 +61,7 @@ export default function Cart() {
                         </div>
                         <div className="divider-orange" />
                         <div className={styles.recapTotal}>
-                            <span className={styles.recapTotalLabel}>Total estimé</span>
+                            <span className={styles.recapTotalLabel}>Total</span>
                             <span className="price-tag" style={{ fontSize: '1.4rem' }}>{formatPrice(subtotal)}</span>
                         </div>
                         <p className={styles.recapNote}>
@@ -85,10 +86,12 @@ function CartItemRow({ item, index, onUpdateQuantity, onRemove }: {
     onUpdateQuantity: (index: number, qty: number) => void;
     onRemove: (index: number) => void;
 }) {
-    const label      = item.type === 'menu' ? item.menu.name : item.product.name;
-    const imageUrl   = item.type === 'menu'
-        ? item.menu.allowedProducts?.find(p => p.imageUrl)?.imageUrl ?? null
-        : item.product.imageUrl;
+    const label = item.type === 'menu' ? item.menu.name : item.product.name;
+    const imageUrl = resolveImageUrl(
+        item.type === 'menu'
+            ? item.menu.imageUrl ?? item.menu.allowedProducts?.find(p => p.imageUrl)?.imageUrl ?? null
+            : item.product.imageUrl,
+    );
     const totalPrice = item.unitPrice * item.quantity;
     const menuDetail = item.type === 'menu'
         ? Object.values(item.menuChoices ?? {}).map(id => item.menu.allowedProducts?.find(p => p.id === id)?.name).filter(Boolean).join(' · ')
