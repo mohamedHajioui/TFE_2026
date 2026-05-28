@@ -102,9 +102,12 @@ export class Order {
   @OneToMany(() => OrderItem, (orderItem) => orderItem.order, { cascade: true })
   items: OrderItem[];
 
-  // ─── Champs INVITÉ (guest checkout) ───
+  // Champs INVITÉ (guest checkout)
   // Renseignés uniquement si `user` est null (commande sans compte).
   // On stocke tout sur la commande elle-même pour qu'elle soit autosuffisante.
+
+  @Column({ type: 'varchar', length: 64, nullable: true })
+  guestToken: string | null;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   guestEmail: string | null;

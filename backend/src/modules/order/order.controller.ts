@@ -87,9 +87,10 @@ export class OrderController {
   @Get('guest/last-address')
   async getLastGuestAddress(
     @Query('email') email: string,
+    @Query('guestToken') guestToken: string,
   ): Promise<object | null> {
-    if (!email) return null;
-    return await this.orderService.getLastGuestAddress(email);
+    if (!email || !guestToken) return null;
+    return await this.orderService.getLastGuestAddress(email, guestToken);
   }
 
   /** Mes commandes (user connecté) */

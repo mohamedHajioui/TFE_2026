@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateGuestCheckoutSessionDto {
   @IsNumber({}, { message: 'ID de commande invalide' })
@@ -8,4 +8,8 @@ export class CreateGuestCheckoutSessionDto {
   @IsEmail({}, { message: 'Email invalide' })
   @IsNotEmpty({ message: 'Email requis' })
   email: string;
+
+  @IsString({ message: 'Token invité invalide' })
+  @IsNotEmpty({ message: 'Token invité requis' })
+  guestToken: string;
 }

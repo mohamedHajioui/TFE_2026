@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import {
@@ -225,6 +226,7 @@ export class OrderService {
       total,
       customerNote: dto.customerNote ?? null,
       // Infos invité
+      guestToken: randomUUID(),
       guestEmail: dto.guest.email,
       guestName: dto.guest.name,
       guestPhone: dto.guest.phone,
@@ -522,7 +524,7 @@ export class OrderService {
    * Retourne la dernière adresse utilisée par un invité avec cet email.
    * Utilisé pour préremplir le formulaire lors d'une nouvelle commande.
    */
-  async getLastGuestAddress(email: string): Promise<{
+  async getLastGuestAddress(email: string, guestToken: string): Promise<{
     street: string | null;
     number: string | null;
     box: string | null;
@@ -534,7 +536,7 @@ export class OrderService {
     phone: string | null;
   } | null> {
     const lastOrder = await this.orderRepository.findOne({
-      where: { guestEmail: email, type: OrderType.DELIVERY },
+      where: { guestEmail: email, guestToken, type: OrderType.DELIVERY },
       order: { createdAt: 'DESC' },
     });
     if (!lastOrder) return null;
