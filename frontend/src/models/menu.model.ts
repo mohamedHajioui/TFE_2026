@@ -28,6 +28,9 @@ export class MenuModel {
     price: number;
 
     @Expose()
+    imageUrl: string | null;
+
+    @Expose()
     @Type(() => ProductModel)
     allowedProducts: ProductModel[];
 
@@ -51,7 +54,6 @@ export class MenuModel {
     @Transform(({ value }) => (value ? new Date(value) : null))
     updatedAt: Date | null;
 
-    // Helpers
     get formattedPrice(): string {
         return `${this.price.toFixed(2)} €`;
     }

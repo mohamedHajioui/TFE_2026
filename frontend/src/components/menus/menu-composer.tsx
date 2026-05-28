@@ -15,10 +15,11 @@ interface MenuComposerProps {
 export function MenuComposer({ menu, onClose }: MenuComposerProps) {
     const { addMenu } = useCart();
 
-    const sandwiches = menu.allowedProducts?.filter(p => p.category === ProductCategory.SANDWICH) ?? [];
-    const drinks= menu.allowedProducts?.filter(p => p.category === ProductCategory.DRINK) ?? [];
-    const desserts= menu.allowedProducts?.filter(p => p.category === ProductCategory.DESSERT) ?? [];
-    const sides= menu.allowedProducts?.filter(p => p.category === ProductCategory.SIDE) ?? [];
+    const activeProducts = menu.allowedProducts?.filter(p => p.isActive) ?? [];
+    const sandwiches = activeProducts.filter(p => p.category === ProductCategory.SANDWICH);
+    const drinks = activeProducts.filter(p => p.category === ProductCategory.DRINK);
+    const desserts = activeProducts.filter(p => p.category === ProductCategory.DESSERT);
+    const sides = activeProducts.filter(p => p.category === ProductCategory.SIDE);
 
     const [choices, setChoices] = useState<MenuChoices>({
         sandwich: sandwiches[0]?.id,

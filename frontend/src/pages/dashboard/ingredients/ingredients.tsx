@@ -372,10 +372,13 @@ export default function AdminIngredients() {
                                     <label className={styles.label}>Unité *</label>
                                     <select className={styles.input} value={form.unit} onChange={e => f('unit', e.target.value)}>
                                         <option value="kg">kg</option>
-                                        <option value="litres">litres</option>
-                                        <option value="pièces">pièces</option>
                                         <option value="grammes">grammes</option>
+                                        <option value="litres">litres</option>
                                         <option value="ml">ml</option>
+                                        <option value="pièces">pièces</option>
+                                        <option value="tranches">tranches</option>
+                                        <option value="sachets">sachets</option>
+                                        <option value="portions">portions</option>
                                     </select>
                                 </div>
                                 <div className={styles.fieldGroup}>
@@ -430,10 +433,13 @@ export default function AdminIngredients() {
                                     <label className={styles.label}>Unité *</label>
                                     <select className={styles.input} value={form.unit} onChange={e => f('unit', e.target.value)}>
                                         <option value="kg">kg</option>
-                                        <option value="litres">litres</option>
-                                        <option value="pièces">pièces</option>
                                         <option value="grammes">grammes</option>
+                                        <option value="litres">litres</option>
                                         <option value="ml">ml</option>
+                                        <option value="pièces">pièces</option>
+                                        <option value="tranches">tranches</option>
+                                        <option value="sachets">sachets</option>
+                                        <option value="portions">portions</option>
                                     </select>
                                 </div>
                             </div>

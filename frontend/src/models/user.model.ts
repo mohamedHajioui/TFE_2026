@@ -7,6 +7,12 @@ export enum UserRole {
     ADMIN = 'ADMIN',
 }
 
+export const UserRoleLabel: Record<UserRole, string> = {
+    [UserRole.ADMIN]:    'Administrateur',
+    [UserRole.EMPLOYEE]: 'Employé',
+    [UserRole.CLIENT]:   'Client',
+};
+
 export class UserModel {
     @Expose()
     id: number;
@@ -27,6 +33,9 @@ export class UserModel {
     isActive: boolean;
 
     @Expose()
+    hasPassword: boolean;
+
+    @Expose()
     @Transform(({ value }) => (value ? new Date(value) : null))
     createdAt: Date | null;
 
@@ -34,7 +43,6 @@ export class UserModel {
     @Transform(({ value }) => (value ? new Date(value) : null))
     updatedAt: Date | null;
 
-    // Helpers
     get isAdmin(): boolean {
         return this.role === UserRole.ADMIN;
     }
@@ -50,4 +58,20 @@ export class UserModel {
     get hasStaffAccess(): boolean {
         return this.role === UserRole.ADMIN || this.role === UserRole.EMPLOYEE;
     }
+}
+
+export interface LoginCredentials {
+    email: string;
+    password: string;
+}
+
+export interface RegisterData {
+    email: string;
+    displayName: string;
+    password: string;
+    phoneNumber?: string;
+}
+
+export interface AuthResponse {
+    user: UserModel;
 }

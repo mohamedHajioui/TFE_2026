@@ -1,9 +1,9 @@
-import { Expose, Transform, Type } from 'class-transformer';
-import { UserModel } from './user.model';
-import { AddressModel } from './address.model';
-import { TimeSlotModel } from './time-slot.model';
-import { ProductModel } from './product.model';
-import { MenuModel } from './menu.model';
+import {Expose, Transform, Type} from 'class-transformer';
+import {UserModel} from './user.model';
+import {AddressModel} from './address.model';
+import {TimeSlotModel} from './time-slot.model';
+import {ProductModel} from './product.model';
+import {MenuModel} from './menu.model';
 
 export enum OrderStatus {
     PENDING = 'PENDING',
@@ -82,11 +82,11 @@ export class OrderItemModel {
     quantity: number;
 
     @Expose()
-    @Transform(({ value }) => parseFloat(value))
+    @Transform(({value}) => parseFloat(value))
     unitPrice: number;
 
     @Expose()
-    @Transform(({ value }) => parseFloat(value))
+    @Transform(({value}) => parseFloat(value))
     totalPrice: number;
 
     @Expose()
@@ -99,10 +99,9 @@ export class OrderItemModel {
     specialInstructions: string | null;
 
     @Expose()
-    @Transform(({ value }) => (value ? new Date(value) : null))
+    @Transform(({value}) => (value ? new Date(value) : null))
     createdAt: Date | null;
 
-    // Helpers
     get label(): string {
         if (this.itemType === 'menu' && this.menu) return this.menu.name;
         if (this.product) return this.product.name;
@@ -135,15 +134,15 @@ export class OrderModel {
     paymentStatus: PaymentStatus;
 
     @Expose()
-    @Transform(({ value }) => parseFloat(value))
+    @Transform(({value}) => parseFloat(value))
     subtotal: number;
 
     @Expose()
-    @Transform(({ value }) => parseFloat(value))
+    @Transform(({value}) => parseFloat(value))
     deliveryFee: number;
 
     @Expose()
-    @Transform(({ value }) => parseFloat(value))
+    @Transform(({value}) => parseFloat(value))
     total: number;
 
     @Expose()
@@ -154,7 +153,7 @@ export class OrderModel {
 
     @Expose()
     @Type(() => UserModel)
-    user: UserModel;
+    user: UserModel | null;
 
     @Expose()
     @Type(() => AddressModel)
@@ -169,18 +168,47 @@ export class OrderModel {
     items: OrderItemModel[];
 
     @Expose()
-    @Transform(({ value }) => (value ? new Date(value) : null))
+    guestEmail: string | null;
+
+    @Expose()
+    guestName: string | null;
+
+    @Expose()
+    guestPhone: string | null;
+
+    @Expose()
+    guestStreet: string | null;
+
+    @Expose()
+    guestNumber: string | null;
+
+    @Expose()
+    guestBox: string | null;
+
+    @Expose()
+    guestPostalCode: string | null;
+
+    @Expose()
+    guestCity: string | null;
+
+    @Expose()
+    guestCountry: string | null;
+
+    @Expose()
+    guestAddressComplement: string | null;
+
+    @Expose()
+    @Transform(({value}) => (value ? new Date(value) : null))
     createdAt: Date | null;
 
     @Expose()
-    @Transform(({ value }) => (value ? new Date(value) : null))
+    @Transform(({value}) => (value ? new Date(value) : null))
     updatedAt: Date | null;
 
     @Expose()
-    @Transform(({ value }) => (value ? new Date(value) : null))
+    @Transform(({value}) => (value ? new Date(value) : null))
     completedAt: Date | null;
 
-    // Helpers
     get statusLabel(): string {
         return OrderStatusLabel[this.status];
     }
@@ -207,5 +235,46 @@ export class OrderModel {
 
     get isActive(): boolean {
         return ![OrderStatus.COMPLETED, OrderStatus.CANCELLED].includes(this.status);
+    }
+
+    /**
+     * Retourne le nom/email du client, qu'il soit connecté ou invité.
+     * Utile dans le dashboard admin.
+     */
+    get clientLabel(): string {
+        if (this.user?.displayName) return this.user.displayName;
+        if (this.user?.email) return this.user.email;
+        if (this.guestName) return this.guestName;
+        if (this.guestEmail) return this.guestEmail;
+        return 'Invité';
+    }
+
+    /**
+     * Adresse de livraison sous forme de chaîne lisible,
+     * que l'adresse vienne d'un user ou d'un invité.
+     */
+    get deliveryAddressLabel(): string | null {
+        if (this.type !== OrderType.DELIVERY) return null;
+
+        if (this.guestStreet) {
+            const parts = [
+                `${this.guestStreet} ${this.guestNumber ?? ''}`.trim(),
+                this.guestBox ? `bte ${this.guestBox}` : null,
+                `${this.guestPostalCode ?? ''} ${this.guestCity ?? ''}`.trim(),
+            ].filter(Boolean);
+            return parts.join(', ');
+        }
+
+        if (this.deliveryAddress) {
+            const {street, number, box, postalCode, city} = this.deliveryAddress;
+            const parts = [
+                `${street} ${number ?? ''}`.trim(),
+                box ? `bte ${box}` : null,
+                `${postalCode ?? ''} ${city ?? ''}`.trim(),
+            ].filter(Boolean);
+            return parts.join(', ');
+        }
+
+        return null;
     }
 }

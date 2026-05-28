@@ -265,7 +265,7 @@
     border: 1px solid #FFFFFF0F;
     border-radius: 16px;
     width: 100%;
-    max-width: 520px;
+    max-width: 640px;
     max-height: 90vh;
     overflow-y: auto;
     display: flex;
@@ -486,6 +486,129 @@
     object-fit: cover;
 }
 
+/* Section ingrédients dans le formulaire produit */
+.ingredientsSection {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ingredientsSectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.addIngredientBtn {
+    background: none;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 8px;
+    padding: 5px 12px;
+    color: var(--sg-amber);
+    font-size: 0.78rem;
+    font-family: "Nunito", sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.addIngredientBtn:hover {
+    background: #FFAA0010;
+    border-color: var(--sg-amber);
+}
+
+.ingredientsList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ingredientRow {
+    display: grid;
+    grid-template-columns: 1fr 70px 80px 70px 32px;
+    gap: 8px;
+    align-items: end;
+    background: #0A0A0C;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+.ingredientRow .input {
+    padding: 7px 10px;
+    font-size: 0.82rem;
+}
+
+.ingredientRow .label {
+    font-size: 0.68rem;
+}
+
+.ingredientSelect {
+    width: 100%;
+    background: #13131A;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 6px;
+    padding: 7px 10px;
+    color: #F4F4F5;
+    font-size: 0.82rem;
+    font-family: "Nunito", sans-serif;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.removeIngredientBtn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #1C0808;
+    border: 1px solid #EF444430;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    align-self: end;
+    flex-shrink: 0;
+}
+
+.removeIngredientBtn:hover {
+    background: #2C0808;
+}
+
+.ingredientTypeToggle {
+    display: flex;
+    gap: 4px;
+}
+
+.ingredientTypeBtn {
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #FFFFFF0F;
+    background: transparent;
+    color: #71717A;
+    font-size: 0.7rem;
+    font-family: "Nunito", sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.ingredientTypeBtnActive {
+    background: var(--sg-amber);
+    color: #0A0A0C;
+    border-color: var(--sg-amber);
+    font-weight: 700;
+}
+
+.noIngredients {
+    color: #52525B;
+    font-size: 0.82rem;
+    font-family: "Nunito", sans-serif;
+    text-align: center;
+    padding: 12px;
+}
+
 @media (max-width: 768px) {
     .tableHead {
         display: none;
@@ -498,5 +621,9 @@
 
     .formRow {
         grid-template-columns: 1fr;
+    }
+
+    .ingredientRow {
+        grid-template-columns: 1fr 1fr;
     }
 }

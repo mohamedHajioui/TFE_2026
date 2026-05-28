@@ -22,7 +22,6 @@ export class TimeSlotModel {
     @Expose()
     isAvailable: boolean;
 
-    // Helpers
     get isFull(): boolean {
         return this.currentBookings >= this.maxCapacity;
     }
