@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import {
   Order,
   OrderStatus,
@@ -318,6 +318,37 @@ export class OrderService {
       );
     }
 
+    const removedIds = new Set(dto.customization?.removed ?? []);
+    const extraIds = new Set(dto.customization?.extra ?? []);
+
+    for (const pi of product.productIngredients ?? []) {
+      const ing = pi.ingredient;
+      if (!ing) continue;
+
+      if (pi.isRequired && !removedIds.has(ing.id)) {
+        const needed = Number(pi.quantity) * dto.quantity;
+        if (!ing.isAvailable || Number(ing.currentStock) < needed) {
+          throw new BadRequestException(
+            `Stock insuffisant pour "${ing.name}" (besoin : ${needed} ${ing.unit}, dispo : ${Number(ing.currentStock)} ${ing.unit})`,
+          );
+        }
+      }
+
+      if (extraIds.has(ing.id)) {
+        if (!ing.isAvailable) {
+          throw new BadRequestException(
+            `Le supplément "${ing.name}" n'est plus disponible`,
+          );
+        }
+        const needed = Number(pi.quantity) * dto.quantity;
+        if (Number(ing.currentStock) < needed) {
+          throw new BadRequestException(
+            `Stock insuffisant pour le supplément "${ing.name}" (besoin : ${needed} ${ing.unit}, dispo : ${Number(ing.currentStock)} ${ing.unit})`,
+          );
+        }
+      }
+    }
+
     let unitPrice = Number(product.basePrice);
     if (dto.customization?.extra) {
       for (const ingredientId of dto.customization.extra) {
@@ -360,11 +391,40 @@ export class OrderService {
 
     if (dto.menuChoices) {
       const allowedIds = menu.allowedProducts?.map((p) => p.id) ?? [];
+      const chosenProductIds: number[] = [];
+
       for (const [role, id] of Object.entries(dto.menuChoices)) {
-        if (id && !allowedIds.includes(id)) {
+        if (!id) continue;
+        if (!allowedIds.includes(id)) {
           throw new BadRequestException(
             `Produit #${id} (${role}) ne fait pas partie du menu "${menu.name}"`,
           );
+        }
+        chosenProductIds.push(id);
+      }
+
+      if (chosenProductIds.length > 0) {
+        const chosenProducts = await this.productRepository.find({
+          where: { id: In(chosenProductIds) },
+          relations: ['productIngredients', 'productIngredients.ingredient'],
+        });
+
+        for (const product of chosenProducts) {
+          if (!product.isActive) {
+            throw new BadRequestException(
+              `Le produit "${product.name}" du menu n'est plus disponible`,
+            );
+          }
+
+          for (const pi of product.productIngredients ?? []) {
+            if (!pi.isRequired || !pi.ingredient) continue;
+            const needed = Number(pi.quantity) * dto.quantity;
+            if (!pi.ingredient.isAvailable || Number(pi.ingredient.currentStock) < needed) {
+              throw new BadRequestException(
+                `Stock insuffisant pour "${pi.ingredient.name}" dans le produit "${product.name}" du menu`,
+              );
+            }
+          }
         }
       }
     }

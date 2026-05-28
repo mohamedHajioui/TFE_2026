@@ -180,10 +180,22 @@ export class ProductService {
   }
 
   /**
-   * Activer/désactiver un produit
+   * Activer/désactiver un produit.
+   * La réactivation est bloquée si un ingrédient requis est en rupture.
    */
   async toggleActive(id: number): Promise<Product> {
     const product = await this.findOne(id);
+
+    if (!product.isActive) {
+      for (const pi of product.productIngredients ?? []) {
+        if (!pi.isRequired || !pi.ingredient) continue;
+        if (!pi.ingredient.isAvailable || Number(pi.ingredient.currentStock) < Number(pi.quantity)) {
+          throw new BadRequestException(
+            `Impossible de réactiver "${product.name}" : l'ingrédient "${pi.ingredient.name}" est en stock insuffisant (${Number(pi.ingredient.currentStock)} ${pi.ingredient.unit})`,
+          );
+        }
+      }
+    }
 
     product.isActive = !product.isActive;
 
