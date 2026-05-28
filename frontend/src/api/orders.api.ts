@@ -107,9 +107,9 @@ export const ordersApi = {
     },
 
     /** Retrouver la dernière adresse utilisée par un email invité (préremplissage) */
-    getLastGuestAddress: async (email: string): Promise<LastGuestAddressData | null> => {
+    getLastGuestAddress: async (email: string, guestToken: string): Promise<LastGuestAddressData | null> => {
         const response = await apiClient.get('/orders/guest/last-address', {
-            params: { email },
+            params: { email, guestToken },
         });
         return response.data;
     },

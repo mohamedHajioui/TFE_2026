@@ -168,6 +168,9 @@ export class OrderModel {
     items: OrderItemModel[];
 
     @Expose()
+    guestToken: string | null;
+
+    @Expose()
     guestEmail: string | null;
 
     @Expose()

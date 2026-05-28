@@ -16,10 +16,12 @@ export const paymentApi = {
     createGuestCheckoutSession: async (
         orderId: number,
         email: string,
+        guestToken: string,
     ): Promise<CheckoutSessionResponse> => {
         const response = await apiClient.post('/payments/guest/checkout-session', {
             orderId,
             email,
+            guestToken,
         });
         return response.data;
     },

@@ -116,9 +116,12 @@ export function useCheckout() {
         if (orderType !== OrderType.DELIVERY) return;
         if (!guestEmail || !guestEmail.includes('@')) return;
 
+        const storedToken = localStorage.getItem('guestToken');
+        if (!storedToken) return;
+
         const handle = setTimeout(async () => {
             try {
-                const last = await ordersApi.getLastGuestAddress(guestEmail);
+                const last = await ordersApi.getLastGuestAddress(guestEmail, storedToken);
                 if (!last?.street) return;
 
                 setGuestAddress((prev) => {
@@ -281,7 +284,10 @@ export function useCheckout() {
                 }
 
                 const order = await ordersApi.createGuest(data);
-                checkoutResponse = await paymentApi.createGuestCheckoutSession(order.id, guestEmail);
+                if (order.guestToken) {
+                    localStorage.setItem('guestToken', order.guestToken);
+                }
+                checkoutResponse = await paymentApi.createGuestCheckoutSession(order.id, guestEmail, order.guestToken!);
             }
 
             window.location.href = checkoutResponse.url;
