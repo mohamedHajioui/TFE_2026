@@ -5,7 +5,7 @@ import {UserRole} from '@/models';
 import {
     LayoutDashboard, ShoppingBag, UtensilsCrossed, Package,
     Users, Clock, LogOut, Menu, X, ChevronRight, Bell, Truck, Store,
-    CreditCard, type LucideIcon,
+    CreditCard, BarChart3, ChefHat, type LucideIcon,
 } from 'lucide-react';
 import styles from './DashboardLayout.module.css';
 import {type AdminNotification, useAdminNotifications} from "@/hooks/useDashboardNotifications";
@@ -28,8 +28,10 @@ const NAV_ITEMS: NavItem[] = [
     {href: '/admin/orders', label: 'Commandes', icon: ShoppingBag, notif: true},
     {href: '/admin/products', label: 'Produits', icon: Package},
     {href: '/admin/menus', label: 'Menus', icon: UtensilsCrossed},
+    {href: '/admin/kitchen', label: 'Cuisine', icon: ChefHat},
     {href: '/admin/ingredients', label: 'Stocks', icon: LayoutDashboard},
     {href: '/admin/timeslots', label: 'Créneaux', icon: Clock},
+    {href: '/admin/statistics', label: 'Statistiques', icon: BarChart3, adminOnly: true},
     {href: '/admin/users', label: 'Utilisateurs', icon: Users, adminOnly: true},
 ];
 

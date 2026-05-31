@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import {
     Package, UtensilsCrossed, ShoppingBag, Users,
-    CreditCard, LayoutDashboard, Clock,
+    CreditCard, LayoutDashboard, Clock, BarChart3, ChefHat,
 } from 'lucide-react';
 import styles from './home.module.css';
 import {DashboardLayout} from "@/components/layouts/DashboardLayout";
@@ -16,11 +16,15 @@ export default function AdminDashboard() {
     const cards = [
         { label: 'Caisse', href: '/admin/pos', icon: CreditCard, desc: 'Encoder les commandes sur place' },
         { label: 'Commandes', href: '/admin/orders', icon: ShoppingBag, desc: 'Suivre les commandes' },
+        { label: 'Cuisine', href: '/admin/kitchen', icon: ChefHat, desc: 'Préparations par créneau' },
         { label: 'Produits', href: '/admin/products', icon: Package, desc: 'Gérer le catalogue' },
         { label: 'Menus', href: '/admin/menus', icon: UtensilsCrossed, desc: 'Gérer les formules' },
         { label: 'Stocks', href: '/admin/ingredients', icon: LayoutDashboard, desc: 'Gérer les ingrédients' },
         { label: 'Créneaux', href: '/admin/timeslots', icon: Clock, desc: 'Gérer les plages horaires' },
-        ...(isAdmin ? [{ label: 'Utilisateurs', href: '/admin/users', icon: Users, desc: 'Gérer les comptes' }] : []),
+        ...(isAdmin ? [
+            { label: 'Statistiques', href: '/admin/statistics', icon: BarChart3, desc: 'Voir les chiffres clés' },
+            { label: 'Utilisateurs', href: '/admin/users', icon: Users, desc: 'Gérer les comptes' },
+        ] : []),
     ];
 
     return (

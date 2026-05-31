@@ -20,6 +20,8 @@ import DashboardProducts from '@/pages/dashboard/products/products';
 import DashboardIngredients from '@/pages/dashboard/ingredients/ingredients';
 import DashboardTimeSlots from '@/pages/dashboard/time-slots/time-slots';
 import DashboardUsers from '@/pages/dashboard/users/users';
+import DashboardStatistics from '@/pages/dashboard/statistics/statistics';
+import DashboardKitchen from '@/pages/dashboard/kitchen/kitchen';
 
 export function AppRoutes() {
     return (
@@ -46,7 +48,9 @@ export function AppRoutes() {
             <Route path="/admin/products" element={<DashboardRoute><DashboardProducts /></DashboardRoute>} />
             <Route path="/admin/ingredients" element={<DashboardRoute><DashboardIngredients /></DashboardRoute>} />
             <Route path="/admin/timeslots" element={<DashboardRoute><DashboardTimeSlots /></DashboardRoute>} />
+            <Route path="/admin/kitchen" element={<DashboardRoute><DashboardKitchen /></DashboardRoute>} />
 
+            <Route path="/admin/statistics" element={<AdminOnlyRoute><DashboardStatistics /></AdminOnlyRoute>} />
             <Route path="/admin/users" element={<AdminOnlyRoute><DashboardUsers /></AdminOnlyRoute>} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
