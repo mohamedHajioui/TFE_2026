@@ -17,6 +17,7 @@ import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
 import { QueryIngredientDto } from './dto/query-ingredient.dto';
 import { Ingredient } from './entity/ingredient.entity';
+import { StockMovement } from './entity/stock-movement.entity';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -47,6 +48,18 @@ export class IngredientController {
   @Get('low-stock')
   async findLowStock(): Promise<Ingredient[]> {
     return await this.ingredientService.findLowStock();
+  }
+
+  @Roles(UserRole.ADMIN, UserRole.EMPLOYEE)
+  @Get('movements')
+  async getMovements(
+    @Query('ingredientId') ingredientId?: string,
+    @Query('limit') limit?: string,
+  ): Promise<StockMovement[]> {
+    return await this.ingredientService.getMovements(
+      ingredientId ? Number(ingredientId) : undefined,
+      limit ? Number(limit) : 50,
+    );
   }
 
   /**

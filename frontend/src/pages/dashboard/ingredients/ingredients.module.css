@@ -457,6 +457,95 @@
     background: #FFFFFF0F;
 }
 
+.tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.tabBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: 1px solid #FFFFFF0F;
+    background: transparent;
+    color: #71717A;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.tabBtn:hover {
+    border-color: var(--sg-amber);
+    color: #F4F4F5;
+}
+
+.tabBtnActive {
+    background: var(--sg-amber);
+    color: #0A0A0C;
+    border-color: var(--sg-amber);
+}
+
+.movementHead {
+    display: grid;
+    grid-template-columns: 130px 1fr 100px 120px 120px 1fr;
+    padding: 12px 16px;
+    border-bottom: 1px solid #FFFFFF08;
+    background: #0A0A0C;
+}
+
+.movementRow {
+    display: grid;
+    grid-template-columns: 130px 1fr 100px 120px 120px 1fr;
+    padding: 12px 16px;
+    border-bottom: 1px solid #FFFFFF08;
+    align-items: center;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.82rem;
+    color: #F4F4F5;
+}
+
+.movementRow:last-child {
+    border-bottom: none;
+}
+
+.movementBadge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+}
+
+.movementAdjust {
+    background: #0C1B3A;
+    color: #3B82F6;
+}
+
+.movementDeduct {
+    background: #1C0808;
+    color: #F87171;
+}
+
+.movementRestore {
+    background: #052010;
+    color: #4ADE80;
+}
+
+@media (max-width: 768px) {
+    .movementHead {
+        display: none;
+    }
+    .movementRow {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+}
+
 .saveBtn {
     display: flex;
     align-items: center;

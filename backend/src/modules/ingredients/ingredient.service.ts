@@ -8,6 +8,10 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Ingredient } from './entity/ingredient.entity';
+import {
+  StockMovement,
+  StockMovementType,
+} from './entity/stock-movement.entity';
 import { Product } from '../products/entity/product.entity';
 import { ProductIngredient } from '../product-ingredients/entity/product-ingredient.entity';
 import { Menu } from '../menus/entity/menu.entity';
@@ -23,6 +27,8 @@ export class IngredientService {
   constructor(
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
+    @InjectRepository(StockMovement)
+    private readonly stockMovementRepository: Repository<StockMovement>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
     @InjectRepository(ProductIngredient)
@@ -68,9 +74,10 @@ export class IngredientService {
         `Un ingrédient nommé "${createIngredientDto.name}" existe déjà`,
       );
 
+    const initialStock = Number(createIngredientDto.currentStock ?? 0);
     const ingredient = this.ingredientRepository.create({
       ...createIngredientDto,
-      isAvailable: createIngredientDto.isAvailable ?? true,
+      isAvailable: initialStock > 0 ? (createIngredientDto.isAvailable ?? true) : false,
       costPerUnit: createIngredientDto.costPerUnit ?? 0,
     });
 
@@ -96,11 +103,40 @@ export class IngredientService {
         );
     }
 
+    if (
+      updateIngredientDto.currentStock !== undefined &&
+      Number(updateIngredientDto.currentStock) < 0
+    ) {
+      throw new BadRequestException('Le stock ne peut pas être négatif');
+    }
+
+    const stockBefore = Number(ingredient.currentStock);
     Object.assign(ingredient, updateIngredientDto);
 
     if (Number(ingredient.currentStock) <= 0) ingredient.isAvailable = false;
+    else ingredient.isAvailable = true;
 
-    return await this.ingredientRepository.save(ingredient);
+    const saved = await this.ingredientRepository.save(ingredient);
+
+    const stockAfter = Number(saved.currentStock);
+    if (stockAfter !== stockBefore) {
+      await this.logMovement(
+        saved,
+        StockMovementType.ADJUSTMENT,
+        stockAfter - stockBefore,
+        stockBefore,
+        stockAfter,
+        'Modification directe',
+        null,
+      );
+      if (stockAfter < stockBefore) {
+        await this.checkAndDisableProducts([saved.id]);
+      } else {
+        await this.checkAndReenableProducts([saved.id]);
+      }
+    }
+
+    return saved;
   }
 
   async remove(id: number): Promise<void> {
@@ -122,18 +158,37 @@ export class IngredientService {
   ): Promise<Ingredient> {
     const ingredient = await this.findOne(id);
 
-    const newStock = Number(ingredient.currentStock) + Number(quantity);
+    const stockBefore = Number(ingredient.currentStock);
+    const newStock = stockBefore + Number(quantity);
 
     if (newStock < 0) {
       throw new BadRequestException(
-        `Stock insuffisant. Stock actuel : ${Number(ingredient.currentStock)} ${ingredient.unit}`,
+        `Stock insuffisant. Stock actuel : ${stockBefore} ${ingredient.unit}`,
       );
     }
 
     ingredient.currentStock = newStock;
     ingredient.isAvailable = newStock > 0;
 
-    return await this.ingredientRepository.save(ingredient);
+    const saved = await this.ingredientRepository.save(ingredient);
+
+    await this.logMovement(
+      ingredient,
+      StockMovementType.ADJUSTMENT,
+      quantity,
+      stockBefore,
+      newStock,
+      reason ?? null,
+      null,
+    );
+
+    if (quantity < 0) {
+      await this.checkAndDisableProducts([ingredient.id]);
+    } else if (quantity > 0) {
+      await this.checkAndReenableProducts([ingredient.id]);
+    }
+
+    return saved;
   }
 
   async findLowStock(): Promise<Ingredient[]> {
@@ -175,20 +230,31 @@ export class IngredientService {
       }
     }
 
-    // Appliquer les déductions
     const touchedIngredientIds: number[] = [];
     for (const [ingredientId, qty] of ingredientDeltas) {
       const ingredient = await this.ingredientRepository.findOne({ where: { id: ingredientId } });
       if (!ingredient) continue;
 
-      const newStock = Math.max(0, Number(ingredient.currentStock) - qty);
+      const stockBefore = Number(ingredient.currentStock);
+      if (stockBefore < qty) {
+        this.logger.error(
+          `Stock insuffisant détecté à la déduction : "${ingredient.name}" (besoin: ${qty}, dispo: ${stockBefore}) — commande #${orderId}`,
+        );
+      }
+      const newStock = Math.max(0, stockBefore - qty);
       ingredient.currentStock = newStock;
       ingredient.isAvailable = newStock > 0;
       await this.ingredientRepository.save(ingredient);
       touchedIngredientIds.push(ingredientId);
 
-      this.logger.log(
-        `Stock déduit: ${ingredient.name} -${qty} ${ingredient.unit} → ${newStock} ${ingredient.unit} (commande #${orderId})`,
+      await this.logMovement(
+        ingredient,
+        StockMovementType.ORDER_DEDUCTION,
+        -qty,
+        stockBefore,
+        newStock,
+        null,
+        orderId,
       );
     }
 
@@ -217,20 +283,26 @@ export class IngredientService {
       }
     }
 
-    // Restaurer les stocks
     const touchedIngredientIds: number[] = [];
     for (const [ingredientId, qty] of ingredientDeltas) {
       const ingredient = await this.ingredientRepository.findOne({ where: { id: ingredientId } });
       if (!ingredient) continue;
 
-      const newStock = Number(ingredient.currentStock) + qty;
+      const stockBefore = Number(ingredient.currentStock);
+      const newStock = stockBefore + qty;
       ingredient.currentStock = newStock;
       ingredient.isAvailable = newStock > 0;
       await this.ingredientRepository.save(ingredient);
       touchedIngredientIds.push(ingredientId);
 
-      this.logger.log(
-        `Stock restauré: ${ingredient.name} +${qty} ${ingredient.unit} → ${newStock} ${ingredient.unit} (annulation commande #${orderId})`,
+      await this.logMovement(
+        ingredient,
+        StockMovementType.ORDER_RESTORE,
+        qty,
+        stockBefore,
+        newStock,
+        null,
+        orderId,
       );
     }
 
@@ -260,14 +332,10 @@ export class IngredientService {
       if (!ingredientId) continue;
 
       // Ingrédient de base non retiré → on déduit
-      if (pi.isRequired && !removedIds.has(ingredientId)) {
-        const qty = Number(pi.quantity) * orderQuantity;
-        deltas.set(ingredientId, (deltas.get(ingredientId) ?? 0) + qty);
-      }
+      const isKept = pi.isRequired && !removedIds.has(ingredientId);
+      const isExtra = !pi.isRequired && extraIds.has(ingredientId);
 
-      // Ingrédient optionnel retiré → on ne déduit pas (il n'est pas de base)
-      // Ingrédient ajouté en extra → on déduit
-      if (extraIds.has(ingredientId)) {
+      if (isKept || isExtra) {
         const qty = Number(pi.quantity) * orderQuantity;
         deltas.set(ingredientId, (deltas.get(ingredientId) ?? 0) + qty);
       }
@@ -412,8 +480,46 @@ export class IngredientService {
       } else if (!menu.isActive && shouldBeActive) {
         menu.isActive = true;
         await this.menuRepository.save(menu);
-        this.logger.log(`Menu "${menu.name}" réactivé automatiquement`);
+        this.logger.log(`Menu "${menu.name}" réactivé automatiquement (stock restauré)`);
       }
     }
+  }
+
+  private async logMovement(
+    ingredient: Ingredient,
+    type: StockMovementType,
+    quantity: number,
+    stockBefore: number,
+    stockAfter: number,
+    reason: string | null,
+    orderId: number | null,
+  ): Promise<void> {
+    const movement = this.stockMovementRepository.create({
+      ingredient,
+      type,
+      quantity,
+      stockBefore,
+      stockAfter,
+      reason,
+      orderId,
+    });
+    await this.stockMovementRepository.save(movement);
+  }
+
+  async getMovements(
+    ingredientId?: number,
+    limit = 50,
+  ): Promise<StockMovement[]> {
+    const qb = this.stockMovementRepository
+      .createQueryBuilder('m')
+      .leftJoinAndSelect('m.ingredient', 'ingredient')
+      .orderBy('m.createdAt', 'DESC')
+      .take(limit);
+
+    if (ingredientId) {
+      qb.andWhere('m.ingredient.id = :ingredientId', { ingredientId });
+    }
+
+    return await qb.getMany();
   }
 }

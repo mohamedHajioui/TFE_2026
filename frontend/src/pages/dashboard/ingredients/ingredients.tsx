@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
-import { ingredientsApi, type CreateIngredientData } from '@/api/ingredients.api';
+import { ingredientsApi, type CreateIngredientData, type StockMovementData } from '@/api/ingredients.api';
 import { IngredientModel, IngredientCategory, IngredientCategoryLabel } from '@/models/ingredient.model';
 import { getApiErrorMessage } from '@/utils/validation';
-import { Plus, Minus, Search, AlertTriangle, X, Save, Pencil } from 'lucide-react';
+import { Plus, Minus, Search, AlertTriangle, X, Save, Pencil, History } from 'lucide-react';
 import styles from './ingredients.module.css';
 
 type AdjustMode = 'add' | 'remove';
@@ -31,8 +31,16 @@ const EMPTY_FORM: IngredientForm = {
     minStock: '0', unit: 'kg', costPerUnit: '0',
 };
 
+const MOVEMENT_TYPE_LABELS: Record<string, string> = {
+    ADJUSTMENT: 'Ajustement',
+    ORDER_DEDUCTION: 'Commande',
+    ORDER_RESTORE: 'Annulation',
+};
+
 export default function AdminIngredients() {
+    const [tab, setTab] = useState<'stock' | 'history'>('stock');
     const [ingredients, setIngredients] = useState<IngredientModel[]>([]);
+    const [movements, setMovements] = useState<StockMovementData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [catFilter, setCatFilter] = useState<IngredientCategory | ''>('');
@@ -51,7 +59,16 @@ export default function AdminIngredients() {
         finally { setIsLoading(false); }
     };
 
-    useEffect(() => { load(); }, []);
+    const loadMovements = async () => {
+        setIsLoading(true);
+        try { setMovements(await ingredientsApi.getMovements(undefined, 100)); }
+        finally { setIsLoading(false); }
+    };
+
+    useEffect(() => {
+        if (tab === 'stock') load();
+        else loadMovements();
+    }, [tab]);
 
     const filtered = ingredients.filter(ing => {
         const matchSearch = !search || ing.name.toLowerCase().includes(search.toLowerCase());
@@ -196,6 +213,57 @@ export default function AdminIngredients() {
                 </button>
             </div>
 
+            <div className={styles.tabs}>
+                <button className={`${styles.tabBtn} ${tab === 'stock' ? styles.tabBtnActive : ''}`} onClick={() => setTab('stock')}>
+                    Stock
+                </button>
+                <button className={`${styles.tabBtn} ${tab === 'history' ? styles.tabBtnActive : ''}`} onClick={() => setTab('history')}>
+                    <History size={14} /> Historique
+                </button>
+            </div>
+
+            {tab === 'history' && (
+                <>
+                    {isLoading && <div className={styles.loading}><div className="spinner" /></div>}
+                    {!isLoading && movements.length === 0 && (
+                        <div className={styles.emptyBox}>Aucun mouvement de stock enregistré.</div>
+                    )}
+                    {!isLoading && movements.length > 0 && (
+                        <div className={styles.table}>
+                            <div className={styles.movementHead}>
+                                <span className={styles.tableHeadCell}>Date</span>
+                                <span className={styles.tableHeadCell}>Ingrédient</span>
+                                <span className={styles.tableHeadCell}>Type</span>
+                                <span className={styles.tableHeadCell}>Quantité</span>
+                                <span className={styles.tableHeadCell}>Avant → Après</span>
+                                <span className={styles.tableHeadCell}>Détail</span>
+                            </div>
+                            {movements.map(m => (
+                                <div key={m.id} className={styles.movementRow}>
+                                    <span>{new Date(m.createdAt).toLocaleString('fr-BE', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                                    <span style={{ fontWeight: 600 }}>{m.ingredient.name}</span>
+                                    <span>
+                                        <span className={`${styles.movementBadge} ${m.type === 'ADJUSTMENT' ? styles.movementAdjust : m.type === 'ORDER_DEDUCTION' ? styles.movementDeduct : styles.movementRestore}`}>
+                                            {MOVEMENT_TYPE_LABELS[m.type] ?? m.type}
+                                        </span>
+                                    </span>
+                                    <span style={{ color: Number(m.quantity) >= 0 ? '#4ADE80' : '#F87171', fontWeight: 700 }}>
+                                        {Number(m.quantity) >= 0 ? '+' : ''}{Number(m.quantity).toFixed(1)} {m.ingredient.unit}
+                                    </span>
+                                    <span style={{ color: '#A1A1AA' }}>
+                                        {Number(m.stockBefore).toFixed(1)} → {Number(m.stockAfter).toFixed(1)}
+                                    </span>
+                                    <span style={{ color: '#71717A', fontSize: '0.78rem' }}>
+                                        {m.reason ?? (m.orderId ? `Commande #${m.orderId}` : '—')}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </>
+            )}
+
+            {tab === 'stock' && <>
             <div className={styles.filters}>
                 <div className={styles.searchWrapper}>
                     <Search size={15} color="#52525B" className={styles.searchIcon} />
@@ -274,6 +342,7 @@ export default function AdminIngredients() {
                     </div>
                 </>
             )}
+            </>}
 
             {modal && (
                 <div className={styles.overlay} onClick={() => setModal(null)}>

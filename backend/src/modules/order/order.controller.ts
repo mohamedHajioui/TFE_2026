@@ -114,6 +114,38 @@ export class OrderController {
     return await this.orderService.getStatistics();
   }
 
+  @Roles(UserRole.ADMIN)
+  @Get('statistics/revenue')
+  async getRevenueByPeriod(
+    @Query('period') period?: 'day' | 'week' | 'month',
+    @Query('days') days?: string,
+  ) {
+    return await this.orderService.getRevenueByPeriod(
+      period ?? 'day',
+      days ? parseInt(days, 10) : 30,
+    );
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Get('statistics/top-ingredients')
+  async getTopIngredients(@Query('limit') limit?: string) {
+    return await this.orderService.getTopIngredients(
+      limit ? parseInt(limit, 10) : 10,
+    );
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Get('statistics/peak-hours')
+  async getPeakHours() {
+    return await this.orderService.getPeakHours();
+  }
+
+  @Roles(UserRole.ADMIN, UserRole.EMPLOYEE)
+  @Get('kitchen')
+  async getKitchenView(@Query('date') date?: string) {
+    return await this.orderService.getKitchenView(date);
+  }
+
   /** Détail d'une commande */
   @Get(':id')
   async findOne(

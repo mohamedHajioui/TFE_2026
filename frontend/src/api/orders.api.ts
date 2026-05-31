@@ -81,6 +81,30 @@ export interface OrderStatistics {
     revenueToday: number;
 }
 
+export interface RevenueByPeriod {
+    date: string;
+    revenue: number;
+    orders: number;
+}
+
+export interface TopIngredient {
+    ingredientName: string;
+    totalUsed: number;
+    unit: string;
+}
+
+export interface PeakHour {
+    hour: number;
+    orders: number;
+}
+
+export interface KitchenSlot {
+    slotId: number;
+    slotStart: string;
+    slotEnd: string;
+    orders: OrderModel[];
+}
+
 export interface LastGuestAddressData {
     street: string | null;
     number: string | null;
@@ -141,6 +165,26 @@ export const ordersApi = {
 
     getStatistics: async (): Promise<OrderStatistics> => {
         const response = await apiClient.get('/orders/statistics');
+        return response.data;
+    },
+
+    getRevenueByPeriod: async (period: 'day' | 'week' | 'month' = 'day', days = 30): Promise<RevenueByPeriod[]> => {
+        const response = await apiClient.get('/orders/statistics/revenue', { params: { period, days } });
+        return response.data;
+    },
+
+    getTopIngredients: async (limit = 10): Promise<TopIngredient[]> => {
+        const response = await apiClient.get('/orders/statistics/top-ingredients', { params: { limit } });
+        return response.data;
+    },
+
+    getPeakHours: async (): Promise<PeakHour[]> => {
+        const response = await apiClient.get('/orders/statistics/peak-hours');
+        return response.data;
+    },
+
+    getKitchenView: async (date?: string): Promise<KitchenSlot[]> => {
+        const response = await apiClient.get('/orders/kitchen', { params: { date } });
         return response.data;
     },
 
