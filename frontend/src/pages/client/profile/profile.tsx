@@ -184,7 +184,7 @@ export default function Profile() {
                             Mot de passe
                         </h2>
                         <div className={styles.googleBadge}>
-                            🔒 Votre compte est lié à Google — la connexion se fait via Google, pas de mot de passe à gérer.
+                            La connexion se fait via Google, pas de mot de passe à gérer.
                         </div>
                     </section>
                 ) : (

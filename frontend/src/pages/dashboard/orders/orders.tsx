@@ -6,7 +6,7 @@ import { OrderModel, OrderStatus, OrderType, PaymentStatus } from '@/models/orde
 import { formatPrice } from '@/utils/format';
 import {
     RefreshCw, Truck, Store, ChevronDown, ChevronUp,
-    User, Clock, Bell, Check,
+    User, Clock, Bell, Check, Phone,
 } from 'lucide-react';
 import styles from './orders.module.css';
 
@@ -31,6 +31,7 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
 };
 
 const NEXT_STATUSES: Partial<Record<OrderStatus, OrderStatus[]>> = {
+    [OrderStatus.PENDING]: [OrderStatus.CONFIRMED],
     [OrderStatus.CONFIRMED]: [OrderStatus.IN_PREPARATION],
     [OrderStatus.IN_PREPARATION]: [OrderStatus.READY],
     [OrderStatus.READY]: [OrderStatus.IN_DELIVERY, OrderStatus.COMPLETED],
@@ -172,10 +173,12 @@ function OrderCard({ order, onRefetch }: { order: OrderModel; onRefetch: () => v
     };
 
     const clientLabel =
-        order.guestEmail ??
+        order.guestName ??
         order.user?.displayName ??
         order.user?.email ??
         'Invité';
+
+    const phoneLabel = order.guestPhone ?? order.user?.phoneNumber ?? null;
 
     const slotLabel = order.timeSlot
         ? `${order.timeSlot.date} · ${order.timeSlot.startTime}–${order.timeSlot.endTime}`
@@ -215,6 +218,11 @@ function OrderCard({ order, onRefetch }: { order: OrderModel; onRefetch: () => v
                 <span className={styles.infoItem}>
                     <User size={12} /> {clientLabel}
                 </span>
+                {phoneLabel && (
+                    <span className={styles.infoItem}>
+                        <Phone size={12} /> {phoneLabel}
+                    </span>
+                )}
                 {slotLabel && (
                     <span className={styles.infoItem}>
                         <Clock size={12} /> {slotLabel}
@@ -253,6 +261,24 @@ function OrderCard({ order, onRefetch }: { order: OrderModel; onRefetch: () => v
                         <div className={`${styles.itemRow} ${styles.itemRowTotal}`}>
                             <span>Total</span>
                             <span>{formatPrice(order.total)}</span>
+                        </div>
+                    </div>
+
+                    <div className={styles.section}>
+                        <div className={styles.sectionTitle}>Client</div>
+                        <div className={styles.clientDetails}>
+                            <span>{clientLabel}</span>
+                            {(order.guestEmail ?? order.user?.email) && (
+                                <span style={{ color: '#71717A', fontSize: '0.82rem' }}>
+                                    {order.guestEmail ?? order.user?.email}
+                                </span>
+                            )}
+                            {phoneLabel && (
+                                <span style={{ color: '#71717A', fontSize: '0.82rem' }}>
+                                    <Phone size={11} style={{ display: 'inline', marginRight: 4 }} />
+                                    {phoneLabel}
+                                </span>
+                            )}
                         </div>
                     </div>
 

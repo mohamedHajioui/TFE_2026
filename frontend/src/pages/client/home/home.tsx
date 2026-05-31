@@ -47,7 +47,7 @@ export default function Home() {
             </section>
 
             <div className={styles.infoBand}>
-                {['Lun–Ven 8h–21h · Sam 9h–22h', 'Retrait en boutique', 'Livraison disponible'].map(
+                {['Lun–Ven 8h–19h · Sam 9h–22h', 'Retrait en boutique', 'Livraison disponible'].map(
                     (label, i) => (
                         <span key={i} className={styles.infoItem}>
                             {i > 0 && <span className={styles.infoDot} />}

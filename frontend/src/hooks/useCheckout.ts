@@ -284,10 +284,11 @@ export function useCheckout() {
                 }
 
                 const order = await ordersApi.createGuest(data);
-                if (order.guestToken) {
-                    localStorage.setItem('guestToken', order.guestToken);
+                if (!order.guestToken) {
+                    throw new Error('Erreur lors de la création de la commande. Veuillez réessayer.');
                 }
-                checkoutResponse = await paymentApi.createGuestCheckoutSession(order.id, guestEmail, order.guestToken!);
+                localStorage.setItem('guestToken', order.guestToken);
+                checkoutResponse = await paymentApi.createGuestCheckoutSession(order.id, guestEmail, order.guestToken);
             }
 
             window.location.href = checkoutResponse.url;

@@ -9,7 +9,6 @@ import styles from './cart.module.css';
 export default function Cart() {
     const { items, totalItems, subtotal, updateQuantity, removeItem, clearCart } = useCart();
     const navigate = useNavigate();
-    const deliveryFee = 3.5;
 
     if (items.length === 0) {
         return (
@@ -40,7 +39,7 @@ export default function Cart() {
                 <div className={styles.itemList}>
                     {items.map((item, index) => (
                         <CartItemRow
-                            key={index}
+                            key={item.type === 'menu' ? `menu-${item.menu.id}-${index}` : `product-${item.product.id}-${index}`}
                             item={item}
                             index={index}
                             onUpdateQuantity={updateQuantity}
@@ -55,17 +54,13 @@ export default function Cart() {
                             <span>Sous-total</span>
                             <span>{formatPrice(subtotal)}</span>
                         </div>
-                        <div className={styles.recapRow}>
-                            <span>Livraison (si applicable)</span>
-                            <span>{formatPrice(deliveryFee)}</span>
-                        </div>
                         <div className="divider-orange" />
                         <div className={styles.recapTotal}>
-                            <span className={styles.recapTotalLabel}>Total</span>
+                            <span className={styles.recapTotalLabel}>Sous-total</span>
                             <span className="price-tag" style={{ fontSize: '1.4rem' }}>{formatPrice(subtotal)}</span>
                         </div>
                         <p className={styles.recapNote}>
-                            Les frais de livraison seront calculés à la confirmation de commande.
+                            Les frais de livraison seront calculés au moment du checkout.
                         </p>
                     </div>
                     <button

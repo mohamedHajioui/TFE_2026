@@ -35,8 +35,7 @@ apiClient.interceptors.response.use(
             originalRequest.url?.includes('/auth/login') ||
             originalRequest.url?.includes('/auth/register') ||
             originalRequest.url?.includes('/auth/refresh') ||
-            originalRequest.url?.includes('/auth/google') ||
-            originalRequest.url?.includes('/users/me');
+            originalRequest.url?.includes('/auth/google');
 
         if (
             error.response?.status === 401 &&
@@ -66,7 +65,11 @@ apiClient.interceptors.response.use(
                 isRefreshing = false;
 
                 processPendingQueue(refreshError);
-                if (window.location.pathname !== '/login') {
+                const publicPaths = ['/', '/products', '/menus', '/cart', '/checkout', '/register'];
+                const isPublicPage = publicPaths.some(p =>
+                    window.location.pathname === p || window.location.pathname.startsWith('/checkout/'),
+                );
+                if (!isPublicPage && window.location.pathname !== '/login') {
                     window.location.href = '/login';
                 }
                 return Promise.reject(error);

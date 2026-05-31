@@ -269,8 +269,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
                         customization,
                         specialInstructions,
                     })
-                    .then((data) => setItems(apiResponseToCartItems(data)))
+                    .then((data) => {
+                        setItems(apiResponseToCartItems(data));
+                        showToast(product.name, product.imageUrl);
+                    })
                     .catch(console.error);
+                return;
             } else {
                 setItems((prev) => {
                     const existingIndex = prev.findIndex(
@@ -313,6 +317,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             quantity = 1,
             specialInstructions?: string,
         ) => {
+            const firstImage = menu.allowedProducts?.find((p) => p.imageUrl)?.imageUrl ?? null;
             if (isDbMode) {
                 cartApi
                     .addItem({
@@ -322,22 +327,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
                         menuChoices,
                         specialInstructions,
                     })
-                    .then((data) => setItems(apiResponseToCartItems(data)))
+                    .then((data) => {
+                        setItems(apiResponseToCartItems(data));
+                        showToast(menu.name, firstImage);
+                    })
                     .catch(console.error);
-            } else {
-                setItems((prev) => [
-                    ...prev,
-                    {
-                        type: 'menu',
-                        menu,
-                        quantity,
-                        menuChoices,
-                        specialInstructions,
-                        unitPrice: Number(menu.price),
-                    },
-                ]);
+                return;
             }
-            const firstImage = menu.allowedProducts?.find((p) => p.imageUrl)?.imageUrl ?? null;
+            setItems((prev) => [
+                ...prev,
+                {
+                    type: 'menu',
+                    menu,
+                    quantity,
+                    menuChoices,
+                    specialInstructions,
+                    unitPrice: Number(menu.price),
+                },
+            ]);
             showToast(menu.name, firstImage);
         },
         [isDbMode, showToast],

@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { ProductModel, ProductIngredientModel } from '@/models/product.model';
+import { ProductModel, ProductIngredientModel, ProductCategory } from '@/models/product.model';
+import { IngredientCategory } from '@/models/ingredient.model';
 import type { ProductCustomization } from '@/models/order.model';
 import { formatPrice } from '@/utils/format';
 import { resolveImageUrl } from '@/utils/imageUrl';
@@ -16,8 +17,17 @@ export function ProductCustomizer({ product, onAdd, onClose }: ProductCustomizer
     const baseIngredients = product.requiredIngredients;
     const extraIngredients = product.optionalIngredients;
 
+    const breadOptions = (product.productIngredients ?? []).filter(
+        (pi) => pi.ingredient?.category === IngredientCategory.BREAD && pi.ingredient?.isAvailable,
+    );
+    const isSandwich = product.category === ProductCategory.SANDWICH;
+    const showBreadChoice = isSandwich && breadOptions.length > 1;
+
     const [removedIds, setRemovedIds] = useState<Set<number>>(new Set());
     const [extraIds, setExtraIds] = useState<Set<number>>(new Set());
+    const [selectedBread, setSelectedBread] = useState<string>(
+        breadOptions.length > 0 ? breadOptions[0].ingredient.name : '',
+    );
     const [quantity, setQuantity] = useState(1);
 
     const toggleBase = (ingredientId: number) => {
@@ -63,8 +73,9 @@ export function ProductCustomizer({ product, onAdd, onClose }: ProductCustomizer
         const customization: ProductCustomization = {};
         if (removedIds.size > 0) customization.removed = Array.from(removedIds);
         if (extraIds.size > 0) customization.extra = Array.from(extraIds);
+        if (showBreadChoice && selectedBread) customization.breadType = selectedBread;
 
-        const hasCustomization = removedIds.size > 0 || extraIds.size > 0;
+        const hasCustomization = removedIds.size > 0 || extraIds.size > 0 || !!customization.breadType;
         onAdd(quantity, hasCustomization ? customization : {});
     };
 
@@ -93,6 +104,28 @@ export function ProductCustomizer({ product, onAdd, onClose }: ProductCustomizer
                 </div>
 
                 <div className={styles.body}>
+                    {showBreadChoice && (
+                        <div className={styles.section}>
+                            <div className={styles.sectionTitle}>Choix du pain</div>
+                            {breadOptions.map((pi) => {
+                                const name = pi.ingredient.name;
+                                const isSelected = selectedBread === name;
+                                return (
+                                    <div
+                                        key={pi.id}
+                                        className={styles.ingredientRow}
+                                        onClick={() => setSelectedBread(name)}
+                                    >
+                                        <div className={`${styles.checkbox} ${isSelected ? styles.checkboxChecked : ''}`}>
+                                            {isSelected && <Check size={13} color="#0A0A0C" strokeWidth={3} />}
+                                        </div>
+                                        <span className={styles.ingredientName}>{name}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+
                     {baseIngredients.length > 0 && (
                         <div className={styles.section}>
                             <div className={styles.sectionTitle}>

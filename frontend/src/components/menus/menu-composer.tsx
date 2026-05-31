@@ -5,6 +5,7 @@ import type { MenuChoices } from '@/models/order.model';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/utils/format';
 import { X, Check } from 'lucide-react';
+import { resolveImageUrl } from '@/utils/imageUrl';
 import styles from './menu-composer.module.css';
 
 interface MenuComposerProps {
@@ -132,8 +133,8 @@ function CategorySection({ label, required, products, selectedId, onSelect }: {
                             className={`${styles.productBtn} ${isSelected ? styles.productBtnSelected : ''}`}
                         >
                             <div className={styles.productInfo}>
-                                {product.imageUrl
-                                    ? <img src={product.imageUrl} alt={product.name} className={styles.productImage} />
+                                {resolveImageUrl(product.imageUrl)
+                                    ? <img src={resolveImageUrl(product.imageUrl)!} alt={product.name} className={styles.productImage} />
                                     : <div className={styles.productImagePlaceholder} />
                                 }
                                 <div style={{ minWidth: 0 }}>
