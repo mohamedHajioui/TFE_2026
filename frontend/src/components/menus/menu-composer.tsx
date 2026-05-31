@@ -5,6 +5,7 @@ import type { MenuChoices } from '@/models/order.model';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/utils/format';
 import { X, Check } from 'lucide-react';
+import { resolveImageUrl } from '@/utils/imageUrl';
 import styles from './menu-composer.module.css';
 
 interface MenuComposerProps {
@@ -15,10 +16,11 @@ interface MenuComposerProps {
 export function MenuComposer({ menu, onClose }: MenuComposerProps) {
     const { addMenu } = useCart();
 
-    const sandwiches = menu.allowedProducts?.filter(p => p.category === ProductCategory.SANDWICH) ?? [];
-    const drinks= menu.allowedProducts?.filter(p => p.category === ProductCategory.DRINK) ?? [];
-    const desserts= menu.allowedProducts?.filter(p => p.category === ProductCategory.DESSERT) ?? [];
-    const sides= menu.allowedProducts?.filter(p => p.category === ProductCategory.SIDE) ?? [];
+    const activeProducts = menu.allowedProducts?.filter(p => p.isActive) ?? [];
+    const sandwiches = activeProducts.filter(p => p.category === ProductCategory.SANDWICH);
+    const drinks = activeProducts.filter(p => p.category === ProductCategory.DRINK);
+    const desserts = activeProducts.filter(p => p.category === ProductCategory.DESSERT);
+    const sides = activeProducts.filter(p => p.category === ProductCategory.SIDE);
 
     const [choices, setChoices] = useState<MenuChoices>({
         sandwich: sandwiches[0]?.id,
@@ -42,7 +44,6 @@ export function MenuComposer({ menu, onClose }: MenuComposerProps) {
         <div className={styles.overlay} onClick={onClose}>
             <div className={styles.modal} onClick={e => e.stopPropagation()}>
 
-                {/* Header */}
                 <div className={styles.modalHeader}>
                     <div>
                         <div className={`badge-category ${styles.modalBadge}`}>Composer</div>
@@ -54,7 +55,6 @@ export function MenuComposer({ menu, onClose }: MenuComposerProps) {
                     </button>
                 </div>
 
-                {/* Body */}
                 <div className={styles.modalBody}>
                     {sandwiches.length > 0 && (
                         <CategorySection
@@ -94,7 +94,6 @@ export function MenuComposer({ menu, onClose }: MenuComposerProps) {
                     )}
                 </div>
 
-                {/* Footer */}
                 <div className={styles.modalFooter}>
                     <button
                         className={`btn-primary ${styles.addBtn}`}
@@ -134,8 +133,8 @@ function CategorySection({ label, required, products, selectedId, onSelect }: {
                             className={`${styles.productBtn} ${isSelected ? styles.productBtnSelected : ''}`}
                         >
                             <div className={styles.productInfo}>
-                                {product.imageUrl
-                                    ? <img src={product.imageUrl} alt={product.name} className={styles.productImage} />
+                                {resolveImageUrl(product.imageUrl)
+                                    ? <img src={resolveImageUrl(product.imageUrl)!} alt={product.name} className={styles.productImage} />
                                     : <div className={styles.productImagePlaceholder} />
                                 }
                                 <div style={{ minWidth: 0 }}>

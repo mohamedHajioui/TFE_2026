@@ -1,0 +1,186 @@
+.hero {
+    background: #0A0A0C;
+    padding: clamp(72px, 10vw, 120px) 24px clamp(64px, 8vw, 100px);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.heroGlow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+            radial-gradient(ellipse 60% 50% at 20% 60%, #FFAA0010 0%, transparent 70%),
+            radial-gradient(ellipse 50% 40% at 80% 40%, #FFAA0008 0%, transparent 70%);
+}
+
+.heroInner { position: relative; max-width: 680px; margin: 0 auto; }
+
+.pillWrapper { margin-bottom: 28px; display: flex; justify-content: center; }
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #FFAA0015;
+    border: 1px solid #FFAA0035;
+    color: var(--sg-amber);
+    font-family: "Nunito", sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 100px;
+}
+
+.pillDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--sg-amber);
+    display: inline-block;
+}
+
+.heroTitle {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: clamp(2.2rem, 6vw, 4rem);
+    color: #F4F4F5;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    line-height: 1.05;
+    margin-bottom: 24px;
+}
+
+.heroTitleAccent { color: var(--sg-amber); display: block; }
+
+.heroSub {
+    color: #71717A;
+    font-size: clamp(0.95rem, 2vw, 1.05rem);
+    max-width: 440px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+    font-family: "Nunito", sans-serif;
+    font-weight: 400;
+}
+
+.ctaGroup { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+.infoBand {
+    background: #13131A;
+    border-top: 1px solid #FFFFFF0A;
+    border-bottom: 1px solid #FFFFFF0A;
+    padding: 14px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    row-gap: 8px;
+}
+
+.infoItem { display: flex; align-items: center; gap: 12px; }
+
+.infoDot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #3F3F46;
+    display: inline-block;
+    margin: 0 12px;
+}
+
+.infoText {
+    font-family: "Nunito", sans-serif;
+    font-weight: 600;
+    font-size: clamp(0.75rem, 1.8vw, 0.82rem);
+    color: #71717A;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+}
+
+.teaserSection { max-width: 1100px; margin: 0 auto; padding: clamp(48px, 7vw, 80px) 20px; }
+
+.teaserGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.teaserCard {
+    padding: 32px;
+    text-align: left;
+    cursor: pointer;
+    border: 1px solid #FFFFFF0F;
+    transition: border-color 0.2s, transform 0.2s;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    background: #13131A;
+    border-radius: 16px;
+    font-family: "Nunito", sans-serif;
+}
+
+.teaserCard:hover { border-color: #FFAA0040; transform: translateY(-2px); }
+
+.teaserIcon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: #FFAA0012;
+    border: 1px solid #FFAA0030;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sg-amber);
+    flex-shrink: 0;
+}
+
+.teaserContent { flex: 1; min-width: 0; }
+
+.teaserBadge {
+    font-family: "Oswald", sans-serif;
+    font-weight: 600;
+    font-size: 0.72rem;
+    color: var(--sg-amber);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+}
+
+.teaserTitle {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: #F4F4F5;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin: 0 0 10px;
+}
+
+.teaserText {
+    color: #A1A1AA;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    margin: 0 0 16px;
+}
+
+.teaserFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid #FFFFFF08;
+}
+
+.teaserCount {
+    font-family: "Nunito", sans-serif;
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: #71717A;
+}
+
+.teaserArrow { color: var(--sg-amber); transition: transform 0.2s; }
+.teaserCard:hover .teaserArrow { transform: translateX(4px); }

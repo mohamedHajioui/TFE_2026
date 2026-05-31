@@ -208,10 +208,34 @@ export class MenuService {
   }
 
   /**
-   * Activer/désactiver un menu
+   * Activer/désactiver un menu.
+   * La réactivation est bloquée si une catégorie requise n'a plus de produit actif.
    */
   async toggleActive(id: number): Promise<Menu> {
     const menu = await this.findOne(id);
+
+    if (!menu.isActive) {
+      const config = menu.configuration;
+      const products = menu.allowedProducts ?? [];
+      const categories = ['sandwich', 'drink', 'dessert', 'side'] as const;
+
+      for (const cat of categories) {
+        const catConfig = config[cat];
+        if (!catConfig?.required || catConfig.quantity === 0) continue;
+
+        const catUpper = cat.toUpperCase();
+        const activeInCategory = products.filter(
+          (p) => p.category === catUpper && p.isActive,
+        );
+
+        if (activeInCategory.length === 0) {
+          throw new BadRequestException(
+            `Impossible de réactiver "${menu.name}" : aucun produit actif dans la catégorie "${cat}"`,
+          );
+        }
+      }
+    }
+
     menu.isActive = !menu.isActive;
     return await this.menuRepository.save(menu);
   }
@@ -267,12 +291,13 @@ export class MenuService {
   }
 
   /**
-   * Récupérer les menus actifs et disponibles aujourd'hui
+   * Récupérer les menus actifs et disponibles aujourd'hui.
+   * Seuls les produits actifs sont inclus dans allowedProducts.
    */
   async getActiveMenus(): Promise<Menu[]> {
     const today = new Date().toISOString().split('T')[0];
 
-    return await this.menuRepository
+    const menus = await this.menuRepository
       .createQueryBuilder('menu')
       .leftJoinAndSelect('menu.allowedProducts', 'allowedProducts')
       .where('menu.isActive = true')
@@ -286,5 +311,13 @@ export class MenuService {
       )
       .orderBy('menu.name', 'ASC')
       .getMany();
+
+    for (const menu of menus) {
+      menu.allowedProducts = (menu.allowedProducts ?? []).filter(
+        (p) => p.isActive,
+      );
+    }
+
+    return menus;
   }
 }

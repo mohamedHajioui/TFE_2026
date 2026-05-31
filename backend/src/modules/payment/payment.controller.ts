@@ -43,6 +43,7 @@ export class PaymentController {
     return await this.paymentService.createGuestCheckoutSession(
       dto.orderId,
       dto.email,
+      dto.guestToken,
     );
   }
 

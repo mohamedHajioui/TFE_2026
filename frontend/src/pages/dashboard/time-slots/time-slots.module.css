@@ -1,0 +1,629 @@
+/* Header */
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.headerSub {
+    color: #52525B;
+    font-size: 0.82rem;
+    margin: 4px 0 0;
+    font-family: "Nunito", sans-serif;
+}
+
+.headerActions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btnCreate {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--sg-amber);
+    border: none;
+    border-radius: 10px;
+    padding: 9px 16px;
+    color: #0A0A0C;
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btnCreate:hover {
+    background: #FFB833;
+}
+
+.btnGenerate {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #1C1C26;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 10px;
+    padding: 9px 16px;
+    color: #A1A1AA;
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.btnGenerate:hover {
+    border-color: var(--sg-amber);
+    color: var(--sg-amber);
+}
+
+/* Messages */
+
+.successBox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #001A0A;
+    border: 1px solid #22C55E40;
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #4ADE80;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+}
+
+.errorBox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #1C1015;
+    border: 1px solid #4A1A1A;
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #F87171;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+}
+
+/* Formulaires */
+
+.formCard {
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+.formTitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--sg-amber);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 6px;
+}
+
+.formDesc {
+    color: #52525B;
+    font-size: 0.82rem;
+    font-family: "Nunito", sans-serif;
+    margin: 0 0 16px;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+}
+
+.formField {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.formLabel {
+    font-family: "Oswald", sans-serif;
+    font-size: 0.72rem;
+    color: #52525B;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.formInput {
+    background: #0A0A0C;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #F4F4F5;
+    font-size: 0.88rem;
+    font-family: "Nunito", sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+    color-scheme: dark;
+}
+
+.formInput:focus {
+    border-color: var(--sg-amber);
+}
+
+.formActions {
+    display: flex;
+    gap: 10px;
+}
+
+.btnPrimary {
+    background: var(--sg-amber);
+    border: none;
+    border-radius: 8px;
+    padding: 9px 18px;
+    color: #0A0A0C;
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+}
+
+.btnPrimary:hover {
+    background: #FFB833;
+}
+
+.btnPrimary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btnCancel {
+    background: none;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 8px;
+    padding: 9px 16px;
+    color: #71717A;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.btnCancel:hover {
+    border-color: #FFFFFF20;
+    color: #A1A1AA;
+}
+
+/* Filtres */
+
+.filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #13131A;
+    border: 1px solid #FFFFFF08;
+    border-radius: 12px;
+}
+
+.filterField {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.filterLabel {
+    font-family: "Oswald", sans-serif;
+    font-size: 0.68rem;
+    color: #52525B;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.filterInput {
+    background: #0A0A0C;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 8px;
+    padding: 7px 12px;
+    color: #A1A1AA;
+    font-size: 0.85rem;
+    font-family: "Nunito", sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+    color-scheme: dark;
+}
+
+.filterInput:focus {
+    border-color: var(--sg-amber);
+}
+
+.refreshBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #1C1C26;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: #71717A;
+    font-size: 0.82rem;
+    font-family: "Nunito", sans-serif;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.refreshBtn:hover {
+    border-color: var(--sg-amber);
+    color: var(--sg-amber);
+}
+
+/* États */
+
+.loading {
+    display: flex;
+    justify-content: center;
+    padding: 60px 0;
+}
+
+.emptyBox {
+    background: #13131A;
+    border: 1px solid #FFFFFF08;
+    border-radius: 16px;
+    padding: 60px 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.emptyTitle {
+    font-family: "Oswald", sans-serif;
+    font-size: 1rem;
+    color: #52525B;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0;
+}
+
+.emptyText {
+    color: #3F3F46;
+    font-size: 0.82rem;
+    font-family: "Nunito", sans-serif;
+    margin: 0;
+}
+
+/* Liste par jour */
+
+.dayList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dayGroup {
+    background: #13131A;
+    border: 1px solid #FFFFFF08;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.dayHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    transition: background 0.15s;
+}
+
+.dayHeader:hover {
+    background: #1C1C26;
+}
+
+.dayInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dayTitle {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #F4F4F5;
+    text-transform: capitalize;
+    letter-spacing: 0.02em;
+}
+
+.dayMeta {
+    font-family: "Nunito", sans-serif;
+    font-size: 0.75rem;
+    color: #52525B;
+}
+
+/* Lignes créneaux */
+
+.slotList {
+    border-top: 1px solid #FFFFFF08;
+    display: flex;
+    flex-direction: column;
+}
+
+.slotRow {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 18px;
+    border-bottom: 1px solid #FFFFFF05;
+    flex-wrap: wrap;
+    transition: background 0.1s;
+}
+
+.slotRow:last-child {
+    border-bottom: none;
+}
+
+.slotRow:hover {
+    background: #FFFFFF03;
+}
+
+.slotRowDisabled {
+    opacity: 0.5;
+}
+
+.slotTime {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: #F4F4F5;
+    min-width: 110px;
+}
+
+.slotCapacity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 160px;
+}
+
+.slotCapacityBar {
+    flex: 1;
+    height: 4px;
+    background: #1C1C26;
+    border-radius: 2px;
+    overflow: hidden;
+    max-width: 120px;
+}
+
+.slotCapacityFill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s;
+}
+
+.slotCapacityText {
+    font-family: "Nunito", sans-serif;
+    font-size: 0.78rem;
+    color: #71717A;
+    white-space: nowrap;
+}
+
+.slotStatus {
+    min-width: 80px;
+}
+
+.badgeActive {
+    background: #001A0A;
+    color: #4ADE80;
+    border: 1px solid #22C55E40;
+    font-family: "Oswald", sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+.badgeInactive {
+    background: #1A0A00;
+    color: #F87171;
+    border: 1px solid #4A1A1A;
+    font-family: "Oswald", sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+.slotActions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.btnToggle {
+    background: #1C1C26;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 6px;
+    padding: 5px 12px;
+    color: #A1A1AA;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.btnToggle:hover {
+    border-color: var(--sg-amber);
+    color: var(--sg-amber);
+}
+
+.btnDelete {
+    background: none;
+    border: 1px solid #4A1A1A;
+    border-radius: 6px;
+    padding: 5px 8px;
+    color: #EF4444;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background 0.15s;
+}
+
+.btnDelete:hover {
+    background: #1C1015;
+}
+
+.btnDelete:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ─── Modal de confirmation ─── */
+
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.modal {
+    background: #13131A;
+    border: 1px solid #4A1A1A;
+    border-radius: 16px;
+    padding: 32px 28px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+    animation: slideUp 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 32px 64px -16px rgba(0, 0, 0, 0.6);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modalIcon {
+    width: 52px;
+    height: 52px;
+    background: #1C1015;
+    border: 1px solid #4A1A1A;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+
+.modalTitle {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #F4F4F5;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 10px;
+}
+
+.modalMessage {
+    color: #71717A;
+    font-size: 0.85rem;
+    font-family: "Nunito", sans-serif;
+    line-height: 1.6;
+    margin: 0 0 24px;
+}
+
+.modalActions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.modalBtnConfirm {
+    background: #EF4444;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 20px;
+    color: #fff;
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.modalBtnConfirm:hover {
+    background: #DC2626;
+}
+
+.modalBtnCancel {
+    background: none;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 8px;
+    padding: 9px 16px;
+    color: #71717A;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.modalBtnCancel:hover {
+    border-color: #FFFFFF20;
+    color: #A1A1AA;
+}

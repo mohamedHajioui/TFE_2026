@@ -39,7 +39,6 @@ export class AddressModel {
     @Transform(({ value }) => (value ? new Date(value) : null))
     updatedAt: Date | null;
 
-    // Helper : adresse formatée sur une ligne
     get fullAddress(): string {
         const parts = [
             `${this.street} ${this.number}${this.box ? ` bte ${this.box}` : ''}`,
@@ -49,7 +48,6 @@ export class AddressModel {
         return parts.join(', ');
     }
 
-    // Helper : adresse courte (rue + numéro + ville)
     get shortAddress(): string {
         return `${this.street} ${this.number}, ${this.city}`;
     }

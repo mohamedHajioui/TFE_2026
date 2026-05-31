@@ -56,7 +56,6 @@ export class IngredientModel {
     @Transform(({ value }) => (value ? new Date(value) : null))
     updatedAt: Date | null;
 
-    // Helpers
     get categoryLabel(): string {
         return IngredientCategoryLabel[this.category];
     }

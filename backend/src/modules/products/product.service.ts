@@ -9,6 +9,7 @@ import { Repository, Like } from 'typeorm';
 import { Product } from './entity/product.entity';
 import { ProductIngredient } from '../product-ingredients/entity/product-ingredient.entity';
 import { Ingredient } from '../ingredients/entity/ingredient.entity';
+import { Menu } from '../menus/entity/menu.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
@@ -25,6 +26,8 @@ export class ProductService {
     private readonly productIngredientRepository: Repository<ProductIngredient>,
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
+    @InjectRepository(Menu)
+    private readonly menuRepository: Repository<Menu>,
   ) {}
 
   /**
@@ -180,14 +183,62 @@ export class ProductService {
   }
 
   /**
-   * Activer/désactiver un produit
+   * Activer/désactiver un produit.
+   * La réactivation est bloquée si un ingrédient requis est en rupture.
    */
   async toggleActive(id: number): Promise<Product> {
     const product = await this.findOne(id);
 
-    product.isActive = !product.isActive;
+    if (!product.isActive) {
+      for (const pi of product.productIngredients ?? []) {
+        if (!pi.isRequired || !pi.ingredient) continue;
+        if (!pi.ingredient.isAvailable || Number(pi.ingredient.currentStock) < Number(pi.quantity)) {
+          throw new BadRequestException(
+            `Impossible de réactiver "${product.name}" : l'ingrédient "${pi.ingredient.name}" est en stock insuffisant (${Number(pi.ingredient.currentStock)} ${pi.ingredient.unit})`,
+          );
+        }
+      }
+    }
 
-    return await this.productRepository.save(product);
+    product.isActive = !product.isActive;
+    const saved = await this.productRepository.save(product);
+
+    if (!product.isActive) {
+      await this.checkAndDisableMenus();
+    }
+
+    return saved;
+  }
+
+  private async checkAndDisableMenus(): Promise<void> {
+    const menus = await this.menuRepository.find({
+      relations: ['allowedProducts'],
+    });
+
+    for (const menu of menus) {
+      if (!menu.isActive) continue;
+      const config = menu.configuration;
+      const products = menu.allowedProducts ?? [];
+      const categories = ['sandwich', 'drink', 'dessert', 'side'] as const;
+
+      let shouldBeActive = true;
+      for (const cat of categories) {
+        const catConfig = config[cat];
+        if (!catConfig?.required || catConfig.quantity === 0) continue;
+        const activeInCategory = products.filter(
+          (p) => p.category === cat.toUpperCase() && p.isActive,
+        );
+        if (activeInCategory.length === 0) {
+          shouldBeActive = false;
+          break;
+        }
+      }
+
+      if (!shouldBeActive) {
+        menu.isActive = false;
+        await this.menuRepository.save(menu);
+      }
+    }
   }
 
   /**

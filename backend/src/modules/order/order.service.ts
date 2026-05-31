@@ -4,8 +4,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import {
   Order,
   OrderStatus,
@@ -21,6 +22,7 @@ import {
   CreateOrderItemDto,
   GuestAddressDto,
 } from './dto/create-order.dto';
+import { CreateManualOrderDto } from './dto/create-manual-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { TimeSlot } from '../time-slot/entity/time-slot.entity';
@@ -224,6 +226,7 @@ export class OrderService {
       total,
       customerNote: dto.customerNote ?? null,
       // Infos invité
+      guestToken: randomUUID(),
       guestEmail: dto.guest.email,
       guestName: dto.guest.name,
       guestPhone: dto.guest.phone,
@@ -317,6 +320,33 @@ export class OrderService {
       );
     }
 
+    const removedIds = new Set(dto.customization?.removed ?? []);
+    const extraIds = new Set(dto.customization?.extra ?? []);
+
+    for (const pi of product.productIngredients ?? []) {
+      const ing = pi.ingredient;
+      if (!ing) continue;
+
+      if (pi.isRequired && !removedIds.has(ing.id)) {
+        const needed = Number(pi.quantity) * dto.quantity;
+        if (!ing.isAvailable || Number(ing.currentStock) < needed) {
+          this.ingredientService.checkAndDisableProducts([ing.id]).catch(() => {});
+          throw new BadRequestException(
+            `Le produit "${product.name}" n'est plus disponible dans la quantité demandée. Veuillez réduire la quantité ou choisir un autre produit.`,
+          );
+        }
+      }
+
+      if (extraIds.has(ing.id)) {
+        const needed = Number(pi.quantity) * dto.quantity;
+        if (!ing.isAvailable || Number(ing.currentStock) < needed) {
+          throw new BadRequestException(
+            `Le supplément "${ing.name}" n'est plus disponible. Veuillez le retirer de votre commande.`,
+          );
+        }
+      }
+    }
+
     let unitPrice = Number(product.basePrice);
     if (dto.customization?.extra) {
       for (const ingredientId of dto.customization.extra) {
@@ -357,13 +387,55 @@ export class OrderService {
       );
     }
 
+    const config = menu.configuration;
+    const requiredCategories = (['sandwich', 'drink', 'dessert', 'side'] as const).filter(
+      (cat) => config[cat]?.required && config[cat]?.quantity > 0,
+    );
+    for (const cat of requiredCategories) {
+      if (!dto.menuChoices?.[cat]) {
+        throw new BadRequestException(
+          `Le menu "${menu.name}" requiert un choix pour la catégorie "${cat}"`,
+        );
+      }
+    }
+
     if (dto.menuChoices) {
       const allowedIds = menu.allowedProducts?.map((p) => p.id) ?? [];
+      const chosenProductIds: number[] = [];
+
       for (const [role, id] of Object.entries(dto.menuChoices)) {
-        if (id && !allowedIds.includes(id)) {
+        if (!id) continue;
+        if (!allowedIds.includes(id)) {
           throw new BadRequestException(
             `Produit #${id} (${role}) ne fait pas partie du menu "${menu.name}"`,
           );
+        }
+        chosenProductIds.push(id);
+      }
+
+      if (chosenProductIds.length > 0) {
+        const chosenProducts = await this.productRepository.find({
+          where: { id: In(chosenProductIds) },
+          relations: ['productIngredients', 'productIngredients.ingredient'],
+        });
+
+        for (const product of chosenProducts) {
+          if (!product.isActive) {
+            throw new BadRequestException(
+              `Le produit "${product.name}" du menu n'est plus disponible`,
+            );
+          }
+
+          for (const pi of product.productIngredients ?? []) {
+            if (!pi.isRequired || !pi.ingredient) continue;
+            const needed = Number(pi.quantity) * dto.quantity;
+            if (!pi.ingredient.isAvailable || Number(pi.ingredient.currentStock) < needed) {
+              this.ingredientService.checkAndDisableProducts([pi.ingredient.id]).catch(() => {});
+              throw new BadRequestException(
+                `Le produit "${product.name}" du menu "${menu.name}" n'est plus disponible dans la quantité demandée. Veuillez réduire la quantité ou choisir un autre produit.`,
+              );
+            }
+          }
         }
       }
     }
@@ -461,7 +533,7 @@ export class OrderService {
    * Retourne la dernière adresse utilisée par un invité avec cet email.
    * Utilisé pour préremplir le formulaire lors d'une nouvelle commande.
    */
-  async getLastGuestAddress(email: string): Promise<{
+  async getLastGuestAddress(email: string, guestToken: string): Promise<{
     street: string | null;
     number: string | null;
     box: string | null;
@@ -473,7 +545,7 @@ export class OrderService {
     phone: string | null;
   } | null> {
     const lastOrder = await this.orderRepository.findOne({
-      where: { guestEmail: email, type: OrderType.DELIVERY },
+      where: { guestEmail: email, guestToken, type: OrderType.DELIVERY },
       order: { createdAt: 'DESC' },
     });
     if (!lastOrder) return null;
@@ -494,9 +566,24 @@ export class OrderService {
 
   /* MISE À JOUR DE STATUT (ADMIN/EMPLOYEE) */
 
+  private static readonly VALID_TRANSITIONS: Record<string, string[]> = {
+    [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
+    [OrderStatus.CONFIRMED]: [OrderStatus.IN_PREPARATION, OrderStatus.CANCELLED],
+    [OrderStatus.IN_PREPARATION]: [OrderStatus.READY, OrderStatus.CANCELLED],
+    [OrderStatus.READY]: [OrderStatus.IN_DELIVERY, OrderStatus.COMPLETED, OrderStatus.CANCELLED],
+    [OrderStatus.IN_DELIVERY]: [OrderStatus.COMPLETED, OrderStatus.CANCELLED],
+  };
+
   async updateStatus(id: number, dto: UpdateOrderStatusDto): Promise<Order> {
     const order = await this.findOneById(id);
     const previousStatus = order.status;
+
+    const allowed = OrderService.VALID_TRANSITIONS[previousStatus] ?? [];
+    if (!allowed.includes(dto.status)) {
+      throw new BadRequestException(
+        `Transition de statut invalide : ${previousStatus} → ${dto.status}`,
+      );
+    }
 
     order.status = dto.status;
     if (dto.internalNote) order.internalNote = dto.internalNote;
@@ -569,33 +656,28 @@ export class OrderService {
 
   async createManualOrder(
     staffUserId: number,
-    dto: CreateOrderDto,
+    dto: CreateManualOrderDto,
   ): Promise<Order> {
-    // Créneau
-    const timeSlot = await this.resolveAndCheckTimeSlot(dto.timeSlotId);
-
     // Items
     const { items, subtotal } = await this.buildItems(dto.items);
 
-    // Réserver le créneau immédiatement
-    timeSlot.currentBookings += 1;
-    await this.timeSlotRepository.save(timeSlot);
-
     // Commande directement PAID + CONFIRMED (paiement en caisse)
+    // Pas de créneau : les commandes manuelles sont pour les clients sur place
     const orderNumber = await this.generateOrderNumber();
     const order = this.orderRepository.create({
       orderNumber,
-      user: null, // client sur place, pas de compte
       type: OrderType.PICKUP,
       status: OrderStatus.CONFIRMED,
       paymentStatus: PaymentStatus.PAID,
-      timeSlot,
       subtotal,
       deliveryFee: 0,
       total: subtotal,
-      customerNote: dto.customerNote ?? null,
+      customerNote: dto.customerNote ?? undefined,
       internalNote: `Commande manuelle par employé #${staffUserId}`,
-    } as Partial<Order>);
+    });
+    // Pas de user (client sur place) ni de timeSlot (commande manuelle)
+    order.user = null as any;
+    order.timeSlot = null as any;
 
     const saved = await this.orderRepository.save(order);
 
@@ -650,5 +732,131 @@ export class OrderService {
     const revenueToday = parseFloat(revenueResult?.revenue ?? '0');
 
     return { totalOrders, pendingOrders, completedToday, revenueToday };
+  }
+
+  async getRevenueByPeriod(
+    period: 'day' | 'week' | 'month' = 'day',
+    days = 30,
+  ): Promise<{ date: string; revenue: number; orders: number }[]> {
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+
+    let dateTrunc: string;
+    if (period === 'week') dateTrunc = "TO_CHAR(DATE_TRUNC('week', order.completedAt), 'YYYY-MM-DD')";
+    else if (period === 'month') dateTrunc = "TO_CHAR(DATE_TRUNC('month', order.completedAt), 'YYYY-MM')";
+    else dateTrunc = "TO_CHAR(order.completedAt, 'YYYY-MM-DD')";
+
+    const rows = await this.orderRepository
+      .createQueryBuilder('order')
+      .select(dateTrunc, 'date')
+      .addSelect('SUM(order.total)', 'revenue')
+      .addSelect('COUNT(*)', 'orders')
+      .where('order.status = :status', { status: OrderStatus.COMPLETED })
+      .andWhere('order.paymentStatus = :ps', { ps: PaymentStatus.PAID })
+      .andWhere('order.completedAt >= :since', { since })
+      .groupBy(dateTrunc)
+      .orderBy(dateTrunc, 'ASC')
+      .getRawMany<{ date: string; revenue: string; orders: string }>();
+
+    return rows.map((r) => ({
+      date: r.date,
+      revenue: parseFloat(r.revenue ?? '0'),
+      orders: parseInt(r.orders ?? '0', 10),
+    }));
+  }
+
+  async getTopIngredients(
+    limit = 10,
+  ): Promise<{ ingredientName: string; totalUsed: number; unit: string }[]> {
+    const rows = await this.orderItemRepository
+      .createQueryBuilder('item')
+      .innerJoin('item.product', 'product')
+      .innerJoin('product.productIngredients', 'pi')
+      .innerJoin('pi.ingredient', 'ingredient')
+      .innerJoin('item.order', 'order')
+      .select('ingredient.name', 'ingredientName')
+      .addSelect('ingredient.unit', 'unit')
+      .addSelect('SUM(pi.quantity * item.quantity)', 'totalUsed')
+      .where('order.paymentStatus = :ps', { ps: PaymentStatus.PAID })
+      .andWhere('pi.isRequired = true')
+      .groupBy('ingredient.id')
+      .addGroupBy('ingredient.name')
+      .addGroupBy('ingredient.unit')
+      .orderBy('SUM(pi.quantity * item.quantity)', 'DESC')
+      .limit(limit)
+      .getRawMany<{ ingredientName: string; totalUsed: string; unit: string }>();
+
+    return rows.map((r) => ({
+      ingredientName: r.ingredientName,
+      totalUsed: parseFloat(r.totalUsed ?? '0'),
+      unit: r.unit,
+    }));
+  }
+
+  async getPeakHours(): Promise<{ hour: number; orders: number }[]> {
+    const rows = await this.orderRepository
+      .createQueryBuilder('order')
+      .select('EXTRACT(HOUR FROM order.createdAt)::int', 'hour')
+      .addSelect('COUNT(*)', 'orders')
+      .where('order.paymentStatus = :ps', { ps: PaymentStatus.PAID })
+      .groupBy('EXTRACT(HOUR FROM order.createdAt)')
+      .orderBy('EXTRACT(HOUR FROM order.createdAt)', 'ASC')
+      .getRawMany<{ hour: number; orders: string }>();
+
+    return rows.map((r) => ({
+      hour: Number(r.hour),
+      orders: parseInt(r.orders ?? '0', 10),
+    }));
+  }
+
+  async getKitchenView(date?: string): Promise<
+    {
+      slotId: number;
+      slotStart: string;
+      slotEnd: string;
+      orders: Order[];
+    }[]
+  > {
+    const targetDate = date ?? new Date().toISOString().split('T')[0];
+
+    const orders = await this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.timeSlot', 'timeSlot')
+      .leftJoinAndSelect('order.items', 'items')
+      .leftJoinAndSelect('items.product', 'product')
+      .leftJoinAndSelect('items.menu', 'menu')
+      .where('order.paymentStatus = :ps', { ps: PaymentStatus.PAID })
+      .andWhere('order.status IN (:...statuses)', {
+        statuses: [
+          OrderStatus.CONFIRMED,
+          OrderStatus.IN_PREPARATION,
+          OrderStatus.READY,
+        ],
+      })
+      .andWhere('timeSlot.date = :date', { date: targetDate })
+      .orderBy('timeSlot.startTime', 'ASC')
+      .addOrderBy('order.createdAt', 'ASC')
+      .getMany();
+
+    const grouped = new Map<
+      number,
+      { slotId: number; slotStart: string; slotEnd: string; orders: Order[] }
+    >();
+
+    for (const order of orders) {
+      if (!order.timeSlot) continue;
+      const slotId = order.timeSlot.id;
+      if (!grouped.has(slotId)) {
+        grouped.set(slotId, {
+          slotId,
+          slotStart: order.timeSlot.startTime,
+          slotEnd: order.timeSlot.endTime,
+          orders: [],
+        });
+      }
+      grouped.get(slotId)!.orders.push(order);
+    }
+
+    return Array.from(grouped.values());
   }
 }

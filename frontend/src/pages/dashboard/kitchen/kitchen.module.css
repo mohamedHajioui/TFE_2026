@@ -1,0 +1,201 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.headerText {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.headerSub {
+    color: #71717A;
+    font-size: 0.85rem;
+    font-family: "Nunito", sans-serif;
+    margin: 0;
+}
+
+.dateInput {
+    background: #13131A;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 10px;
+    padding: 9px 14px;
+    color: #F4F4F5;
+    font-size: 0.88rem;
+    font-family: "Nunito", sans-serif;
+    outline: none;
+    cursor: pointer;
+}
+
+.dateInput:focus {
+    border-color: var(--sg-amber);
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    padding: 60px 0;
+}
+
+.errorBox {
+    background: #1C1015;
+    border: 1px solid #4A1A1A;
+    border-radius: 8px;
+    padding: 14px 18px;
+    color: #F87171;
+    font-size: 0.88rem;
+    font-family: "Nunito", sans-serif;
+}
+
+.emptyBox {
+    padding: 40px;
+    text-align: center;
+    color: #52525B;
+    font-family: "Nunito", sans-serif;
+}
+
+.slotGroup {
+    margin-bottom: 24px;
+}
+
+.slotHeader {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 10px 16px;
+    background: #0A0A0C;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 12px;
+}
+
+.slotTime {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--sg-amber);
+}
+
+.slotCount {
+    font-family: "Nunito", sans-serif;
+    font-size: 0.82rem;
+    color: #71717A;
+}
+
+.orderCards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-left: 16px;
+}
+
+.orderCard {
+    background: #13131A;
+    border: 1px solid #FFFFFF08;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.orderTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.orderNumber {
+    font-family: "Oswald", sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #F4F4F5;
+}
+
+.statusBadge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.statusConfirmed {
+    background: #0C1B3A;
+    color: #3B82F6;
+}
+
+.statusPrep {
+    background: #1A0F30;
+    color: #8B5CF6;
+}
+
+.statusReady {
+    background: #052010;
+    color: #4ADE80;
+}
+
+.orderType {
+    font-size: 0.75rem;
+    color: #71717A;
+    font-family: "Nunito", sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.itemsList {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.itemRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: #0A0A0C;
+    border-radius: 6px;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.85rem;
+    color: #F4F4F5;
+}
+
+.itemQty {
+    font-weight: 700;
+    color: var(--sg-amber);
+    min-width: 24px;
+}
+
+.itemName {
+    flex: 1;
+}
+
+.itemNote {
+    font-size: 0.75rem;
+    color: #71717A;
+    font-style: italic;
+}
+
+.orderNote {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: #1A1800;
+    border: 1px solid #FFAA0020;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: #F59E0B;
+    font-family: "Nunito", sans-serif;
+}
+
+@media (max-width: 768px) {
+    .orderCards {
+        padding-left: 0;
+    }
+}

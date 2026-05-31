@@ -87,6 +87,7 @@ export class PaymentService implements OnModuleInit {
   async createGuestCheckoutSession(
     orderId: number,
     guestEmail: string,
+    guestToken: string,
   ): Promise<{ url: string; sessionId: string }> {
     const order = await this.loadOrder(orderId);
 
@@ -95,9 +96,9 @@ export class PaymentService implements OnModuleInit {
         'Cette commande nécessite une authentification',
       );
     }
-    if (order.guestEmail !== guestEmail) {
+    if (order.guestEmail !== guestEmail || order.guestToken !== guestToken) {
       throw new ForbiddenException(
-        'Email ne correspondant pas à cette commande',
+        'Identifiants invité invalides pour cette commande',
       );
     }
 
@@ -237,6 +238,11 @@ export class PaymentService implements OnModuleInit {
 
     if (order.paymentStatus === PaymentStatus.PAID) {
       this.logger.log(`Commande ${order.orderNumber} déjà PAID — skip`);
+      return;
+    }
+
+    if (order.status === OrderStatus.CANCELLED) {
+      this.logger.warn(`Commande ${order.orderNumber} déjà annulée — webhook ignoré`);
       return;
     }
 

@@ -42,13 +42,11 @@ export const menusApi = {
         return toModels(MenuModel, response.data);
     },
 
-    //Calculer l'économie d'un menu par rapport à l'achat séparé (public)
     calculateSavings: async (id: number): Promise<MenuSavings> => {
         const response = await apiClient.get(`/menus/${id}/savings`);
         return response.data;
     },
 
-    //verifier la disponibilité d'un menu à une date donnée (public)
     checkAvailability: async (id: number, date: string): Promise<{ available: boolean }> => {
         const response = await apiClient.get(`/menus/${id}/available/${date}`);
         return response.data;
@@ -72,7 +70,6 @@ export const menusApi = {
         return toModel(MenuModel, response.data);
     },
 
-    //Activer/désactiver un menu (ADMIN/EMPLOYEE)
     toggleActive: async (id: number): Promise<MenuModel> => {
         const response = await apiClient.put(`/menus/${id}/toggle`);
         return toModel(MenuModel, response.data);

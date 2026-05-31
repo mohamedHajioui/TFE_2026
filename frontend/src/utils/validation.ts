@@ -48,13 +48,12 @@ export function getPasswordErrors(password: string): string[] {
 /**
  * Extrait le message d'erreur d'une réponse Axios
  */
-export function getApiErrorMessage(error: unknown): string {
+export function getApiErrorMessage(error: unknown, fallback = 'Une erreur est survenue'): string {
     if (error && typeof error === 'object' && 'response' in error) {
-        const response = (error as any).response;
-        // NestJS retourne { message: string | string[] }
-        const msg = response?.data?.message;
-        if (Array.isArray(msg)) return msg[0];
+        const msg = (error as { response?: { data?: { message?: string | string[] } } })
+            ?.response?.data?.message;
+        if (Array.isArray(msg)) return msg.join(', ');
         if (typeof msg === 'string') return msg;
     }
-    return 'Une erreur est survenue';
+    return fallback;
 }

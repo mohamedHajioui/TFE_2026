@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateManualOrderDto } from './dto/create-manual-order.dto';
 import { DeliveryEstimateDto } from './dto/delivery-estimate.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { QueryOrderDto } from './dto/query-order.dto';
@@ -50,7 +51,7 @@ export class OrderController {
   @Post('manual')
   async createManual(
     @CurrentUser() user: User,
-    @Body() dto: CreateOrderDto,
+    @Body() dto: CreateManualOrderDto,
   ): Promise<Order> {
     return await this.orderService.createManualOrder(user.id, dto);
   }
@@ -86,9 +87,10 @@ export class OrderController {
   @Get('guest/last-address')
   async getLastGuestAddress(
     @Query('email') email: string,
+    @Query('guestToken') guestToken: string,
   ): Promise<object | null> {
-    if (!email) return null;
-    return await this.orderService.getLastGuestAddress(email);
+    if (!email || !guestToken) return null;
+    return await this.orderService.getLastGuestAddress(email, guestToken);
   }
 
   /** Mes commandes (user connecté) */
@@ -110,6 +112,38 @@ export class OrderController {
   @Get('statistics')
   async getStatistics() {
     return await this.orderService.getStatistics();
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Get('statistics/revenue')
+  async getRevenueByPeriod(
+    @Query('period') period?: 'day' | 'week' | 'month',
+    @Query('days') days?: string,
+  ) {
+    return await this.orderService.getRevenueByPeriod(
+      period ?? 'day',
+      days ? parseInt(days, 10) : 30,
+    );
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Get('statistics/top-ingredients')
+  async getTopIngredients(@Query('limit') limit?: string) {
+    return await this.orderService.getTopIngredients(
+      limit ? parseInt(limit, 10) : 10,
+    );
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Get('statistics/peak-hours')
+  async getPeakHours() {
+    return await this.orderService.getPeakHours();
+  }
+
+  @Roles(UserRole.ADMIN, UserRole.EMPLOYEE)
+  @Get('kitchen')
+  async getKitchenView(@Query('date') date?: string) {
+    return await this.orderService.getKitchenView(date);
   }
 
   /** Détail d'une commande */

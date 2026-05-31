@@ -1,0 +1,150 @@
+.hero {
+    background: #0A0A0C;
+    padding: clamp(48px, 7vw, 80px) 24px clamp(32px, 5vw, 48px);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid #FFFFFF0A;
+}
+
+.heroInner { position: relative; max-width: 680px; margin: 0 auto; }
+
+.badgeWrapper { margin-bottom: 20px; display: flex; justify-content: center; }
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #FFAA0015;
+    border: 1px solid #FFAA0035;
+    color: var(--sg-amber);
+    font-family: "Nunito", sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 100px;
+}
+
+.badgeDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--sg-amber);
+    display: inline-block;
+}
+
+.title {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    color: #F4F4F5;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+    margin: 0 0 16px;
+}
+
+.titleAccent { color: var(--sg-amber); }
+
+.subtitle {
+    color: #71717A;
+    font-size: 0.95rem;
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.7;
+    font-family: "Nunito", sans-serif;
+}
+
+.content { max-width: 1200px; margin: 0 auto; padding: 40px 20px 80px; }
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.countBadge {
+    background: #FFAA0012;
+    border: 1px solid #FFAA0025;
+    color: var(--sg-amber);
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 60px 0;
+}
+
+.loadingText {
+    color: #52525B;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.85rem;
+}
+
+.errorBox {
+    background: #1C1015;
+    border: 1px solid #4A1A1A;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+}
+
+.errorTitle {
+    font-family: "Oswald", sans-serif;
+    color: #F87171;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 6px;
+}
+
+.errorMsg {
+    color: #F87171;
+    font-size: 0.85rem;
+    font-family: "Nunito", sans-serif;
+    margin: 0;
+}
+
+.emptyBox {
+    background: #13131A;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 16px;
+    padding: 60px 24px;
+    text-align: center;
+}
+
+.emptyTitle {
+    font-family: "Oswald", sans-serif;
+    font-size: 1.1rem;
+    color: #71717A;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 8px;
+}
+
+.emptyText {
+    color: #52525B;
+    font-size: 0.85rem;
+    margin: 0;
+    font-family: "Nunito", sans-serif;
+}

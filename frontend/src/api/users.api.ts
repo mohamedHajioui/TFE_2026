@@ -19,6 +19,12 @@ export interface QueryUsersParams {
     search?: string;
 }
 
+export interface AdminUpdateUserData {
+    displayName?: string;
+    phoneNumber?: string;
+    role?: UserRole;
+}
+
 export const usersApi = {
 
     getMyProfile: async (): Promise<UserModel> => {
@@ -38,9 +44,6 @@ export const usersApi = {
         return response.data;
     },
 
-    // ADMIN--------------------------------------------------------------------------------------------
-
-
     findAll: async (params?: QueryUsersParams): Promise<UserModel[]> => {
         const response = await apiClient.get('/users/list', { params });
         return toModels(UserModel, response.data);
@@ -52,6 +55,15 @@ export const usersApi = {
         return toModel(UserModel, response.data);
     },
 
+    adminUpdate: async (id: number, data: AdminUpdateUserData): Promise<UserModel> => {
+        const response = await apiClient.put(`/users/${id}/update`, data);
+        return toModel(UserModel, response.data);
+    },
+
+    adminResetPassword: async (id: number, newPassword: string): Promise<{ message: string }> => {
+        const response = await apiClient.put(`/users/${id}/reset-password`, { newPassword });
+        return response.data;
+    },
 
     toggleActive: async (id: number): Promise<UserModel> => {
         const response = await apiClient.put(`/users/${id}/toggle-active`);

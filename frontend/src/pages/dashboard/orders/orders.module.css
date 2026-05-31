@@ -1,0 +1,428 @@
+/* Header */
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.headerSub {
+    color: #52525B;
+    font-size: 0.82rem;
+    margin: 4px 0 0;
+    font-family: "Nunito", sans-serif;
+}
+
+.refreshBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #13131A;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: #A1A1AA;
+    font-size: 0.82rem;
+    font-family: "Nunito", sans-serif;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.refreshBtn:hover { border-color: var(--sg-amber); color: var(--sg-amber); }
+
+/* Bannière nouvelles commandes */
+
+.newOrdersBanner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: #FFAA0015;
+    border: 1px solid var(--sg-amber);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--sg-amber);
+    font-family: "Nunito", sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 16px;
+    animation: bannerIn 0.3s ease;
+    transition: background 0.15s;
+}
+
+.newOrdersBanner:hover { background: #FFAA0025; }
+
+@keyframes bannerIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Filtres */
+
+.filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.select {
+    background: #13131A;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #A1A1AA;
+    font-size: 0.85rem;
+    font-family: "Nunito", sans-serif;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.select:focus { border-color: var(--sg-amber); }
+
+.dateInput {
+    background: #13131A;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #A1A1AA;
+    font-size: 0.85rem;
+    font-family: "Nunito", sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+    color-scheme: dark;
+}
+
+.dateInput:focus { border-color: var(--sg-amber); }
+
+.clearFiltersBtn {
+    background: none;
+    border: 1px dashed #FFFFFF15;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #71717A;
+    font-size: 0.82rem;
+    font-family: "Nunito", sans-serif;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.clearFiltersBtn:hover { color: var(--sg-amber); border-color: var(--sg-amber); }
+
+/* États */
+
+.loading {
+    display: flex;
+    justify-content: center;
+    padding: 60px 0;
+}
+
+.errorBox {
+    background: #1C1015;
+    border: 1px solid #4A1A1A;
+    border-radius: 8px;
+    padding: 16px;
+    color: #F87171;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.88rem;
+}
+
+.emptyBox {
+    background: #13131A;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 16px;
+    padding: 60px 24px;
+    text-align: center;
+}
+
+.emptyTitle {
+    font-family: "Oswald", sans-serif;
+    font-size: 1.1rem;
+    color: #71717A;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 8px;
+}
+
+.emptyText {
+    color: #52525B;
+    font-size: 0.85rem;
+    margin: 0;
+    font-family: "Nunito", sans-serif;
+}
+
+/* Liste */
+
+.count {
+    font-family: "Nunito", sans-serif;
+    font-size: 0.82rem;
+    color: #52525B;
+    margin-bottom: 12px;
+}
+
+.orderList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Card commande */
+
+.card { padding: 16px 20px; }
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.cardMeta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.orderNumber {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #F4F4F5;
+    letter-spacing: 0.04em;
+}
+
+.statusBadge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: "Oswald", sans-serif;
+}
+
+.typeBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #1C1C26;
+    color: #71717A;
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-family: "Oswald", sans-serif;
+}
+
+.cardRight {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.total {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--sg-amber);
+}
+
+.expandBtn {
+    background: #1C1C26;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    color: #71717A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.expandBtn:hover { border-color: var(--sg-amber); color: var(--sg-amber); }
+
+/* Infos rapides */
+
+.cardInfo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.infoItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #71717A;
+    font-size: 0.78rem;
+    font-family: "Nunito", sans-serif;
+}
+
+.infoDate {
+    color: #3F3F46;
+    font-size: 0.75rem;
+    font-family: "Nunito", sans-serif;
+    margin-left: auto;
+}
+
+/* Corps dépliable */
+
+.cardBody {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #FFFFFF08;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.section {}
+
+.sectionTitle {
+    font-family: "Oswald", sans-serif;
+    font-size: 0.72rem;
+    color: #52525B;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+}
+
+.itemRow {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #A1A1AA;
+    font-family: "Nunito", sans-serif;
+    padding: 3px 0;
+}
+
+.itemRowFee {
+    color: #52525B;
+    border-top: 1px solid #FFFFFF08;
+    margin-top: 4px;
+    padding-top: 6px;
+}
+
+.itemRowTotal {
+    color: #F4F4F5;
+    font-weight: 700;
+    border-top: 1px solid #FFFFFF0F;
+    padding-top: 6px;
+    margin-top: 4px;
+    font-family: "Oswald", sans-serif;
+    font-size: 0.9rem;
+}
+
+.clientDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.88rem;
+    color: #F4F4F5;
+}
+
+.addressText {
+    color: #A1A1AA;
+    font-size: 0.85rem;
+    font-family: "Nunito", sans-serif;
+}
+
+.noteText {
+    color: #A1A1AA;
+    font-size: 0.85rem;
+    font-family: "Nunito", sans-serif;
+    background: #1C1C26;
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+
+/* Actions statut */
+
+.actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.actionBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--sg-amber);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: #0A0A0C;
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+}
+
+.actionBtn:hover { background: #FFB833; }
+.actionBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.noteToggleBtn {
+    background: none;
+    border: 1px dashed #FFFFFF15;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #71717A;
+    font-size: 0.8rem;
+    font-family: "Nunito", sans-serif;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.noteToggleBtn:hover { border-color: var(--sg-amber); color: var(--sg-amber); }
+
+.noteInput {
+    width: 100%;
+    background: #0A0A0C;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #F4F4F5;
+    font-size: 0.85rem;
+    font-family: "Nunito", sans-serif;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+}
+
+.noteInput:focus { border-color: var(--sg-amber); }
+
+.completedBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #22C55E;
+    font-size: 0.82rem;
+    font-family: "Nunito", sans-serif;
+    font-weight: 600;
+}
+
+.cancelledBadge {
+    color: #EF4444;
+    font-size: 0.82rem;
+    font-family: "Nunito", sans-serif;
+    font-weight: 600;
+}

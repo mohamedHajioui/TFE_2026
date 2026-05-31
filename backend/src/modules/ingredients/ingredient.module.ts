@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { IngredientController } from './ingredient.controller';
 import { IngredientService } from './ingredient.service';
 import { Ingredient } from './entity/ingredient.entity';
+import { StockMovement } from './entity/stock-movement.entity';
 import { Product } from '../products/entity/product.entity';
 import { ProductIngredient } from '../product-ingredients/entity/product-ingredient.entity';
 import { Menu } from '../menus/entity/menu.entity';
@@ -12,6 +13,7 @@ import { OrderItem } from '../order-item/entity/order-item.entity';
   imports: [
     TypeOrmModule.forFeature([
       Ingredient,
+      StockMovement,
       Product,
       ProductIngredient,
       Menu,

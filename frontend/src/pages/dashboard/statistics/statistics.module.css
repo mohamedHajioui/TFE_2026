@@ -1,0 +1,267 @@
+.header {
+    margin-bottom: 32px;
+}
+
+.headerSub {
+    color: #71717A;
+    font-size: 0.85rem;
+    font-family: "Nunito", sans-serif;
+    margin: 8px 0 0;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.statCard {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.statIcon {
+    width: 44px;
+    height: 44px;
+    background: #FFAA0010;
+    border: 1px solid var(--sg-amber);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.statValue {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: #F4F4F5;
+    letter-spacing: 0.02em;
+}
+
+.statLabel {
+    color: #71717A;
+    font-size: 0.8rem;
+    font-family: "Nunito", sans-serif;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    padding: 60px 0;
+}
+
+.errorBox {
+    background: #1C1015;
+    border: 1px solid #4A1A1A;
+    border-radius: 8px;
+    padding: 14px 18px;
+    color: #F87171;
+    font-size: 0.88rem;
+    font-family: "Nunito", sans-serif;
+}
+
+.sectionsRow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.sectionCard {
+    padding: 20px;
+}
+
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.sectionTitleRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.sectionHeader .sectionTitleRow {
+    margin-bottom: 0;
+}
+
+.sectionTitle {
+    font-family: "Oswald", sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #F4F4F5;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.periodSelect {
+    background: #0A0A0C;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 8px;
+    padding: 6px 10px;
+    color: #F4F4F5;
+    font-size: 0.82rem;
+    font-family: "Nunito", sans-serif;
+    outline: none;
+    cursor: pointer;
+}
+
+.emptyText {
+    color: #52525B;
+    font-size: 0.85rem;
+    font-family: "Nunito", sans-serif;
+    text-align: center;
+    padding: 24px;
+}
+
+.barChart {
+    display: flex;
+    gap: 4px;
+    align-items: flex-end;
+    height: 180px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.barCol {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 36px;
+    flex: 1;
+    gap: 4px;
+}
+
+.barValue {
+    font-size: 0.65rem;
+    color: #A1A1AA;
+    font-family: "Nunito", sans-serif;
+    white-space: nowrap;
+}
+
+.barTrack {
+    width: 100%;
+    max-width: 28px;
+    height: 100px;
+    background: #1C1C26;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+}
+
+.barFill {
+    width: 100%;
+    background: var(--sg-amber);
+    border-radius: 4px;
+    min-height: 2px;
+    transition: height 0.3s;
+}
+
+.barLabel {
+    font-size: 0.6rem;
+    color: #71717A;
+    font-family: "Nunito", sans-serif;
+    white-space: nowrap;
+}
+
+.barOrders {
+    font-size: 0.58rem;
+    color: #52525B;
+    font-family: "Nunito", sans-serif;
+}
+
+.rankList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.rankRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: #0A0A0C;
+    border-radius: 8px;
+}
+
+.rankNumber {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--sg-amber);
+    min-width: 22px;
+}
+
+.rankName {
+    flex: 1;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.85rem;
+    color: #F4F4F5;
+}
+
+.rankValue {
+    font-family: "Nunito", sans-serif;
+    font-size: 0.8rem;
+    color: #A1A1AA;
+    white-space: nowrap;
+}
+
+.peakList {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.peakRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.peakHour {
+    font-family: "Oswald", sans-serif;
+    font-size: 0.82rem;
+    color: #A1A1AA;
+    min-width: 32px;
+}
+
+.peakBarTrack {
+    flex: 1;
+    height: 18px;
+    background: #1C1C26;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.peakBarFill {
+    height: 100%;
+    background: var(--sg-amber);
+    border-radius: 4px;
+    min-width: 2px;
+    transition: width 0.3s;
+}
+
+.peakCount {
+    font-family: "Nunito", sans-serif;
+    font-size: 0.8rem;
+    color: #71717A;
+    min-width: 28px;
+    text-align: right;
+}
+
+@media (max-width: 768px) {
+    .sectionsRow {
+        grid-template-columns: 1fr;
+    }
+}

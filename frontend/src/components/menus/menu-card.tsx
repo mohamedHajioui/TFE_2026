@@ -1,5 +1,6 @@
 import { MenuModel } from '@/models/menu.model';
 import { formatPrice } from '@/utils/format';
+import { resolveImageUrl } from '@/utils/imageUrl';
 import styles from './menu-card.module.css';
 
 interface MenuCardProps {
@@ -16,10 +17,13 @@ export function MenuCard({ menu, onSelect }: MenuCardProps) {
     const totalSeparate = menu.allowedProducts?.reduce((sum, p) => sum + Number(p.basePrice), 0) ?? 0;
     const savings = totalSeparate - Number(menu.price);
 
-    const menuImage =
+    // Priorité : image du menu > image d'un sandwich > image d'un autre produit
+    const menuImage = resolveImageUrl(
+        menu.imageUrl ??
         menu.allowedProducts?.find(p => p.category === 'SANDWICH' && p.imageUrl)?.imageUrl ??
         menu.allowedProducts?.find(p => p.imageUrl)?.imageUrl ??
-        null;
+        null
+    );
 
     return (
         <div className={`card-dark ${styles.card}`}>

@@ -81,4 +81,23 @@ export const ingredientsApi = {
     remove: async (id: number): Promise<void> => {
         await apiClient.delete(`/ingredients/${id}/delete`);
     },
+
+    getMovements: async (ingredientId?: number, limit = 50): Promise<StockMovementData[]> => {
+        const response = await apiClient.get('/ingredients/movements', {
+            params: { ingredientId, limit },
+        });
+        return response.data;
+    },
 };
+
+export interface StockMovementData {
+    id: number;
+    type: 'ADJUSTMENT' | 'ORDER_DEDUCTION' | 'ORDER_RESTORE';
+    quantity: number;
+    stockBefore: number;
+    stockAfter: number;
+    reason: string | null;
+    orderId: number | null;
+    createdAt: string;
+    ingredient: { id: number; name: string; unit: string };
+}

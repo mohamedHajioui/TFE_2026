@@ -1,18 +1,62 @@
 import { apiClient } from './axios.config';
 import { toModel, toModels } from './transform.helper';
-import {OrderModel, OrderStatus, OrderType, PaymentStatus, type ProductCustomization} from '../models/order.model';
+import {
+    OrderModel,
+    OrderStatus,
+    OrderType,
+    PaymentStatus,
+    type MenuChoices,
+    type ProductCustomization,
+} from '../models/order.model';
 
+/**
+ * Un item du panier envoyé au backend.
+ * - itemType: 'product' → productId requis + customization optionnelle
+ * - itemType: 'menu'    → menuId + menuChoices requis
+ */
 export interface CreateOrderItemData {
-    productId: number;
+    itemType: 'product' | 'menu';
+    productId?: number;
+    menuId?: number;
+    menuChoices?: MenuChoices;
     quantity: number;
     customization?: ProductCustomization;
     specialInstructions?: string;
 }
 
+export interface GuestInfo {
+    email: string;
+    name: string;
+    phone: string;
+}
+
+export interface GuestAddress {
+    street: string;
+    number: string;
+    box?: string;
+    postalCode: string;
+    city: string;
+    country?: string;
+    complement?: string;
+}
+
 export interface CreateOrderData {
     type: OrderType;
     timeSlotId: number;
-    deliveryAddressId?: number; // Requis si type = DELIVERY
+    /** Si user connecté + DELIVERY */
+    deliveryAddressId?: number;
+    /** Si invité (pas de user) */
+    guest?: GuestInfo;
+    /** Si invité + DELIVERY */
+    guestAddress?: GuestAddress;
+    items: CreateOrderItemData[];
+    customerNote?: string;
+    /** Coordonnées GPS du client — le backend calcule le prix de livraison */
+    customerLat?: number;
+    customerLng?: number;
+}
+
+export interface CreateManualOrderData {
     items: CreateOrderItemData[];
     customerNote?: string;
 }
@@ -37,60 +81,116 @@ export interface OrderStatistics {
     revenueToday: number;
 }
 
+export interface RevenueByPeriod {
+    date: string;
+    revenue: number;
+    orders: number;
+}
+
+export interface TopIngredient {
+    ingredientName: string;
+    totalUsed: number;
+    unit: string;
+}
+
+export interface PeakHour {
+    hour: number;
+    orders: number;
+}
+
+export interface KitchenSlot {
+    slotId: number;
+    slotStart: string;
+    slotEnd: string;
+    orders: OrderModel[];
+}
+
+export interface LastGuestAddressData {
+    street: string | null;
+    number: string | null;
+    box: string | null;
+    postalCode: string | null;
+    city: string | null;
+    country: string | null;
+    complement: string | null;
+    name: string | null;
+    phone: string | null;
+}
+
 export const ordersApi = {
-    /**
-     * Créer une commande (authentifié)
-     */
+    /** Créer une commande (USER CONNECTÉ) */
     create: async (data: CreateOrderData): Promise<OrderModel> => {
         const response = await apiClient.post('/orders/create', data);
         return toModel(OrderModel, response.data);
     },
 
-    /**
-     * Mes commandes (authentifié)
-     */
+    /** Créer une commande en tant qu'INVITÉ (sans compte) */
+    createGuest: async (data: CreateOrderData): Promise<OrderModel> => {
+        const response = await apiClient.post('/orders/guest/create', data);
+        return toModel(OrderModel, response.data);
+    },
+
+    /** Retrouver la dernière adresse utilisée par un email invité (préremplissage) */
+    getLastGuestAddress: async (email: string, guestToken: string): Promise<LastGuestAddressData | null> => {
+        const response = await apiClient.get('/orders/guest/last-address', {
+            params: { email, guestToken },
+        });
+        return response.data;
+    },
+
     getMyOrders: async (): Promise<OrderModel[]> => {
         const response = await apiClient.get('/orders/my-orders');
         return toModels(OrderModel, response.data);
     },
 
-    /**
-     * Détail d'une commande (authentifié — vérifié côté serveur)
-     */
     findOne: async (id: number): Promise<OrderModel> => {
         const response = await apiClient.get(`/orders/${id}`);
         return toModel(OrderModel, response.data);
     },
 
-    /**
-     * Liste toutes les commandes avec filtres (ADMIN/EMPLOYEE)
-     */
     findAll: async (params?: QueryOrdersParams): Promise<OrderModel[]> => {
         const response = await apiClient.get('/orders/list', { params });
         return toModels(OrderModel, response.data);
     },
 
-    /**
-     * Changer le statut d'une commande (ADMIN/EMPLOYEE)
-     */
     updateStatus: async (id: number, data: UpdateOrderStatusData): Promise<OrderModel> => {
         const response = await apiClient.put(`/orders/${id}/status`, data);
         return toModel(OrderModel, response.data);
     },
 
-    /**
-     * Annuler une commande (authentifié)
-     */
     cancel: async (id: number): Promise<OrderModel> => {
         const response = await apiClient.put(`/orders/${id}/cancel`);
         return toModel(OrderModel, response.data);
     },
 
-    /**
-     * Statistiques (ADMIN)
-     */
     getStatistics: async (): Promise<OrderStatistics> => {
         const response = await apiClient.get('/orders/statistics');
         return response.data;
+    },
+
+    getRevenueByPeriod: async (period: 'day' | 'week' | 'month' = 'day', days = 30): Promise<RevenueByPeriod[]> => {
+        const response = await apiClient.get('/orders/statistics/revenue', { params: { period, days } });
+        return response.data;
+    },
+
+    getTopIngredients: async (limit = 10): Promise<TopIngredient[]> => {
+        const response = await apiClient.get('/orders/statistics/top-ingredients', { params: { limit } });
+        return response.data;
+    },
+
+    getPeakHours: async (): Promise<PeakHour[]> => {
+        const response = await apiClient.get('/orders/statistics/peak-hours');
+        return response.data;
+    },
+
+    getKitchenView: async (date?: string): Promise<KitchenSlot[]> => {
+        const response = await apiClient.get('/orders/kitchen', { params: { date } });
+        return response.data;
+    },
+
+    /** Créer une commande manuelle (ADMIN/EMPLOYEE — client sur place) */
+    createManual: async (data: CreateManualOrderData): Promise<OrderModel> => {
+        const response = await apiClient.post('/orders/manual', data);
+        return toModel(OrderModel, response.data);
     },
 };
