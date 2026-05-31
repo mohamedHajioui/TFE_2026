@@ -9,6 +9,7 @@ import { Repository, Like } from 'typeorm';
 import { Product } from './entity/product.entity';
 import { ProductIngredient } from '../product-ingredients/entity/product-ingredient.entity';
 import { Ingredient } from '../ingredients/entity/ingredient.entity';
+import { Menu } from '../menus/entity/menu.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
@@ -25,6 +26,8 @@ export class ProductService {
     private readonly productIngredientRepository: Repository<ProductIngredient>,
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
+    @InjectRepository(Menu)
+    private readonly menuRepository: Repository<Menu>,
   ) {}
 
   /**
@@ -198,8 +201,44 @@ export class ProductService {
     }
 
     product.isActive = !product.isActive;
+    const saved = await this.productRepository.save(product);
 
-    return await this.productRepository.save(product);
+    if (!product.isActive) {
+      await this.checkAndDisableMenus();
+    }
+
+    return saved;
+  }
+
+  private async checkAndDisableMenus(): Promise<void> {
+    const menus = await this.menuRepository.find({
+      relations: ['allowedProducts'],
+    });
+
+    for (const menu of menus) {
+      if (!menu.isActive) continue;
+      const config = menu.configuration;
+      const products = menu.allowedProducts ?? [];
+      const categories = ['sandwich', 'drink', 'dessert', 'side'] as const;
+
+      let shouldBeActive = true;
+      for (const cat of categories) {
+        const catConfig = config[cat];
+        if (!catConfig?.required || catConfig.quantity === 0) continue;
+        const activeInCategory = products.filter(
+          (p) => p.category === cat.toUpperCase() && p.isActive,
+        );
+        if (activeInCategory.length === 0) {
+          shouldBeActive = false;
+          break;
+        }
+      }
+
+      if (!shouldBeActive) {
+        menu.isActive = false;
+        await this.menuRepository.save(menu);
+      }
+    }
   }
 
   /**

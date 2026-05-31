@@ -241,6 +241,11 @@ export class PaymentService implements OnModuleInit {
       return;
     }
 
+    if (order.status === OrderStatus.CANCELLED) {
+      this.logger.warn(`Commande ${order.orderNumber} déjà annulée — webhook ignoré`);
+      return;
+    }
+
     // Réserver le créneau après confirmation paiement
     if (order.timeSlot) {
       const slot = await this.timeSlotRepo.findOne({
