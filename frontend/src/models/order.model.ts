@@ -229,10 +229,9 @@ export class OrderModel {
     }
 
     get isCancellable(): boolean {
-        return ![
-            OrderStatus.COMPLETED,
-            OrderStatus.CANCELLED,
-            OrderStatus.IN_DELIVERY,
+        return [
+            OrderStatus.PENDING,
+            OrderStatus.CONFIRMED,
         ].includes(this.status);
     }
 

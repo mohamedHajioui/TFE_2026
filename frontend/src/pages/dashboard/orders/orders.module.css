@@ -426,3 +426,29 @@
     font-family: "Nunito", sans-serif;
     font-weight: 600;
 }
+
+.cancelOrderBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid #EF444450;
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: #EF4444;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.cancelOrderBtn:hover:not(:disabled) {
+    background: #EF44441A;
+    border-color: #EF4444;
+}
+
+.cancelOrderBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}

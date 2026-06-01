@@ -1,0 +1,142 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.modal {
+    background: #13131A;
+    border: 1px solid #EF444430;
+    border-radius: 20px;
+    padding: 36px 32px 32px;
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+    text-align: center;
+    animation: slideUp 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow:
+        0 0 0 1px #EF444415,
+        0 32px 64px -16px rgba(0, 0, 0, 0.7);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.closeBtn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: #1C1C26;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    color: #71717A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.closeBtn:hover {
+    color: #F4F4F5;
+    border-color: #FFFFFF25;
+}
+
+.iconWrapper {
+    width: 58px;
+    height: 58px;
+    background: #EF44441A;
+    border: 1px solid #EF444435;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.title {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: #F4F4F5;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 10px;
+}
+
+.message {
+    color: #71717A;
+    font-size: 0.88rem;
+    font-family: "Nunito", sans-serif;
+    line-height: 1.6;
+    margin: 0 0 28px;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+}
+
+.keepBtn {
+    flex: 1;
+    background: #1C1C26;
+    border: 1px solid #FFFFFF15;
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #A1A1AA;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.keepBtn:hover:not(:disabled) {
+    border-color: #FFFFFF30;
+    color: #F4F4F5;
+}
+
+.keepBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.confirmBtn {
+    flex: 1;
+    background: #EF44441A;
+    border: 1px solid #EF4444;
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #EF4444;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.confirmBtn:hover:not(:disabled) {
+    background: #EF4444;
+    color: #ffffff;
+}
+
+.confirmBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

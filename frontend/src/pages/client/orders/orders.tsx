@@ -5,6 +5,7 @@ import { useMyOrders } from '@/hooks/useOrders';
 import { ordersApi } from '@/api/orders.api';
 import { OrderModel, OrderStatus, OrderType } from '@/models/order.model';
 import { formatPrice, formatDateTime } from '@/utils/format';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import styles from './orders.module.css';
 
 const STATUS_COLORS: Record<OrderStatus, { bg: string; color: string }> = {
@@ -21,6 +22,8 @@ export default function Orders() {
     const { orders, isLoading, error, refetch } = useMyOrders();
     const navigate = useNavigate();
     const [reorderingId, setReorderingId] = useState<number | null>(null);
+    const [cancelTarget, setCancelTarget] = useState<OrderModel | null>(null);
+    const [cancelling, setCancelling] = useState(false);
 
     const handleReorder = async (order: OrderModel) => {
         setReorderingId(order.id);
@@ -56,13 +59,21 @@ export default function Orders() {
         }
     };
 
-    const handleCancel = async (order: OrderModel) => {
-        if (!confirm('Annuler cette commande ?')) return;
+    const handleCancelRequest = (order: OrderModel) => {
+        setCancelTarget(order);
+    };
+
+    const handleCancelConfirm = async () => {
+        if (!cancelTarget) return;
+        setCancelling(true);
         try {
-            await ordersApi.cancel(order.id);
+            await ordersApi.cancel(cancelTarget.id);
             refetch();
+            setCancelTarget(null);
         } catch {
             alert('Impossible d\'annuler cette commande.');
+        } finally {
+            setCancelling(false);
         }
     };
 
@@ -96,12 +107,24 @@ export default function Orders() {
                                 order={order}
                                 isReordering={reorderingId === order.id}
                                 onReorder={handleReorder}
-                                onCancel={handleCancel}
+                                onCancel={handleCancelRequest}
                             />
                         ))}
                     </div>
                 )}
             </div>
+
+            {cancelTarget && (
+                <ConfirmModal
+                    title="Annuler la commande ?"
+                    message={`Vous êtes sur le point d'annuler la commande ${cancelTarget.orderNumber}. Cette action est irréversible.`}
+                    confirmLabel="Oui, annuler"
+                    cancelLabel="Non, garder"
+                    onConfirm={handleCancelConfirm}
+                    onClose={() => setCancelTarget(null)}
+                    isLoading={cancelling}
+                />
+            )}
         </AppLayout>
     );
 }

@@ -6,8 +6,9 @@ import { OrderModel, OrderStatus, OrderType, PaymentStatus } from '@/models/orde
 import { formatPrice } from '@/utils/format';
 import {
     RefreshCw, Truck, Store, ChevronDown, ChevronUp,
-    User, Clock, Bell, Check, Phone,
+    User, Clock, Bell, Check, Phone, XCircle,
 } from 'lucide-react';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import styles from './orders.module.css';
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
@@ -152,6 +153,8 @@ function OrderCard({ order, onRefetch }: { order: OrderModel; onRefetch: () => v
     const [updating, setUpdating] = useState(false);
     const [noteInput, setNoteInput] = useState('');
     const [showNote, setShowNote] = useState(false);
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [cancelling, setCancelling] = useState(false);
 
     const nextStatuses = NEXT_STATUSES[order.status] ?? [];
 
@@ -169,6 +172,19 @@ function OrderCard({ order, onRefetch }: { order: OrderModel; onRefetch: () => v
             alert('Erreur lors du changement de statut');
         } finally {
             setUpdating(false);
+        }
+    };
+
+    const handleCancelConfirm = async () => {
+        setCancelling(true);
+        try {
+            await ordersApi.cancel(order.id);
+            onRefetch();
+            setShowCancelModal(false);
+        } catch {
+            alert('Impossible d\'annuler cette commande.');
+        } finally {
+            setCancelling(false);
         }
     };
 
@@ -336,6 +352,19 @@ function OrderCard({ order, onRefetch }: { order: OrderModel; onRefetch: () => v
                         </div>
                     )}
 
+                    {order.isCancellable && (
+                        <div className={styles.section}>
+                            <button
+                                className={styles.cancelOrderBtn}
+                                onClick={() => setShowCancelModal(true)}
+                                disabled={updating}
+                            >
+                                <XCircle size={14} />
+                                Annuler la commande
+                            </button>
+                        </div>
+                    )}
+
                     {order.status === OrderStatus.COMPLETED && (
                         <div className={styles.completedBadge}>
                             <Check size={14} /> Commande terminée
@@ -347,6 +376,18 @@ function OrderCard({ order, onRefetch }: { order: OrderModel; onRefetch: () => v
                         </div>
                     )}
                 </div>
+            )}
+
+            {showCancelModal && (
+                <ConfirmModal
+                    title="Annuler la commande ?"
+                    message={`Vous êtes sur le point d'annuler la commande ${order.orderNumber} (${STATUS_LABELS[order.status]}). Le client sera informé. Cette action est irréversible.`}
+                    confirmLabel="Oui, annuler"
+                    cancelLabel="Non, garder"
+                    onConfirm={handleCancelConfirm}
+                    onClose={() => setShowCancelModal(false)}
+                    isLoading={cancelling}
+                />
             )}
         </div>
     );
