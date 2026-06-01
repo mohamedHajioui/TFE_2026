@@ -8,6 +8,7 @@ import {formatPrice} from '@/utils/format';
 import {getApiErrorMessage} from '@/utils/validation';
 import {useImageUpload} from '@/hooks/useImageUpload';
 import {Plus, Pencil, Power, Trash2, X, Check, Save, Upload} from 'lucide-react';
+import {ErrorModal} from '@/components/ui/ErrorModal';
 import styles from './menus.module.css';
 
 interface MenuForm {
@@ -50,6 +51,7 @@ export default function AdminMenus() {
     const [saving, setSaving] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
     const [actionId, setActionId] = useState<number | null>(null);
+    const [toggleError, setToggleError] = useState<string | null>(null);
     const { imagePreview, uploading, fileInputRef, handleFileChange, openFilePicker, resetImage, setPreviewFromUrl } = useImageUpload();
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -164,6 +166,8 @@ export default function AdminMenus() {
         try {
             await menusApi.toggleActive(menu.id);
             await load();
+        } catch (err: unknown) {
+            setToggleError(getApiErrorMessage(err));
         } finally {
             setActionId(null);
         }
@@ -196,6 +200,13 @@ export default function AdminMenus() {
 
     return (
         <DashboardLayout>
+            {toggleError && (
+                <ErrorModal
+                    title="Réactivation impossible"
+                    message={toggleError}
+                    onClose={() => setToggleError(null)}
+                />
+            )}
             <div className={styles.header}>
                 <div className={styles.headerText}>
                     <div className="section-header">Menus</div>

@@ -9,6 +9,7 @@ import { getApiErrorMessage } from '@/utils/validation';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { Plus, Pencil, Power, Trash2, X, Search, Save, Upload } from 'lucide-react';
 import { resolveImageUrl } from '@/utils/imageUrl';
+import { ErrorModal } from '@/components/ui/ErrorModal';
 import styles from './products.module.css';
 
 interface IngredientFormRow {
@@ -52,6 +53,7 @@ export default function AdminProducts() {
     const [saving, setSaving] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
     const [actionId, setActionId] = useState<number | null>(null);
+    const [toggleError, setToggleError] = useState<string | null>(null);
     const { imagePreview, uploading, fileInputRef, handleFileChange, openFilePicker, resetImage, setPreviewFromUrl } = useImageUpload();
 
     const load = async () => {
@@ -198,7 +200,7 @@ export default function AdminProducts() {
             await productsApi.toggleActive(p.id);
             await load();
         } catch (err: unknown) {
-            alert(getApiErrorMessage(err));
+            setToggleError(getApiErrorMessage(err));
         } finally { setActionId(null); }
     };
 
@@ -214,6 +216,13 @@ export default function AdminProducts() {
 
     return (
         <DashboardLayout>
+            {toggleError && (
+                <ErrorModal
+                    title="Réactivation impossible"
+                    message={toggleError}
+                    onClose={() => setToggleError(null)}
+                />
+            )}
             <div className={styles.header}>
                 <div className={styles.headerText}>
                     <div className="section-header">Produits</div>

@@ -441,34 +441,58 @@ export class IngredientService {
   }
 
   /**
-   * Vérifie chaque menu actif : si une catégorie requise n'a plus aucun produit actif,
-   * le menu est désactivé. Si tous les catégories requises ont au moins un produit actif,
-   * le menu est réactivé.
+   * Vérifie chaque menu : si une catégorie requise n'a plus aucun produit actif,
+   * le menu est désactivé. Si toutes les catégories requises ont au moins un produit
+   * actif, le menu est (ré)activé.
+   *
+   * On interroge la DB directement via count() pour éviter tout problème de
+   * cache lié à l'identity map de TypeORM (données isActive potentiellement
+   * périmées juste après un save dans la même requête).
    */
   private async checkAndDisableMenus(): Promise<void> {
-    const menus = await this.menuRepository.find({
-      relations: ['allowedProducts'],
-    });
+    // createQueryBuilder évite le cache de l'EntityManager pour le chargement initial
+    const menus = await this.menuRepository
+      .createQueryBuilder('menu')
+      .leftJoinAndSelect('menu.allowedProducts', 'product')
+      .getMany();
 
     for (const menu of menus) {
       const config = menu.configuration;
-      const products = menu.allowedProducts ?? [];
-
+      const allowedProducts = menu.allowedProducts ?? [];
       let shouldBeActive = true;
 
-      // Pour chaque catégorie requise, vérifier qu'au moins un produit est actif
       const categories = ['sandwich', 'drink', 'dessert', 'side'] as const;
+
       for (const cat of categories) {
-        const catConfig = config[cat];
+        const catConfig = config?.[cat];
         if (!catConfig?.required || catConfig.quantity === 0) continue;
 
         const catUpper = cat.toUpperCase();
-        const activeInCategory = products.filter(
-          (p) => p.category === catUpper && p.isActive,
-        );
 
-        if (activeInCategory.length === 0) {
+        // IDs des produits de cette catégorie dans ce menu
+        const productIdsInCat = allowedProducts
+          .filter((p) => p.category === catUpper)
+          .map((p) => p.id);
+
+        if (productIdsInCat.length === 0) {
+          // Aucun produit du tout dans une catégorie obligatoire → désactiver
           shouldBeActive = false;
+          this.logger.warn(
+            `Menu "${menu.name}" : aucun produit dans la catégorie requise "${cat}"`,
+          );
+          break;
+        }
+
+        // Requête directe en DB pour le statut isActive — évite l'identity map
+        const activeCount = await this.productRepository.count({
+          where: { id: In(productIdsInCat), isActive: true },
+        });
+
+        if (activeCount === 0) {
+          shouldBeActive = false;
+          this.logger.warn(
+            `Menu "${menu.name}" : plus aucun produit actif dans la catégorie requise "${cat}"`,
+          );
           break;
         }
       }
@@ -476,11 +500,15 @@ export class IngredientService {
       if (menu.isActive && !shouldBeActive) {
         menu.isActive = false;
         await this.menuRepository.save(menu);
-        this.logger.warn(`Menu "${menu.name}" désactivé automatiquement (produits indisponibles)`);
+        this.logger.warn(
+          `Menu "${menu.name}" désactivé automatiquement (produits indisponibles)`,
+        );
       } else if (!menu.isActive && shouldBeActive) {
         menu.isActive = true;
         await this.menuRepository.save(menu);
-        this.logger.log(`Menu "${menu.name}" réactivé automatiquement (stock restauré)`);
+        this.logger.log(
+          `Menu "${menu.name}" réactivé automatiquement (stock restauré)`,
+        );
       }
     }
   }
