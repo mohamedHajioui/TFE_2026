@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Clock, Truck, Store } from 'lucide-react';
+import { Clock, Truck, Store, ShoppingBag } from 'lucide-react';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { ordersApi, type KitchenSlot } from '@/api/orders.api';
 import { OrderStatus, OrderType } from '@/models/order.model';
@@ -13,7 +13,10 @@ const STATUS_STYLE: Record<string, { cls: string; label: string }> = {
 };
 
 export default function DashboardKitchen() {
-    const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+    // Toujours initialiser sur la date locale belge (pas UTC)
+    const [date, setDate] = useState(() =>
+        new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Brussels' }).format(new Date()),
+    );
     const [slots, setSlots] = useState<KitchenSlot[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -71,57 +74,66 @@ export default function DashboardKitchen() {
 
             {!loading && !error && slots.length > 0 && (
                 <>
-                    {slots.map((slot) => (
-                        <div key={slot.slotId} className={styles.slotGroup}>
-                            <div className={styles.slotHeader}>
-                                <Clock size={18} color="var(--sg-amber)" />
-                                <span className={styles.slotTime}>
-                                    {slot.slotStart} – {slot.slotEnd}
-                                </span>
-                                <span className={styles.slotCount}>
-                                    {slot.orders.length} commande{slot.orders.length > 1 ? 's' : ''}
-                                </span>
-                            </div>
-                            <div className={styles.orderCards}>
-                                {slot.orders.map((order: any) => {
-                                    const statusInfo = STATUS_STYLE[order.status] ?? { cls: '', label: order.status };
-                                    return (
-                                        <div key={order.id} className={styles.orderCard}>
-                                            <div className={styles.orderTop}>
-                                                <span className={styles.orderNumber}>
-                                                    #{order.orderNumber}
-                                                </span>
-                                                <span className={`${styles.statusBadge} ${statusInfo.cls}`}>
-                                                    {statusInfo.label}
-                                                </span>
-                                            </div>
-                                            <div className={styles.orderType}>
-                                                {order.type === OrderType.DELIVERY
-                                                    ? <><Truck size={13} /> Livraison</>
-                                                    : <><Store size={13} /> À emporter</>
-                                                }
-                                            </div>
-                                            <div className={styles.itemsList}>
-                                                {(order.items ?? []).map((item: any) => (
-                                                    <div key={item.id} className={styles.itemRow}>
-                                                        <span className={styles.itemQty}>{item.quantity}×</span>
-                                                        <span className={styles.itemName}>
-                                                            {item.product?.name ?? item.menu?.name ?? 'Produit'}
-                                                        </span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            {order.customerNote && (
-                                                <div className={styles.orderNote}>
-                                                    Note : {order.customerNote}
+                    {slots.map((slot) => {
+                        const isManualSlot = slot.isManual === true;
+                        return (
+                            <div key={slot.slotId} className={styles.slotGroup}>
+                                <div className={`${styles.slotHeader} ${isManualSlot ? styles.slotHeaderManual : ''}`}>
+                                    {isManualSlot
+                                        ? <ShoppingBag size={18} color="#A78BFA" />
+                                        : <Clock size={18} color="var(--sg-amber)" />
+                                    }
+                                    <span className={styles.slotTime}>
+                                        {isManualSlot ? 'Caisse — Sur place' : `${slot.slotStart} – ${slot.slotEnd}`}
+                                    </span>
+                                    <span className={styles.slotCount}>
+                                        {slot.orders.length} commande{slot.orders.length > 1 ? 's' : ''}
+                                    </span>
+                                </div>
+                                <div className={styles.orderCards}>
+                                    {slot.orders.map((order: any) => {
+                                        const statusInfo = STATUS_STYLE[order.status] ?? { cls: '', label: order.status };
+                                        const isManualOrder = order.internalNote?.startsWith('Commande manuelle');
+                                        return (
+                                            <div key={order.id} className={`${styles.orderCard} ${isManualOrder ? styles.orderCardManual : ''}`}>
+                                                <div className={styles.orderTop}>
+                                                    <span className={styles.orderNumber}>
+                                                        #{order.orderNumber}
+                                                    </span>
+                                                    <span className={`${styles.statusBadge} ${statusInfo.cls}`}>
+                                                        {statusInfo.label}
+                                                    </span>
                                                 </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                                                <div className={styles.orderType}>
+                                                    {isManualOrder
+                                                        ? <><ShoppingBag size={13} /> Caisse</>
+                                                        : order.type === OrderType.DELIVERY
+                                                            ? <><Truck size={13} /> Livraison</>
+                                                            : <><Store size={13} /> En ligne</>
+                                                    }
+                                                </div>
+                                                <div className={styles.itemsList}>
+                                                    {(order.items ?? []).map((item: any) => (
+                                                        <div key={item.id} className={styles.itemRow}>
+                                                            <span className={styles.itemQty}>{item.quantity}×</span>
+                                                            <span className={styles.itemName}>
+                                                                {item.product?.name ?? item.menu?.name ?? 'Produit'}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                {order.customerNote && (
+                                                    <div className={styles.orderNote}>
+                                                        Note : {order.customerNote}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </>
             )}
         </DashboardLayout>

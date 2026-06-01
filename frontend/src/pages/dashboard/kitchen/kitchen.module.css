@@ -194,6 +194,20 @@
     font-family: "Nunito", sans-serif;
 }
 
+/* Groupe virtuel "Caisse" */
+.slotHeaderManual {
+    border-left-color: #A78BFA;
+}
+
+/* Badge violet pour distinguer les commandes caisse */
+.orderCardManual {
+    border-color: #A78BFA30;
+}
+
+.orderCardManual .orderType {
+    color: #A78BFA;
+}
+
 @media (max-width: 768px) {
     .orderCards {
         padding-left: 0;

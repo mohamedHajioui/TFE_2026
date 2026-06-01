@@ -814,36 +814,62 @@ export class OrderService {
       slotId: number;
       slotStart: string;
       slotEnd: string;
+      isManual?: boolean;   // true = groupe virtuel "Caisse" (aucun créneau correspondant)
       orders: Order[];
     }[]
   > {
     const targetDate = date ?? new Date().toISOString().split('T')[0];
 
-    const orders = await this.orderRepository
+    const activeStatuses = [
+      OrderStatus.CONFIRMED,
+      OrderStatus.IN_PREPARATION,
+      OrderStatus.READY,
+    ];
+
+    // ── 1. Commandes en ligne (avec créneau) ──────────────────────────────
+    const onlineOrders = await this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.timeSlot', 'timeSlot')
       .leftJoinAndSelect('order.items', 'items')
       .leftJoinAndSelect('items.product', 'product')
       .leftJoinAndSelect('items.menu', 'menu')
       .where('order.paymentStatus = :ps', { ps: PaymentStatus.PAID })
-      .andWhere('order.status IN (:...statuses)', {
-        statuses: [
-          OrderStatus.CONFIRMED,
-          OrderStatus.IN_PREPARATION,
-          OrderStatus.READY,
-        ],
-      })
+      .andWhere('order.status IN (:...statuses)', { statuses: activeStatuses })
       .andWhere('timeSlot.date = :date', { date: targetDate })
       .orderBy('timeSlot.startTime', 'ASC')
       .addOrderBy('order.createdAt', 'ASC')
       .getMany();
 
+    // ── 2. Commandes caisse / POS (sans créneau) ──────────────────────────
+    // On filtre par date en heure locale belge (UTC+1/+2)
+    const manualOrders = await this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.items', 'items')
+      .leftJoinAndSelect('items.product', 'product')
+      .leftJoinAndSelect('items.menu', 'menu')
+      .where('order.paymentStatus = :ps', { ps: PaymentStatus.PAID })
+      .andWhere('order.status IN (:...statuses)', { statuses: activeStatuses })
+      .andWhere('order.timeSlot IS NULL')
+      .andWhere(
+        "DATE(order.createdAt AT TIME ZONE 'Europe/Brussels') = :date",
+        { date: targetDate },
+      )
+      .orderBy('order.createdAt', 'ASC')
+      .getMany();
+
+    // ── 3. Créneaux du jour (pour tenter de matcher les commandes caisse) ──
+    const timeSlots = await this.timeSlotRepository.find({
+      where: { date: targetDate },
+      order: { startTime: 'ASC' },
+    });
+
+    // ── 4. Grouper les commandes en ligne par créneau ─────────────────────
     const grouped = new Map<
       number,
-      { slotId: number; slotStart: string; slotEnd: string; orders: Order[] }
+      { slotId: number; slotStart: string; slotEnd: string; isManual?: boolean; orders: Order[] }
     >();
 
-    for (const order of orders) {
+    for (const order of onlineOrders) {
       if (!order.timeSlot) continue;
       const slotId = order.timeSlot.id;
       if (!grouped.has(slotId)) {
@@ -857,6 +883,54 @@ export class OrderService {
       grouped.get(slotId)!.orders.push(order);
     }
 
-    return Array.from(grouped.values());
+    // ── 5. Affecter chaque commande caisse au créneau correspondant ────────
+    //        Si aucun créneau ne correspond → groupe virtuel (slotId = 0)
+    const CAISSE_SLOT_ID = 0;
+    const timeFormatter = new Intl.DateTimeFormat('fr-BE', {
+      timeZone: 'Europe/Brussels',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+
+    for (const order of manualOrders) {
+      const orderHHMM = timeFormatter.format(new Date(order.createdAt));
+
+      const matchingSlot = timeSlots.find(
+        (slot) => slot.startTime <= orderHHMM && orderHHMM < slot.endTime,
+      );
+
+      if (matchingSlot) {
+        // Ajouter dans le créneau réel correspondant
+        if (!grouped.has(matchingSlot.id)) {
+          grouped.set(matchingSlot.id, {
+            slotId: matchingSlot.id,
+            slotStart: matchingSlot.startTime,
+            slotEnd: matchingSlot.endTime,
+            orders: [],
+          });
+        }
+        grouped.get(matchingSlot.id)!.orders.push(order);
+      } else {
+        // Aucun créneau correspondant → groupe virtuel "Caisse"
+        if (!grouped.has(CAISSE_SLOT_ID)) {
+          grouped.set(CAISSE_SLOT_ID, {
+            slotId: CAISSE_SLOT_ID,
+            slotStart: '00:00',
+            slotEnd: '23:59',
+            isManual: true,
+            orders: [],
+          });
+        }
+        grouped.get(CAISSE_SLOT_ID)!.orders.push(order);
+      }
+    }
+
+    // ── 6. Trier par heure de début, groupe caisse en dernier ─────────────
+    return Array.from(grouped.values()).sort((a, b) => {
+      if (a.isManual) return 1;
+      if (b.isManual) return -1;
+      return a.slotStart.localeCompare(b.slotStart);
+    });
   }
 }

@@ -102,6 +102,7 @@ export interface KitchenSlot {
     slotId: number;
     slotStart: string;
     slotEnd: string;
+    isManual?: boolean;   // true = groupe virtuel "Caisse" (pas de créneau correspondant)
     orders: OrderModel[];
 }
 
