@@ -14,14 +14,21 @@ interface ProductCustomizerProps {
 }
 
 export function ProductCustomizer({ product, onAdd, onClose }: ProductCustomizerProps) {
-    const baseIngredients = product.requiredIngredients;
-    const extraIngredients = product.optionalIngredients;
-
-    const breadOptions = (product.productIngredients ?? []).filter(
+    const allIngredients = product.productIngredients ?? [];
+    const breadOptions = allIngredients.filter(
         (pi) => pi.ingredient?.category === IngredientCategory.BREAD && pi.ingredient?.isAvailable,
     );
     const isSandwich = product.category === ProductCategory.SANDWICH;
     const showBreadChoice = isSandwich && breadOptions.length > 1;
+
+    const breadIds = new Set(breadOptions.map((pi) => pi.ingredient?.id).filter(Boolean));
+
+    const baseIngredients = product.requiredIngredients.filter(
+        (pi) => !(showBreadChoice && breadIds.has(pi.ingredient?.id)),
+    );
+    const extraIngredients = product.optionalIngredients.filter(
+        (pi) => !(showBreadChoice && breadIds.has(pi.ingredient?.id)),
+    );
 
     const [removedIds, setRemovedIds] = useState<Set<number>>(new Set());
     const [extraIds, setExtraIds] = useState<Set<number>>(new Set());

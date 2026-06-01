@@ -32,6 +32,12 @@ export class AddressModel {
     isDefault: boolean;
 
     @Expose()
+    lat: number | null;
+
+    @Expose()
+    lng: number | null;
+
+    @Expose()
     @Transform(({ value }) => (value ? new Date(value) : null))
     createdAt: Date | null;
 

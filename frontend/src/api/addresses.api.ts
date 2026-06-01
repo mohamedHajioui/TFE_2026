@@ -11,6 +11,8 @@ export interface CreateAddressData {
     country?: string;
     complement?: string;
     label?: string;
+    lat?: number;
+    lng?: number;
 }
 
 export type UpdateAddressData = Partial<CreateAddressData>;

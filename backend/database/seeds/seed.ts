@@ -1,6 +1,9 @@
 import { faker } from '@faker-js/faker';
 import { User } from '../../src/modules/users/entity/user.entity';
-import { Product, ProductCategory } from '../../src/modules/products/entity/product.entity';
+import {
+  Product,
+  ProductCategory,
+} from '../../src/modules/products/entity/product.entity';
 import {
   Ingredient,
   IngredientCategory,
@@ -14,21 +17,14 @@ import {
   OrderType,
   PaymentStatus,
 } from '../../src/modules/order/entity/order.entity';
-import {
-  OrderItem,
-  ProductCustomization,
-} from '../../src/modules/order-item/entity/order-item.entity';
+import { OrderItem } from '../../src/modules/order-item/entity/order-item.entity';
 import { Address } from '../../src/modules/adress/entity/address.entity';
 import { CryptoUtil } from '../../src/common/utils/crypto.util';
 import { AppDataSource } from '../data-source';
 import { UserRole } from '../../src/modules/users/enums/user-role.enum';
 
-/**
- * Script de seeding - VERSION ALLÉGÉE
- */
 async function seed() {
   console.log('🌱 Début du seeding...');
-
   await AppDataSource.initialize();
   console.log('✅ Connexion DB établie');
 
@@ -45,13 +41,11 @@ async function seed() {
   await AppDataSource.destroy();
 }
 
-/**
- * Nettoyer la base de données
- */
 async function cleanDatabase() {
   console.log('🧹 Nettoyage de la base de données...');
 
   const entities = [
+    'stock_movement',
     'order_item',
     'order',
     'product_ingredient',
@@ -71,15 +65,11 @@ async function cleanDatabase() {
   console.log('✅ Base de données nettoyée');
 }
 
-/**
- * Créer des utilisateurs de test
- */
 async function createUsers() {
   console.log('👥 Création des utilisateurs...');
 
   const userRepo = AppDataSource.getRepository(User);
 
-  // Admin
   const admin = userRepo.create({
     email: 'admin@sandwicherie.be',
     displayName: 'Admin',
@@ -89,7 +79,6 @@ async function createUsers() {
     isActive: true,
   });
 
-  // Employé
   const employee = userRepo.create({
     email: 'employee@sandwicherie.be',
     displayName: 'Employé',
@@ -99,7 +88,6 @@ async function createUsers() {
     isActive: true,
   });
 
-  // Client test
   const client = userRepo.create({
     email: 'client@test.be',
     displayName: 'Client Test',
@@ -109,18 +97,18 @@ async function createUsers() {
     isActive: true,
   });
 
-  // 3 clients aléatoires (au lieu de 10)
   const randomClients: User[] = [];
   for (let i = 0; i < 3; i++) {
-    const randomClient = userRepo.create({
-      email: faker.internet.email(),
-      displayName: faker.person.fullName(),
-      passwordHash: await CryptoUtil.hashPassword('Password123!'),
-      phoneNumber: `+3247${faker.string.numeric(7)}`,
-      role: UserRole.CLIENT,
-      isActive: true,
-    });
-    randomClients.push(randomClient);
+    randomClients.push(
+      userRepo.create({
+        email: faker.internet.email(),
+        displayName: faker.person.fullName(),
+        passwordHash: await CryptoUtil.hashPassword('Password123!'),
+        phoneNumber: `+3247${faker.string.numeric(7)}`,
+        role: UserRole.CLIENT,
+        isActive: true,
+      }),
+    );
   }
 
   await userRepo.save([admin, employee, client, ...randomClients]);
@@ -129,11 +117,13 @@ async function createUsers() {
   console.log('   - Admin: admin@sandwicherie.be / Admin123!');
   console.log('   - Employé: employee@sandwicherie.be / Employee123!');
   console.log('   - Client: client@test.be / Client123!');
-  console.log(`   - ${randomClients.length} clients aléatoires`);
 }
 
 /**
- * Créer des ingrédients (divisé par 2)
+ * RÈGLE IMPORTANTE : la quantité dans product_ingredient doit être
+ * dans la MÊME unité que le currentStock de l'ingrédient.
+ * Ex : si l'ingrédient est en kg, la quantité doit être en kg (0.15, pas 150).
+ * Ex : si l'ingrédient est en pièces, la quantité est 1.
  */
 async function createIngredients() {
   console.log('🥬 Création des ingrédients...');
@@ -141,13 +131,12 @@ async function createIngredients() {
   const ingredientRepo = AppDataSource.getRepository(Ingredient);
 
   const ingredientsData = [
-    // Pains (2 au lieu de 3)
+    // Pains — unité : pièces
     {
       name: 'Pain blanc',
       category: IngredientCategory.BREAD,
-      currentStock: 50,
-      minStock: 10,
-      maxStock: 100,
+      currentStock: 100,
+      minStock: 15,
       unit: 'pièces',
       costPerUnit: 0.5,
       isAvailable: true,
@@ -155,31 +144,49 @@ async function createIngredients() {
     {
       name: 'Pain complet',
       category: IngredientCategory.BREAD,
-      currentStock: 40,
-      minStock: 10,
-      maxStock: 80,
+      currentStock: 80,
+      minStock: 15,
       unit: 'pièces',
       costPerUnit: 0.6,
       isAvailable: true,
     },
+    {
+      name: 'Pain ciabatta',
+      category: IngredientCategory.BREAD,
+      currentStock: 60,
+      minStock: 10,
+      unit: 'pièces',
+      costPerUnit: 0.7,
+      isAvailable: true,
+    },
 
-    // Protéines (3 au lieu de 4)
+    // Protéines — unité : kg
+    // Jambon (porc) — non halal
     {
       name: 'Jambon',
       category: IngredientCategory.PROTEIN,
-      currentStock: 3.0,
-      minStock: 0.5,
-      maxStock: 5.0,
+      currentStock: 5.0,
+      minStock: 1.0,
       unit: 'kg',
       costPerUnit: 8.5,
       isAvailable: true,
     },
+    // Poulet halal
+    {
+      name: 'Poulet halal',
+      category: IngredientCategory.PROTEIN,
+      currentStock: 5.0,
+      minStock: 1.0,
+      unit: 'kg',
+      costPerUnit: 9.5,
+      isAvailable: true,
+    },
+    // Poulet standard
     {
       name: 'Poulet',
       category: IngredientCategory.PROTEIN,
-      currentStock: 2.5,
-      minStock: 0.5,
-      maxStock: 4.0,
+      currentStock: 5.0,
+      minStock: 1.0,
       unit: 'kg',
       costPerUnit: 9.0,
       isAvailable: true,
@@ -187,33 +194,30 @@ async function createIngredients() {
     {
       name: 'Bacon',
       category: IngredientCategory.PROTEIN,
-      currentStock: 1.5,
-      minStock: 0.3,
-      maxStock: 3.0,
+      currentStock: 3.0,
+      minStock: 0.5,
       unit: 'kg',
       costPerUnit: 10.0,
       isAvailable: true,
     },
 
-    // Fromages (1 au lieu de 2)
+    // Fromages — unité : kg
     {
       name: 'Fromage cheddar',
       category: IngredientCategory.CHEESE,
-      currentStock: 2.0,
+      currentStock: 4.0,
       minStock: 0.5,
-      maxStock: 3.0,
       unit: 'kg',
       costPerUnit: 7.5,
       isAvailable: true,
     },
 
-    // Légumes (3 au lieu de 5)
+    // Légumes — unité : kg
     {
       name: 'Salade',
       category: IngredientCategory.VEGETABLE,
-      currentStock: 2.0,
+      currentStock: 3.0,
       minStock: 0.5,
-      maxStock: 4.0,
       unit: 'kg',
       costPerUnit: 2.5,
       isAvailable: true,
@@ -221,9 +225,8 @@ async function createIngredients() {
     {
       name: 'Tomate',
       category: IngredientCategory.VEGETABLE,
-      currentStock: 2.5,
+      currentStock: 4.0,
       minStock: 0.8,
-      maxStock: 5.0,
       unit: 'kg',
       costPerUnit: 3.0,
       isAvailable: true,
@@ -231,186 +234,233 @@ async function createIngredients() {
     {
       name: 'Avocat',
       category: IngredientCategory.VEGETABLE,
-      currentStock: 1.0,
-      minStock: 0.3,
-      maxStock: 2.0,
+      currentStock: 3.0,
+      minStock: 0.5,
       unit: 'kg',
       costPerUnit: 6.0,
       isAvailable: true,
     },
+    {
+      name: 'Oignon rouge',
+      category: IngredientCategory.VEGETABLE,
+      currentStock: 2.0,
+      minStock: 0.3,
+      unit: 'kg',
+      costPerUnit: 1.5,
+      isAvailable: true,
+    },
 
-    // Sauces (1 au lieu de 3)
+    // Sauces — unité : kg
     {
       name: 'Mayonnaise',
       category: IngredientCategory.SAUCE,
-      currentStock: 1.0,
+      currentStock: 2.0,
       minStock: 0.3,
-      maxStock: 2.0,
-      unit: 'litres',
+      unit: 'kg',
       costPerUnit: 4.5,
+      isAvailable: true,
+    },
+    {
+      name: 'Sauce harissa',
+      category: IngredientCategory.SAUCE,
+      currentStock: 1.5,
+      minStock: 0.2,
+      unit: 'kg',
+      costPerUnit: 5.0,
+      isAvailable: true,
+    },
+    {
+      name: 'Sauce mayo-curry',
+      category: IngredientCategory.SAUCE,
+      currentStock: 1.5,
+      minStock: 0.2,
+      unit: 'kg',
+      costPerUnit: 5.0,
+      isAvailable: true,
+    },
+
+    // Boissons — unité : pièces (canettes/bouteilles)
+    {
+      name: 'Coca-Cola (33cl)',
+      category: IngredientCategory.OTHER,
+      currentStock: 100,
+      minStock: 20,
+      unit: 'pièces',
+      costPerUnit: 0.8,
+      isAvailable: true,
+    },
+    {
+      name: 'Ice Tea Pêche (50cl)',
+      category: IngredientCategory.OTHER,
+      currentStock: 80,
+      minStock: 15,
+      unit: 'pièces',
+      costPerUnit: 0.9,
+      isAvailable: true,
+    },
+    {
+      name: 'Eau minérale (50cl)',
+      category: IngredientCategory.OTHER,
+      currentStock: 80,
+      minStock: 15,
+      unit: 'pièces',
+      costPerUnit: 0.4,
+      isAvailable: true,
+    },
+
+    // Desserts — unité : pièces
+    {
+      name: 'Tiramisu (portion)',
+      category: IngredientCategory.OTHER,
+      currentStock: 40,
+      minStock: 5,
+      unit: 'pièces',
+      costPerUnit: 2.0,
+      isAvailable: true,
+    },
+    {
+      name: 'Cookie choco',
+      category: IngredientCategory.OTHER,
+      currentStock: 60,
+      minStock: 10,
+      unit: 'pièces',
+      costPerUnit: 0.6,
       isAvailable: true,
     },
   ];
 
-  const ingredients = ingredientsData.map((data) => ingredientRepo.create(data));
-  const savedIngredients = await ingredientRepo.save(ingredients);
+  const saved = await ingredientRepo.save(
+    ingredientsData.map((d) => ingredientRepo.create(d)),
+  );
 
-  console.log(`✅ ${savedIngredients.length} ingrédients créés`);
-  return savedIngredients;
+  console.log(`✅ ${saved.length} ingrédients créés`);
+  return saved;
 }
 
-/**
- * Créer des produits (divisé par 2)
- */
 async function createProducts() {
   console.log('🍔 Création des produits...');
 
   const productRepo = AppDataSource.getRepository(Product);
   const ingredientRepo = AppDataSource.getRepository(Ingredient);
-  const productIngredientRepo = AppDataSource.getRepository(ProductIngredient);
+  const piRepo = AppDataSource.getRepository(ProductIngredient);
 
-  // Récupérer les ingrédients
-  const painBlanc = await ingredientRepo.findOneBy({ name: 'Pain blanc' });
-  const painComplet = await ingredientRepo.findOneBy({ name: 'Pain complet' });
-  const jambon = await ingredientRepo.findOneBy({ name: 'Jambon' });
-  const fromage = await ingredientRepo.findOneBy({ name: 'Fromage cheddar' });
-  const salade = await ingredientRepo.findOneBy({ name: 'Salade' });
-  const tomate = await ingredientRepo.findOneBy({ name: 'Tomate' });
-  const bacon = await ingredientRepo.findOneBy({ name: 'Bacon' });
-  const poulet = await ingredientRepo.findOneBy({ name: 'Poulet' });
-  const avocat = await ingredientRepo.findOneBy({ name: 'Avocat' });
-  const mayo = await ingredientRepo.findOneBy({ name: 'Mayonnaise' });
+  const get = (name: string) => ingredientRepo.findOneByOrFail({ name });
 
-  if (!painBlanc || !jambon || !fromage || !salade || !tomate || !bacon) {
-    throw new Error('Certains ingrédients sont manquants');
+  // Ingrédients
+  const painBlanc = await get('Pain blanc');
+  const painComplet = await get('Pain complet');
+  const painCiabatta = await get('Pain ciabatta');
+  const jambon = await get('Jambon');
+  const pouletHalal = await get('Poulet halal');
+  const poulet = await get('Poulet');
+  const bacon = await get('Bacon');
+  const fromage = await get('Fromage cheddar');
+  const salade = await get('Salade');
+  const tomate = await get('Tomate');
+  const avocat = await get('Avocat');
+  const oignon = await get('Oignon rouge');
+  const mayo = await get('Mayonnaise');
+  const harissa = await get('Sauce harissa');
+  const mayoCurry = await get('Sauce mayo-curry');
+  const cocaCola = await get('Coca-Cola (33cl)');
+  const iceTea = await get('Ice Tea Pêche (50cl)');
+  const eau = await get('Eau minérale (50cl)');
+  const tiramisu = await get('Tiramisu (portion)');
+  const cookie = await get('Cookie choco');
+
+  // ─── Helper pour créer un produit + ses ingrédients ───────────────────────
+  async function makeProduct(
+    data: Partial<Product>,
+    pis: Array<{
+      ingredient: Ingredient;
+      quantity: number;
+      isRequired: boolean;
+      extraPrice?: number;
+    }>,
+  ): Promise<Product> {
+    const product = await productRepo.save(productRepo.create(data as Product));
+    await piRepo.save(
+      pis.map((pi) =>
+        piRepo.create({
+          product,
+          ingredient: pi.ingredient,
+          quantity: pi.quantity,
+          unit: pi.ingredient.unit,
+          isRequired: pi.isRequired,
+          extraPrice: pi.extraPrice ?? 0,
+        }),
+      ),
+    );
+    return product;
   }
 
-  // Produit 1 : Sandwich Américain
-  const sandwichAmericain = productRepo.create({
-    name: 'Sandwich Américain',
-    category: ProductCategory.SANDWICH,
-    description: 'Pain blanc, jambon, fromage, salade, tomate',
-    basePrice: 6.5,
-    isActive: true,
-    isCustomizable: true,
-  });
-  await productRepo.save(sandwichAmericain);
+  // ─── SANDWICHS ────────────────────────────────────────────────────────────
 
-  const americainIngredients = [
-    productIngredientRepo.create({
-      product: sandwichAmericain,
-      ingredient: painBlanc,
-      quantity: 1,
-      unit: 'pièce',
-      isRequired: true,
-      extraPrice: 0,
-    }),
-    productIngredientRepo.create({
-      product: sandwichAmericain,
-      ingredient: jambon,
-      quantity: 100,
-      unit: 'grammes',
-      isRequired: true,
-      extraPrice: 0,
-    }),
-    productIngredientRepo.create({
-      product: sandwichAmericain,
-      ingredient: fromage,
-      quantity: 50,
-      unit: 'grammes',
-      isRequired: false,
-      extraPrice: 0,
-    }),
-    productIngredientRepo.create({
-      product: sandwichAmericain,
-      ingredient: salade,
-      quantity: 30,
-      unit: 'grammes',
-      isRequired: false,
-      extraPrice: 0,
-    }),
-    productIngredientRepo.create({
-      product: sandwichAmericain,
-      ingredient: tomate,
-      quantity: 40,
-      unit: 'grammes',
-      isRequired: false,
-      extraPrice: 0,
-    }),
-    productIngredientRepo.create({
-      product: sandwichAmericain,
-      ingredient: bacon,
-      quantity: 50,
-      unit: 'grammes',
-      isRequired: false,
-      extraPrice: 1.5,
-    }),
-  ];
+  // Quantités en kg : 0.1 kg = 100g, 0.05 kg = 50g, etc.
 
-  await productIngredientRepo.save(americainIngredients);
+  await makeProduct(
+    {
+      name: 'Sandwich Américain',
+      category: ProductCategory.SANDWICH,
+      description: 'Jambon, fromage cheddar, salade, tomate',
+      basePrice: 6.5,
+      isActive: true,
+      isCustomizable: true,
+    },
+    [
+      { ingredient: painBlanc, quantity: 1, isRequired: true },
+      { ingredient: jambon, quantity: 0.1, isRequired: true },
+      { ingredient: fromage, quantity: 0.05, isRequired: true },
+      { ingredient: salade, quantity: 0.03, isRequired: true },
+      { ingredient: tomate, quantity: 0.04, isRequired: true },
+      { ingredient: mayo, quantity: 0.02, isRequired: false },
+      { ingredient: bacon, quantity: 0.05, isRequired: false, extraPrice: 1.5 },
+    ],
+  );
 
-  // Produit 2 : Sandwich Poulet Avocat
-  if (!painComplet || !poulet || !avocat || !mayo) {
-    throw new Error('Certains ingrédients sont manquants');
-  }
+  await makeProduct(
+    {
+      name: 'Sandwich Poulet Avocat',
+      category: ProductCategory.SANDWICH,
+      description: 'Poulet grillé, avocat, salade, sauce mayo-curry',
+      basePrice: 7.5,
+      isActive: true,
+      isCustomizable: true,
+    },
+    [
+      { ingredient: painComplet, quantity: 1, isRequired: true },
+      { ingredient: poulet, quantity: 0.12, isRequired: true },
+      { ingredient: avocat, quantity: 0.08, isRequired: true },
+      { ingredient: salade, quantity: 0.03, isRequired: true },
+      { ingredient: mayoCurry, quantity: 0.02, isRequired: false },
+      { ingredient: tomate, quantity: 0.04, isRequired: false },
+    ],
+  );
 
-  const sandwichPoulet = productRepo.create({
-    name: 'Sandwich Poulet Avocat',
-    category: ProductCategory.SANDWICH,
-    description: 'Pain complet, poulet grillé, avocat, salade',
-    basePrice: 7.5,
-    isActive: true,
-    isCustomizable: true,
-  });
-  await productRepo.save(sandwichPoulet);
+  // ─── SANDWICH HALAL ───────────────────────────────────────────────────────
+  await makeProduct(
+    {
+      name: 'Sandwich Poulet Halal',
+      category: ProductCategory.SANDWICH,
+      description:
+        'Halal · Poulet halal, salade, tomate, oignon rouge, harissa',
+      basePrice: 7.0,
+      isActive: true,
+      isCustomizable: true,
+    },
+    [
+      { ingredient: painCiabatta, quantity: 1, isRequired: true },
+      { ingredient: pouletHalal, quantity: 0.12, isRequired: true },
+      { ingredient: salade, quantity: 0.03, isRequired: true },
+      { ingredient: tomate, quantity: 0.04, isRequired: true },
+      { ingredient: oignon, quantity: 0.03, isRequired: false },
+      { ingredient: harissa, quantity: 0.02, isRequired: false },
+      { ingredient: mayo, quantity: 0.02, isRequired: false, extraPrice: 0 },
+    ],
+  );
 
-  const pouletIngredients = [
-    productIngredientRepo.create({
-      product: sandwichPoulet,
-      ingredient: painComplet,
-      quantity: 1,
-      unit: 'pièce',
-      isRequired: true,
-      extraPrice: 0,
-    }),
-    productIngredientRepo.create({
-      product: sandwichPoulet,
-      ingredient: poulet,
-      quantity: 120,
-      unit: 'grammes',
-      isRequired: true,
-      extraPrice: 0,
-    }),
-    productIngredientRepo.create({
-      product: sandwichPoulet,
-      ingredient: avocat,
-      quantity: 60,
-      unit: 'grammes',
-      isRequired: true,
-      extraPrice: 0,
-    }),
-    productIngredientRepo.create({
-      product: sandwichPoulet,
-      ingredient: salade,
-      quantity: 30,
-      unit: 'grammes',
-      isRequired: false,
-      extraPrice: 0,
-    }),
-    productIngredientRepo.create({
-      product: sandwichPoulet,
-      ingredient: mayo,
-      quantity: 20,
-      unit: 'ml',
-      isRequired: false,
-      extraPrice: 0,
-    }),
-  ];
-
-  await productIngredientRepo.save(pouletIngredients);
-
-  // Boissons (3 au lieu de 6)
-  const boissonsData = [
+  // ─── BOISSONS (produits simples, pas d'ingrédient géré) ───────────────────
+  await makeProduct(
     {
       name: 'Coca-Cola',
       category: ProductCategory.DRINK,
@@ -419,6 +469,10 @@ async function createProducts() {
       isActive: true,
       isCustomizable: false,
     },
+    [{ ingredient: cocaCola, quantity: 1, isRequired: true }],
+  );
+
+  await makeProduct(
     {
       name: 'Ice Tea Pêche',
       category: ProductCategory.DRINK,
@@ -427,6 +481,10 @@ async function createProducts() {
       isActive: true,
       isCustomizable: false,
     },
+    [{ ingredient: iceTea, quantity: 1, isRequired: true }],
+  );
+
+  await makeProduct(
     {
       name: 'Eau minérale',
       category: ProductCategory.DRINK,
@@ -435,13 +493,11 @@ async function createProducts() {
       isActive: true,
       isCustomizable: false,
     },
-  ];
+    [{ ingredient: eau, quantity: 1, isRequired: true }],
+  );
 
-  const boissons = boissonsData.map((data) => productRepo.create(data));
-  await productRepo.save(boissons);
-
-  // Desserts (2 au lieu de 3)
-  const dessertsData = [
+  // ─── DESSERTS ─────────────────────────────────────────────────────────────
+  await makeProduct(
     {
       name: 'Tiramisu',
       category: ProductCategory.DESSERT,
@@ -450,186 +506,159 @@ async function createProducts() {
       isActive: true,
       isCustomizable: false,
     },
+    [{ ingredient: tiramisu, quantity: 1, isRequired: true }],
+  );
+
+  await makeProduct(
     {
       name: 'Cookie',
       category: ProductCategory.DESSERT,
-      description: 'Cookie aux pépites de chocolat',
+      description: 'Cookie pépites de chocolat',
       basePrice: 2.5,
       isActive: true,
       isCustomizable: false,
     },
-  ];
-
-  const desserts = dessertsData.map((data) => productRepo.create(data));
-  await productRepo.save(desserts);
+    [{ ingredient: cookie, quantity: 1, isRequired: true }],
+  );
 
   console.log('✅ Produits créés :');
-  console.log('   - 2 sandwichs personnalisables');
-  console.log('   - 3 boissons');
-  console.log('   - 2 desserts');
+  console.log('   - Sandwich Américain');
+  console.log('   - Sandwich Poulet Avocat');
+  console.log('   - Sandwich Poulet Halal 🥩');
+  console.log('   - 3 boissons, 2 desserts');
 }
 
-/**
- * Créer des menus (2 au lieu de 4)
- */
 async function createMenus() {
   console.log('🍱 Création des menus...');
 
   const menuRepo = AppDataSource.getRepository(Menu);
   const productRepo = AppDataSource.getRepository(Product);
 
-  const sandwichAmericain = await productRepo.findOneBy({
-    name: 'Sandwich Américain',
-  });
-  const sandwichPoulet = await productRepo.findOneBy({
-    name: 'Sandwich Poulet Avocat',
-  });
-  const coca = await productRepo.findOneBy({ name: 'Coca-Cola' });
-  const iceTea = await productRepo.findOneBy({ name: 'Ice Tea Pêche' });
-  const tiramisu = await productRepo.findOneBy({ name: 'Tiramisu' });
-  const cookie = await productRepo.findOneBy({ name: 'Cookie' });
+  const get = (name: string) => productRepo.findOneByOrFail({ name });
 
-  if (!sandwichAmericain || !sandwichPoulet || !coca || !tiramisu || !cookie || !iceTea) {
-    throw new Error('Certains produits sont manquants');
-  }
+  const sandwichAmericain = await get('Sandwich Américain');
+  const sandwichPoulet = await get('Sandwich Poulet Avocat');
+  const sandwichHalal = await get('Sandwich Poulet Halal');
+  const coca = await get('Coca-Cola');
+  const iceTea = await get('Ice Tea Pêche');
+  const eau = await get('Eau minérale');
+  const tiramisu = await get('Tiramisu');
+  const cookie = await get('Cookie');
 
-  // Menu 1 : Menu Midi
-  const menuMidi = menuRepo.create({
-    name: 'Menu Midi',
-    description: 'Sandwich Américain + Boisson + Cookie',
-    price: 10.0,
-    isActive: true,
-    allowedProducts: [sandwichAmericain, coca, cookie],
-    configuration: {
-      sandwich: { required: true, quantity: 1 },
-      drink: { required: true, quantity: 1 },
-      dessert: { required: true, quantity: 1 },
-      side: { required: false, quantity: 0 },
-    },
-  });
+  const config = {
+    sandwich: { required: true, quantity: 1 },
+    drink: { required: true, quantity: 1 },
+    dessert: { required: true, quantity: 1 },
+    side: { required: false, quantity: 0 },
+  };
 
-  // Menu 2 : Menu Healthy
-  const menuHealthy = menuRepo.create({
-    name: 'Menu Healthy',
-    description: 'Sandwich Poulet Avocat + Ice Tea + Tiramisu',
-    price: 12.5,
-    isActive: true,
-    allowedProducts: [sandwichPoulet, iceTea, tiramisu],
-    configuration: {
-      sandwich: { required: true, quantity: 1 },
-      drink: { required: true, quantity: 1 },
-      dessert: { required: true, quantity: 1 },
-      side: { required: false, quantity: 0 },
-    },
-  });
-
-  await menuRepo.save([menuMidi, menuHealthy]);
+  await menuRepo.save([
+    menuRepo.create({
+      name: 'Menu Midi',
+      description: 'Sandwich Américain + Boisson + Cookie',
+      price: 10.0,
+      isActive: true,
+      configuration: config,
+      allowedProducts: [sandwichAmericain, coca, eau, cookie],
+    }),
+    menuRepo.create({
+      name: 'Menu Healthy',
+      description: 'Sandwich Poulet Avocat + Ice Tea + Tiramisu',
+      price: 12.5,
+      isActive: true,
+      configuration: config,
+      allowedProducts: [sandwichPoulet, iceTea, tiramisu],
+    }),
+    menuRepo.create({
+      name: 'Menu Halal',
+      description: 'Sandwich Poulet Halal + Boisson + Dessert',
+      price: 11.5,
+      isActive: true,
+      configuration: config,
+      allowedProducts: [sandwichHalal, coca, eau, iceTea, cookie, tiramisu],
+    }),
+  ]);
 
   console.log('✅ Menus créés :');
   console.log('   - Menu Midi (10.00€)');
   console.log('   - Menu Healthy (12.50€)');
+  console.log('   - Menu Halal (11.50€) 🥩');
 }
 
-/**
- * Créer des créneaux horaires (3 jours au lieu de 7)
- */
 async function createTimeSlots() {
   console.log('⏰ Création des créneaux horaires...');
 
   const timeSlotRepo = AppDataSource.getRepository(TimeSlot);
-
   const slots: TimeSlot[] = [];
   const today = new Date();
 
-  // Créer des créneaux pour les 3 prochains jours
   for (let day = 0; day < 3; day++) {
     const date = new Date(today);
     date.setDate(date.getDate() + day);
     const dateStr = date.toISOString().split('T')[0];
 
-    // Créneaux de 12h à 14h (4 créneaux au lieu de 6)
-    const midaySlots = [
+    const allSlots = [
       { start: '12:00', end: '12:30' },
       { start: '12:30', end: '13:00' },
       { start: '13:00', end: '13:30' },
       { start: '13:30', end: '14:00' },
-    ];
-
-    // Créneaux de 18h30 à 20h30 (4 créneaux au lieu de 6)
-    const eveningSlots = [
       { start: '18:30', end: '19:00' },
       { start: '19:00', end: '19:30' },
       { start: '19:30', end: '20:00' },
       { start: '20:00', end: '20:30' },
     ];
 
-    const allSlots = [...midaySlots, ...eveningSlots];
-
     for (const slot of allSlots) {
-      const timeSlot = timeSlotRepo.create({
-        date: dateStr,
-        startTime: slot.start,
-        endTime: slot.end,
-        maxCapacity: 10,
-        currentBookings: 0,
-        isAvailable: true,
-      });
-      slots.push(timeSlot);
+      slots.push(
+        timeSlotRepo.create({
+          date: dateStr,
+          startTime: slot.start,
+          endTime: slot.end,
+          maxCapacity: 10,
+          currentBookings: 0,
+          isAvailable: true,
+        }),
+      );
     }
   }
 
   await timeSlotRepo.save(slots);
-
-  console.log(`✅ ${slots.length} créneaux horaires créés (3 jours)`);
+  console.log(`✅ ${slots.length} créneaux horaires créés`);
 }
 
-/**
- * Créer des adresses (divisé par 2)
- */
 async function createAddresses() {
   console.log('📍 Création des adresses...');
 
   const addressRepo = AppDataSource.getRepository(Address);
   const userRepo = AppDataSource.getRepository(User);
 
-  const clients = await userRepo.find({
-    where: { role: UserRole.CLIENT },
-  });
-
-  if (clients.length === 0) {
-    console.log('⚠️  Aucun client trouvé');
-    return;
-  }
-
+  const clients = await userRepo.find({ where: { role: UserRole.CLIENT } });
   const addresses: Address[] = [];
 
-  // 1 adresse par client (au lieu de 1-2)
   for (const client of clients) {
-    const address = addressRepo.create({
-      user: client,
-      street: faker.location.streetAddress(),
-      number: faker.number.int({ min: 1, max: 999 }).toString(),
-      postalCode: faker.helpers.arrayElement(['1000', '1050', '1070', '1200']),
-      city: 'Bruxelles',
-      country: 'Belgium',
-      label: 'Domicile',
-      complement: faker.helpers.maybe(
-        () => faker.helpers.arrayElement(['Code porte: 1234', '2ème étage', 'Sonnette à gauche']),
-        { probability: 0.3 },
-      ),
-    });
-
-    addresses.push(address);
+    addresses.push(
+      addressRepo.create({
+        user: client,
+        street: faker.location.street(),
+        number: faker.number.int({ min: 1, max: 200 }).toString(),
+        postalCode: faker.helpers.arrayElement([
+          '1000',
+          '1050',
+          '1070',
+          '1200',
+        ]),
+        city: 'Bruxelles',
+        country: 'Belgium',
+        label: 'Domicile',
+        isDefault: true,
+      }),
+    );
   }
 
   await addressRepo.save(addresses);
-
-  console.log(`${addresses.length} adresses créées pour ${clients.length} clients`);
+  console.log(`✅ ${addresses.length} adresses créées`);
 }
 
-/**
- * Créer des commandes (12 au lieu de 25)
- */
 async function createOrders() {
   console.log('📦 Création des commandes...');
 
@@ -641,103 +670,95 @@ async function createOrders() {
   const addressRepo = AppDataSource.getRepository(Address);
 
   const clients = await userRepo.find({ where: { role: UserRole.CLIENT } });
-  const products = await productRepo.find({ where: { isActive: true } });
-  const timeSlots = await timeSlotRepo.find({ take: 15 });
+  const sandwichs = await productRepo.find({
+    where: { category: ProductCategory.SANDWICH, isActive: true },
+  });
+  const boissons = await productRepo.find({
+    where: { category: ProductCategory.DRINK, isActive: true },
+  });
+  const desserts = await productRepo.find({
+    where: { category: ProductCategory.DESSERT, isActive: true },
+  });
+  const timeSlots = await timeSlotRepo.find({ take: 10 });
   const addresses = await addressRepo.find({ relations: ['user'] });
 
-  if (clients.length === 0 || products.length === 0 || timeSlots.length === 0) {
-    console.log('⚠️  Données insuffisantes');
+  if (!clients.length || !sandwichs.length || !timeSlots.length) {
+    console.log('⚠️  Données insuffisantes pour créer des commandes');
     return;
   }
 
-  // Créer 12 commandes
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 10; i++) {
     const client = faker.helpers.arrayElement(clients);
     const timeSlot = faker.helpers.arrayElement(timeSlots);
-    const orderType = faker.helpers.arrayElement([OrderType.PICKUP, OrderType.DELIVERY]);
+    const orderType = faker.helpers.arrayElement([
+      OrderType.PICKUP,
+      OrderType.DELIVERY,
+    ]);
 
-    let deliveryAddress: Address | undefined = undefined;
+    let deliveryAddress: Address | undefined;
     if (orderType === OrderType.DELIVERY) {
       const clientAddresses = addresses.filter((a) => a.user.id === client.id);
-      if (clientAddresses.length > 0) {
+      if (clientAddresses.length)
         deliveryAddress = faker.helpers.arrayElement(clientAddresses);
-      }
     }
 
-    const order = orderRepo.create({
-      orderNumber: `CMD-${new Date().getFullYear()}${(new Date().getMonth() + 1).toString().padStart(2, '0')}${new Date().getDate().toString().padStart(2, '0')}-${(i + 1).toString().padStart(3, '0')}`,
-      user: client,
-      timeSlot,
-      type: orderType,
-      status: faker.helpers.arrayElement([
-        OrderStatus.PENDING,
-        OrderStatus.CONFIRMED,
-        OrderStatus.IN_PREPARATION,
-        OrderStatus.READY,
-        OrderStatus.COMPLETED,
-      ]),
-      paymentStatus: faker.helpers.weightedArrayElement([
-        { value: PaymentStatus.PAID, weight: 8 },
-        { value: PaymentStatus.PENDING, weight: 2 },
-      ]),
-      deliveryAddress,
-      subtotal: 0,
-      deliveryFee: orderType === OrderType.DELIVERY ? 3.5 : 0,
-      total: 0,
-      customerNote: faker.helpers.maybe(
-        () =>
-          faker.helpers.arrayElement([
-            'Sans oignons SVP',
-            'Bien cuit',
-            'Livrer après 13h',
-          ]),
-        { probability: 0.3 },
-      ),
-    });
+    const order = await orderRepo.save(
+      orderRepo.create({
+        orderNumber: `CMD-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${String(i + 1).padStart(3, '0')}`,
+        user: client,
+        timeSlot,
+        type: orderType,
+        status: faker.helpers.arrayElement([
+          OrderStatus.CONFIRMED,
+          OrderStatus.IN_PREPARATION,
+          OrderStatus.READY,
+          OrderStatus.COMPLETED,
+        ]),
+        paymentStatus: PaymentStatus.PAID,
+        deliveryAddress,
+        subtotal: 0,
+        deliveryFee: orderType === OrderType.DELIVERY ? 3.5 : 0,
+        total: 0,
+        customerNote: faker.helpers.maybe(
+          () =>
+            faker.helpers.arrayElement([
+              'Sans oignons SVP',
+              'Bien cuit',
+              'Livrer après 13h',
+              'Pas de sauce',
+            ]),
+          { probability: 0.3 },
+        ),
+      }),
+    );
 
-    await orderRepo.save(order);
-
-    // 2-3 produits par commande (au lieu de 1-4)
-    const numItems = faker.number.int({ min: 2, max: 3 });
     let subtotal = 0;
 
-    for (let j = 0; j < numItems; j++) {
-      const product = faker.helpers.arrayElement(products);
-      const quantity = faker.number.int({ min: 1, max: 2 });
+    // 1 sandwich + 1 boisson + optionnellement 1 dessert
+    const items = [
+      faker.helpers.arrayElement(sandwichs),
+      faker.helpers.arrayElement(boissons),
+      ...(faker.datatype.boolean() && desserts.length
+        ? [faker.helpers.arrayElement(desserts)]
+        : []),
+    ];
+
+    for (const product of items) {
+      const quantity = 1;
       const unitPrice = Number(product.basePrice);
+      const totalPrice = unitPrice * quantity;
 
-      let customization: ProductCustomization | undefined = undefined;
-      let totalPrice = unitPrice * quantity;
+      await orderItemRepo.save(
+        orderItemRepo.create({
+          order,
+          product,
+          itemType: 'product',
+          quantity,
+          unitPrice,
+          totalPrice,
+        }),
+      );
 
-      if (product.isCustomizable && product.category === ProductCategory.SANDWICH) {
-        const hasCustomization = faker.datatype.boolean();
-        if (hasCustomization) {
-          customization = {
-            removed: faker.helpers.maybe(() => [faker.number.int({ min: 1, max: 5 })], {
-              probability: 0.3,
-            }),
-            extra: faker.helpers.maybe(() => [faker.number.int({ min: 1, max: 10 })], {
-              probability: 0.4,
-            }),
-          };
-
-          if (customization && customization.extra) {
-            totalPrice += 1.5 * quantity;
-          }
-        }
-      }
-
-      const orderItem = orderItemRepo.create({
-        order,
-        product,
-        itemType: 'product',
-        quantity,
-        unitPrice,
-        totalPrice,
-        customization,
-      });
-
-      await orderItemRepo.save(orderItem);
       subtotal += totalPrice;
     }
 
@@ -745,15 +766,16 @@ async function createOrders() {
     order.total = subtotal + Number(order.deliveryFee);
     await orderRepo.save(order);
 
-    timeSlot.currentBookings += 1;
+    timeSlot.currentBookings = Math.min(
+      timeSlot.currentBookings + 1,
+      timeSlot.maxCapacity,
+    );
     await timeSlotRepo.save(timeSlot);
   }
 
-  console.log('✅ Commandes créées :');
-  console.log('   - 12 commandes aléatoires');
+  console.log('✅ 10 commandes créées');
 }
 
-// Exécuter
 seed()
   .then(() => {
     console.log('✨ Terminé !');

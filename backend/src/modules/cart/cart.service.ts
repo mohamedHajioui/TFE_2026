@@ -24,7 +24,7 @@ export class CartService {
   ) {}
 
   /**
-   * Récupérer le panier complet d'un utilisateur avec les relations hydratées.
+   * Récupérer le panier complet d'un utilisateur avec les relations.
    */
   async getCart(userId: number): Promise<CartItem[]> {
     return this.cartItemRepository.find({
@@ -88,7 +88,7 @@ export class CartService {
         await this.cartItemRepository.save(cartItem);
       }
     } else {
-      // Menu — toujours un nouvel item
+      // Menu toujours un nouvel item
       if (!dto.menuId) {
         throw new BadRequestException('menuId requis pour un item de type menu');
       }

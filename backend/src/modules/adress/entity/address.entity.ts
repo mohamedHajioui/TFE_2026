@@ -45,6 +45,12 @@ export class Address {
   @Column({ default: false })
   isDefault: boolean; // Adresse par défaut
 
+  @Column({ type: 'float', nullable: true })
+  lat: number | null;
+
+  @Column({ type: 'float', nullable: true })
+  lng: number | null;
+
   // Relation avec User
   @ManyToOne(() => User, (user) => user.addresses, { onDelete: 'CASCADE' })
   user: User;

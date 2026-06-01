@@ -403,15 +403,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
 
     const clearCart = useCallback(() => {
-        if (isDbMode) {
-            cartApi
-                .clearCart()
-                .then(() => setItems([]))
-                .catch(console.error);
-        } else {
-            setItems([]);
-        }
-    }, [isDbMode]);
+        setItems([]);
+        saveGuestCart([]);
+        cartApi.clearCart().catch(() => {});
+    }, []);
 
     const openDrawer = useCallback(() => setDrawerOpen(true), []);
     const closeDrawer = useCallback(() => setDrawerOpen(false), []);

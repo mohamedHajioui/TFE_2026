@@ -102,7 +102,12 @@ export function useCheckout() {
                 const addrs = await addressesApi.getMyAddresses();
                 setUserAddresses(addrs);
                 const defaultAddr = addrs.find((a) => a.isDefault) ?? addrs[0];
-                if (defaultAddr) setSelectedAddressId(defaultAddr.id);
+                if (defaultAddr) {
+                    setSelectedAddressId(defaultAddr.id);
+                    if (defaultAddr.lat && defaultAddr.lng) {
+                        setDeliveryCoords({ lat: defaultAddr.lat, lng: defaultAddr.lng });
+                    }
+                }
                 if (addrs.length === 0) setShowNewAddressForm(true);
             } catch {
                 setShowNewAddressForm(true);
@@ -235,6 +240,8 @@ export function useCheckout() {
                             city: newAddress.city,
                             country: newAddress.country || undefined,
                             complement: newAddress.complement || undefined,
+                            lat: deliveryCoords.lat ?? undefined,
+                            lng: deliveryCoords.lng ?? undefined,
                         });
                         data.deliveryAddressId = created.id;
                     } else {
@@ -244,6 +251,11 @@ export function useCheckout() {
                             return;
                         }
                         data.deliveryAddressId = selectedAddressId;
+                        const savedAddr = userAddresses.find((a) => a.id === selectedAddressId);
+                        if (savedAddr?.lat && savedAddr?.lng) {
+                            data.customerLat = savedAddr.lat;
+                            data.customerLng = savedAddr.lng;
+                        }
                     }
                 }
 
@@ -337,7 +349,17 @@ export function useCheckout() {
 
         userAddresses,
         selectedAddressId,
-        setSelectedAddressId,
+        setSelectedAddressId: (id: number | null) => {
+            setSelectedAddressId(id);
+            if (id !== null) {
+                const addr = userAddresses.find((a) => a.id === id);
+                if (addr?.lat && addr?.lng) {
+                    setDeliveryCoords({ lat: addr.lat, lng: addr.lng });
+                } else {
+                    setDeliveryCoords({ lat: null, lng: null });
+                }
+            }
+        },
         showNewAddressForm,
         setShowNewAddressForm,
         newAddress,

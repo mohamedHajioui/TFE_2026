@@ -153,8 +153,8 @@ function DrawerItem({ item, index, onUpdateQuantity, onRemove }: {
                     </button>
                 </div>
                 <button
-                    className={styles.removeBtn}
-                    onClick={() => onRemove(index)}
+                className={styles.removeBtn}
+                onClick={() => onRemove(index)}
                     aria-label="Retirer"
                 >
                     <Trash2 size={14} />

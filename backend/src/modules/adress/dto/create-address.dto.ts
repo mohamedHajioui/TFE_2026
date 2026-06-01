@@ -2,6 +2,7 @@ import {
   IsString,
   IsNotEmpty,
   IsOptional,
+  IsNumber,
   MaxLength,
   Matches,
 } from 'class-validator';
@@ -46,4 +47,12 @@ export class CreateAddressDto {
   @IsOptional()
   @MaxLength(50)
   label?: string; // "Maison", "Travail", etc.
+
+  @IsNumber()
+  @IsOptional()
+  lat?: number;
+
+  @IsNumber()
+  @IsOptional()
+  lng?: number;
 }
