@@ -62,8 +62,11 @@ function groupByDate(slots: TimeSlotModel[]): Map<string, TimeSlotModel[]> {
     return map;
 }
 
-const today = new Date().toISOString().split('T')[0];
-const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
+const toBrussels = (d: Date) =>
+    new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Brussels' }).format(d);
+
+const today = toBrussels(new Date());
+const nextWeek = toBrussels(new Date(Date.now() + 7 * 86400000));
 
 const DEFAULT_GENERATE: GenerateSlotsData = {
     dateFrom: today,
@@ -252,7 +255,12 @@ export default function AdminTimeSlots() {
                                     type="date"
                                     className={styles.formInput}
                                     value={createData.date}
-                                    onChange={e => setCreateData(p => ({...p, date: e.target.value}))}
+                                    onChange={e => {
+                                        const d = e.target.value;
+                                        setCreateData(p => ({...p, date: d}));
+                                        setDateFrom(d);
+                                        setDateTo(d);
+                                    }}
                                     required
                                 />
                             </div>

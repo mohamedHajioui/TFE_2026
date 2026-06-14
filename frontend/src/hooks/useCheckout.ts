@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
@@ -12,6 +12,7 @@ import { AddressModel } from '@/models/address.model';
 import { TimeSlotModel } from '@/models/time-slot.model';
 import { OrderType } from '@/models/order.model';
 import { getApiErrorMessage } from '@/utils/validation';
+import { geocodeAddress } from '@/hooks/useAddressAutocomplete';
 import type { ResolvedAddress } from '@/hooks/useAddressAutocomplete';
 
 export interface AddressForm {
@@ -70,8 +71,29 @@ export function useCheckout() {
     const [error, setError] = useState<string | null>(null);
     const [showPhoneModal, setShowPhoneModal] = useState(false);
     const pendingSubmit = useRef(false);
+    const geocodeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const { fee: deliveryFee, label: deliveryLabel, outOfRange, distanceKm } =
+    // Champs qui influencent les coordonnées GPS (boîte/complément n'ont pas d'impact)
+    const GEO_FIELDS: (keyof AddressForm)[] = ['street', 'number', 'postalCode', 'city'];
+
+    /**
+     * Quand le client modifie un champ d'adresse après avoir sélectionné une suggestion,
+     * on re-géocode avec l'adresse complète pour obtenir des coords précises.
+     * Utile pour les rues longues : le numéro peut changer la position de plusieurs km.
+     */
+    const scheduleGeocode = useCallback((form: AddressForm) => {
+        if (geocodeTimer.current) clearTimeout(geocodeTimer.current);
+        if (!form.street || !form.postalCode) return;
+
+        geocodeTimer.current = setTimeout(async () => {
+            const coords = await geocodeAddress(form.street, form.number, form.postalCode, form.city);
+            if (coords) {
+                setDeliveryCoords({ lat: coords.lat, lng: coords.lng });
+            }
+        }, 800);
+    }, []);
+
+    const { fee: deliveryFee, label: deliveryLabel, outOfRange, distanceKm, isLoading: isDeliveryLoading } =
         useDeliveryEstimate(deliveryCoords.lat, deliveryCoords.lng);
 
     const total = subtotal + (orderType === OrderType.DELIVERY ? deliveryFee : 0);
@@ -83,8 +105,7 @@ export function useCheckout() {
     useEffect(() => {
         const fetchSlots = async () => {
             try {
-                const now = new Date();
-                const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Brussels' }).format(new Date());
                 const usable = await timeSlotsApi.getAvailableSlots(todayStr);
                 setSlots(usable);
                 if (usable.length > 0) setSelectedSlotId(usable[0].id);
@@ -158,6 +179,18 @@ export function useCheckout() {
             setOrderType(OrderType.PICKUP);
         }
     }, [deliveryEnabled, orderType]);
+
+    const handleNewAddressChange = useCallback((next: AddressForm, prevForm: AddressForm) => {
+        setNewAddress(next);
+        const touchedGeoField = GEO_FIELDS.some(f => next[f] !== prevForm[f]);
+        if (touchedGeoField) scheduleGeocode(next);
+    }, [scheduleGeocode]);
+
+    const handleGuestAddressChange = useCallback((next: AddressForm, prevForm: AddressForm) => {
+        setGuestAddress(next);
+        const touchedGeoField = GEO_FIELDS.some(f => next[f] !== prevForm[f]);
+        if (touchedGeoField) scheduleGeocode(next);
+    }, [scheduleGeocode]);
 
     const handleAddressResolved = (resolved: ResolvedAddress, isGuest: boolean) => {
         const form: AddressForm = {
@@ -363,7 +396,7 @@ export function useCheckout() {
         showNewAddressForm,
         setShowNewAddressForm,
         newAddress,
-        setNewAddress,
+        setNewAddress: (next: AddressForm) => handleNewAddressChange(next, newAddress),
         newAddressQuery,
         setNewAddressQuery,
 
@@ -374,7 +407,7 @@ export function useCheckout() {
         guestPhone,
         setGuestPhone,
         guestAddress,
-        setGuestAddress,
+        setGuestAddress: (next: AddressForm) => handleGuestAddressChange(next, guestAddress),
         guestAddressQuery,
         setGuestAddressQuery,
 
@@ -383,6 +416,7 @@ export function useCheckout() {
         deliveryLabel,
         outOfRange,
         distanceKm,
+        isDeliveryLoading,
         handleAddressResolved,
 
         customerNote,

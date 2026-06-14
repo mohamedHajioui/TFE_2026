@@ -238,8 +238,14 @@ export class TimeSlotService {
    */
   async getAvailableSlots(date: string): Promise<TimeSlot[]> {
     const now = new Date();
-    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Brussels' }).format(now);
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/Brussels',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).formatToParts(now);
+    const currentTime = `${parts.find(p => p.type === 'hour')!.value}:${parts.find(p => p.type === 'minute')!.value}`;
 
     const qb = this.timeSlotRepository
       .createQueryBuilder('timeSlot')

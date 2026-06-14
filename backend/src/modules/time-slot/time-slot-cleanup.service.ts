@@ -28,11 +28,14 @@ export class TimeSlotCleanupService {
   async cleanupExpiredSlots(): Promise<void> {
     const now = new Date();
 
-    // Date du jour au format YYYY-MM-DD (locale, pas UTC)
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-
-    // Heure actuelle au format HH:MM
-    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Brussels' }).format(now);
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/Brussels',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).formatToParts(now);
+    const currentTime = `${parts.find(p => p.type === 'hour')!.value}:${parts.find(p => p.type === 'minute')!.value}`;
 
     try {
       // Désactiver (au lieu de supprimer) les créneaux des jours passés
