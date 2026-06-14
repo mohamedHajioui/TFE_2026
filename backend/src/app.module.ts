@@ -1,8 +1,6 @@
 import { Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 import { typeOrmConfig } from './config/database.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { APP_GUARD, APP_PIPE } from '@nestjs/core';
@@ -26,11 +24,9 @@ import { CartModule } from './modules/cart/cart.module';
       envFilePath: '.env',
     }),
     TypeOrmModule.forRootAsync(typeOrmConfig),
-    // Servir les fichiers uploadés (images produits/menus)
-    ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), 'uploads'),
-      serveRoot: '/uploads',
-    }),
+    // ServeStaticModule retiré : en production (Cloud Run), les images sont
+    // stockées sur Google Cloud Storage et servies directement depuis GCS.
+    // En dev local, les URLs GCS restent valides si le bucket est public.
     AuthModule,
     ProductModule,
     IngredientModule,

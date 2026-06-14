@@ -16,7 +16,7 @@ echo ===========================================
 REM --- Nom de la base ---
 set DB_NAME=tfe_2026
 set DB_USER=postgres
-set DB_PASSWORD=1234
+set DB_PASSWORD=dummy1234
 
 echo.
 echo Verification que PostgreSQL est demarre...
