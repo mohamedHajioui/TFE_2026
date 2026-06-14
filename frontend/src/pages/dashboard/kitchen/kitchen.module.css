@@ -194,6 +194,17 @@
     font-family: "Nunito", sans-serif;
 }
 
+/* Statuts supplémentaires */
+.statusDelivery {
+    background: #0D1E35;
+    color: #60A5FA;
+}
+
+.statusDone {
+    background: #111;
+    color: #52525B;
+}
+
 /* Groupe virtuel "Caisse" */
 .slotHeaderManual {
     border-left-color: #A78BFA;
@@ -206,6 +217,89 @@
 
 .orderCardManual .orderType {
     color: #A78BFA;
+}
+
+/* Commandes terminées : atténuées */
+.orderCardDone {
+    opacity: 0.5;
+}
+
+/* Boutons d'action */
+.actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.actionBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    font-family: "Nunito", sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    white-space: nowrap;
+}
+
+.actionBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.actionBtn:not(:disabled):active {
+    transform: scale(0.97);
+}
+
+.actionBtnPrimary {
+    background: var(--sg-amber);
+    color: #0A0A0C;
+}
+
+.actionBtnPrimary:not(:disabled):hover {
+    opacity: 0.88;
+}
+
+.actionBtnSecondary {
+    background: #1E1E28;
+    color: #A1A1AA;
+    border: 1px solid #FFFFFF10;
+}
+
+.actionBtnSecondary:not(:disabled):hover {
+    background: #26262F;
+}
+
+/* Spinner inline dans le bouton */
+.btnSpinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Erreur inline par commande */
+.orderErrBox {
+    margin-top: 8px;
+    padding: 6px 10px;
+    background: #1C1015;
+    border: 1px solid #4A1A1A;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    color: #F87171;
+    font-family: "Nunito", sans-serif;
 }
 
 @media (max-width: 768px) {

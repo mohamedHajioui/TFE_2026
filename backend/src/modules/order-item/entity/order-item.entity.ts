@@ -42,7 +42,7 @@ export class OrderItem {
   @Column({
     type: 'enum',
     enum: ['product', 'menu'],
-    default: 'product', // ✅ AJOUTÉ : Défaut
+    default: 'product',
   })
   itemType: 'product' | 'menu';
 

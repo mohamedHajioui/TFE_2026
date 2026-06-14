@@ -722,10 +722,12 @@ export class OrderService {
     const revenueResult = await this.orderRepository
       .createQueryBuilder('order')
       .select('SUM(order.total)', 'revenue')
-      .where('DATE(order.completedAt) = :today', { today })
-      .andWhere('order.status = :status', { status: OrderStatus.COMPLETED })
+      .where('DATE(order.createdAt) = :today', { today })
       .andWhere('order.paymentStatus = :paymentStatus', {
         paymentStatus: PaymentStatus.PAID,
+      })
+      .andWhere('order.status != :cancelled', {
+        cancelled: OrderStatus.CANCELLED,
       })
       .getRawOne<{ revenue: string | null }>();
 
@@ -742,18 +744,18 @@ export class OrderService {
     since.setDate(since.getDate() - days);
 
     let dateTrunc: string;
-    if (period === 'week') dateTrunc = "TO_CHAR(DATE_TRUNC('week', order.completedAt), 'YYYY-MM-DD')";
-    else if (period === 'month') dateTrunc = "TO_CHAR(DATE_TRUNC('month', order.completedAt), 'YYYY-MM')";
-    else dateTrunc = "TO_CHAR(order.completedAt, 'YYYY-MM-DD')";
+    if (period === 'week') dateTrunc = "TO_CHAR(DATE_TRUNC('week', order.createdAt), 'YYYY-MM-DD')";
+    else if (period === 'month') dateTrunc = "TO_CHAR(DATE_TRUNC('month', order.createdAt), 'YYYY-MM')";
+    else dateTrunc = "TO_CHAR(order.createdAt, 'YYYY-MM-DD')";
 
     const rows = await this.orderRepository
       .createQueryBuilder('order')
       .select(dateTrunc, 'date')
       .addSelect('SUM(order.total)', 'revenue')
       .addSelect('COUNT(*)', 'orders')
-      .where('order.status = :status', { status: OrderStatus.COMPLETED })
-      .andWhere('order.paymentStatus = :ps', { ps: PaymentStatus.PAID })
-      .andWhere('order.completedAt >= :since', { since })
+      .where('order.paymentStatus = :ps', { ps: PaymentStatus.PAID })
+      .andWhere('order.status != :cancelled', { cancelled: OrderStatus.CANCELLED })
+      .andWhere('order.createdAt >= :since', { since })
       .groupBy(dateTrunc)
       .orderBy(dateTrunc, 'ASC')
       .getRawMany<{ date: string; revenue: string; orders: string }>();
