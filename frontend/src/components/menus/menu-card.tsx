@@ -14,10 +14,6 @@ export function MenuCard({ menu, onSelect }: MenuCardProps) {
     const desserts = menu.allowedProducts?.filter(p => p.category === 'DESSERT') ?? [];
     const sides = menu.allowedProducts?.filter(p => p.category === 'SIDE') ?? [];
 
-    const totalSeparate = menu.allowedProducts?.reduce((sum, p) => sum + Number(p.basePrice), 0) ?? 0;
-    const savings = totalSeparate - Number(menu.price);
-
-    // Priorité : image du menu > image d'un sandwich > image d'un autre produit
     const menuImage = resolveImageUrl(
         menu.imageUrl ??
         menu.allowedProducts?.find(p => p.category === 'SANDWICH' && p.imageUrl)?.imageUrl ??
@@ -36,9 +32,6 @@ export function MenuCard({ menu, onSelect }: MenuCardProps) {
                 <div className={styles.badgeWrapper}>
                     <span className="badge-category">Menu</span>
                 </div>
-                {savings > 0 && (
-                    <div className={styles.savingsBadge}>-{formatPrice(savings)}</div>
-                )}
             </div>
 
             <div className={styles.content}>
@@ -55,10 +48,10 @@ export function MenuCard({ menu, onSelect }: MenuCardProps) {
                 <div className="divider-orange" />
 
                 <div className={styles.composition}>
-                    {sandwiches.length > 0 && <MenuRow label="Sandwich" items={sandwiches.map(p => p.name)} required={menu.configuration?.sandwich?.required} />}
-                    {drinks.length > 0 && <MenuRow label="Boisson" items={drinks.map(p => p.name)} required={menu.configuration?.drink?.required} />}
-                    {desserts.length > 0 && <MenuRow label="Dessert" items={desserts.map(p => p.name)} required={menu.configuration?.dessert?.required} />}
-                    {sides.length > 0 && <MenuRow label="Accompagnement" items={sides.map(p => p.name)} required={menu.configuration?.side?.required} />}
+                    {sandwiches.length > 0 && <MenuRow label="Sandwich" items={sandwiches.map(p => p.name)} />}
+                    {drinks.length > 0 && <MenuRow label="Boisson" items={drinks.map(p => p.name)} />}
+                    {desserts.length > 0 && <MenuRow label="Dessert" items={desserts.map(p => p.name)} />}
+                    {sides.length > 0 && <MenuRow label="Accompagnement" items={sides.map(p => p.name)} />}
                 </div>
 
                 {(menu.availableFrom || menu.availableTo) && (
@@ -79,10 +72,10 @@ export function MenuCard({ menu, onSelect }: MenuCardProps) {
     );
 }
 
-function MenuRow({ label, items, required }: { label: string; items: string[]; required?: boolean }) {
+function MenuRow({ label, items }: { label: string; items: string[] }) {
     return (
         <div className={styles.compositionRow}>
-            <span className={styles.compositionLabel}>{label}{required === false ? ' *' : ''}</span>
+            <span className={styles.compositionLabel}>{label}</span>
             <span className={styles.compositionItems}>{items.join(', ')}</span>
         </div>
     );

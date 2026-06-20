@@ -204,7 +204,13 @@ export default function Checkout() {
                                     </>
                                 )}
 
-                                {c.deliveryCoords.lat !== null && (
+                                {c.isDeliveryLoading && (
+                                    <div className={styles.deliveryRecalcRow}>
+                                        <div className="spinner" style={{width: 14, height: 14}}/>
+                                        Calcul des frais en cours…
+                                    </div>
+                                )}
+                                {!c.isDeliveryLoading && c.deliveryCoords.lat !== null && (
                                     <div className={c.outOfRange ? styles.errorInfoRow : styles.successInfoRow}>
                                         <Truck size={14}/>
                                         {c.outOfRange
@@ -291,7 +297,7 @@ export default function Checkout() {
                             </div>
 
                             {c.orderType === OrderType.DELIVERY && (
-                                <div className={styles.recapRow}>
+                                <div className={`${styles.recapRow} ${c.outOfRange ? styles.recapRowError : ''}`}>
                                     <span>
                                         Livraison{' '}
                                         {c.distanceKm ? `(${c.distanceKm.toFixed(1)} km)` : ''}
@@ -299,9 +305,11 @@ export default function Checkout() {
                                     <span>
                                         {c.deliveryCoords.lat === null
                                             ? '—'
-                                            : c.deliveryFee === 0
-                                                ? 'Gratuit'
-                                                : formatPrice(c.deliveryFee)
+                                            : c.outOfRange
+                                                ? 'Hors zone'
+                                                : c.deliveryFee === 0
+                                                    ? 'Gratuit'
+                                                    : formatPrice(c.deliveryFee)
                                         }
                                     </span>
                                 </div>

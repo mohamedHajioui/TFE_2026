@@ -12,6 +12,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { QueryUserDto } from './dto/query-user.dto';
 import { CryptoUtil } from '../../common/utils/crypto.util';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
 
 @Injectable()
 export class UserService {
@@ -76,27 +77,12 @@ export class UserService {
    */
   async updateMyProfile(
     userId: number,
-    updateUserDto: UpdateUserDto,
+    updateUserDto: UpdateMyProfileDto,
   ): Promise<User> {
     const user = await this.findOne(userId);
 
-    // Vérifier si le nouveau displayName existe déjà
-    if (
-      updateUserDto.displayName &&
-      updateUserDto.displayName !== user.displayName
-    ) {
-      const existing = await this.userRepository.findOne({
-        where: { displayName: updateUserDto.displayName },
-      });
-
-      if (existing) {
-        throw new ConflictException(
-          `Le nom "${updateUserDto.displayName}" est déjà utilisé`,
-        );
-      }
-    }
-
-    Object.assign(user, updateUserDto);
+    if (updateUserDto.displayName) user.displayName = updateUserDto.displayName;
+    if (updateUserDto.phoneNumber !== undefined) user.phoneNumber = updateUserDto.phoneNumber;
 
     return await this.userRepository.save(user);
   }

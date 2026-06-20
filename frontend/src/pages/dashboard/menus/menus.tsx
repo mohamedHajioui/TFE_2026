@@ -3,7 +3,7 @@ import {DashboardLayout} from '@/components/layouts/DashboardLayout';
 import {menusApi} from '@/api/menus.api';
 import {productsApi} from '@/api/products.api';
 import {MenuModel} from '@/models/menu.model';
-import {ProductModel, ProductCategory} from '@/models/product.model';
+import {ProductModel} from '@/models/product.model';
 import {formatPrice} from '@/utils/format';
 import {getApiErrorMessage} from '@/utils/validation';
 import {useImageUpload} from '@/hooks/useImageUpload';
@@ -18,23 +18,11 @@ interface MenuForm {
     isActive: boolean;
     imageUrl: string;
     selectedProductIds: number[];
-    config: {
-        sandwich: { required: boolean };
-        drink: { required: boolean };
-        dessert: { required: boolean };
-        side: { required: boolean };
-    };
 }
 
 const EMPTY_FORM: MenuForm = {
     name: '', description: '', price: '', isActive: true, imageUrl: '',
     selectedProductIds: [],
-    config: {
-        sandwich: {required: true},
-        drink: {required: true},
-        dessert: {required: false},
-        side: {required: false},
-    },
 };
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -97,12 +85,6 @@ export default function AdminMenus() {
             isActive: menu.isActive,
             imageUrl: menu.imageUrl ?? '',
             selectedProductIds: menu.allowedProducts?.map(p => p.id) ?? [],
-            config: {
-                sandwich: {required: menu.configuration?.sandwich?.required ?? true},
-                drink: {required: menu.configuration?.drink?.required ?? true},
-                dessert: {required: menu.configuration?.dessert?.required ?? false},
-                side: {required: menu.configuration?.side?.required ?? false},
-            },
         });
         setFormError(null);
         setModalOpen(true);
@@ -139,10 +121,10 @@ export default function AdminMenus() {
             imageUrl: form.imageUrl.trim() || undefined,
             productIds: form.selectedProductIds,
             configuration: {
-                sandwich: {required: form.config.sandwich.required, quantity: 1},
-                drink: {required: form.config.drink.required, quantity: 1},
-                dessert: {required: form.config.dessert.required, quantity: 1},
-                side: {required: form.config.side.required, quantity: 0},
+                sandwich: {required: true,  quantity: 1},
+                drink:    {required: true,  quantity: 1},
+                dessert:  {required: false, quantity: 1},
+                side:     {required: false, quantity: 0},
             },
         };
 
@@ -194,9 +176,6 @@ export default function AdminMenus() {
                 : [...f.selectedProductIds, id],
         }));
     };
-
-    const selectedProducts = products.filter(p => form.selectedProductIds.includes(p.id));
-    const categories = [...new Set(selectedProducts.map(p => p.category))];
 
     return (
         <DashboardLayout>
@@ -411,33 +390,6 @@ export default function AdminMenus() {
                                 })}
                             </div>
 
-                            {categories.length > 0 && (
-                                <div>
-                                    <div className={styles.sectionTitle}>Configuration</div>
-                                    <div className={styles.configGrid}>
-                                        {(Object.keys(form.config) as Array<keyof typeof form.config>)
-                                            .filter(cat => categories.includes(cat.toUpperCase() as ProductCategory))
-                                            .map(cat => (
-                                                <div key={cat} className={styles.configItem}>
-                                                    <span
-                                                        className={styles.configLabel}>{CATEGORY_LABEL[cat.toUpperCase()]} obligatoire</span>
-                                                    <button type="button"
-                                                            className={`${styles.toggle} ${form.config[cat].required ? styles.toggleOn : ''}`}
-                                                            onClick={() => setForm(f => ({
-                                                                ...f,
-                                                                config: {
-                                                                    ...f.config,
-                                                                    [cat]: {required: !f.config[cat].required}
-                                                                }
-                                                            }))}>
-                                                        <span
-                                                            className={`${styles.toggleThumb} ${form.config[cat].required ? styles.toggleThumbOn : ''}`}/>
-                                                    </button>
-                                                </div>
-                                            ))}
-                                    </div>
-                                </div>
-                            )}
                         </div>
 
                         <div className={styles.modalFooter}>

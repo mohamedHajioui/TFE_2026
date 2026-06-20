@@ -363,7 +363,7 @@ export default function AdminProducts() {
 
                             <div className={styles.fieldGroup}>
                                 <label className={styles.label}>Description</label>
-                                <textarea className={`${styles.input} ${styles.textarea}`} placeholder="Pain blanc, jambon, fromage..." value={form.description} onChange={e => f('description', e.target.value)} />
+                                <textarea className={`${styles.input} ${styles.textarea}`} placeholder="Pain blanc, fromage..." value={form.description} onChange={e => f('description', e.target.value)} />
                             </div>
 
                             <div className={styles.ingredientsSection}>

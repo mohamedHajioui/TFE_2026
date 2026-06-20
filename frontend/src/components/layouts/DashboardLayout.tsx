@@ -194,7 +194,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
     const prevCount = useRef(0);
 
     useEffect(() => {
-        if (newCount > prevCount.current && notifications.length > 0) {
+        if (newCount > prevCount.current && notifications.length > 0 && !location.pathname.startsWith('/admin/orders')) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setToastNotif(notifications[0]);
             if (toastTimer.current) clearTimeout(toastTimer.current);

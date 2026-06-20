@@ -828,7 +828,7 @@ export class OrderService {
       OrderStatus.READY,
     ];
 
-    // ── 1. Commandes en ligne (avec créneau) ──────────────────────────────
+    // Commandes en ligne (avec créneau)
     const onlineOrders = await this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.timeSlot', 'timeSlot')
@@ -842,7 +842,7 @@ export class OrderService {
       .addOrderBy('order.createdAt', 'ASC')
       .getMany();
 
-    // ── 2. Commandes caisse / POS (sans créneau) ──────────────────────────
+    // Commandes caisse / POS (sans créneau)
     // On filtre par date en heure locale belge (UTC+1/+2)
     const manualOrders = await this.orderRepository
       .createQueryBuilder('order')
@@ -859,13 +859,13 @@ export class OrderService {
       .orderBy('order.createdAt', 'ASC')
       .getMany();
 
-    // ── 3. Créneaux du jour (pour tenter de matcher les commandes caisse) ──
+    // Créneaux du jour (pour tenter de matcher les commandes caisse)
     const timeSlots = await this.timeSlotRepository.find({
       where: { date: targetDate },
       order: { startTime: 'ASC' },
     });
 
-    // ── 4. Grouper les commandes en ligne par créneau ─────────────────────
+    // Grouper les commandes en ligne par créneau
     const grouped = new Map<
       number,
       { slotId: number; slotStart: string; slotEnd: string; isManual?: boolean; orders: Order[] }
@@ -885,8 +885,8 @@ export class OrderService {
       grouped.get(slotId)!.orders.push(order);
     }
 
-    // ── 5. Affecter chaque commande caisse au créneau correspondant ────────
-    //        Si aucun créneau ne correspond → groupe virtuel (slotId = 0)
+    // Affecter chaque commande caisse au créneau correspondant
+    // Si aucun créneau ne correspond → groupe virtuel (slotId = 0)
     const CAISSE_SLOT_ID = 0;
     const timeFormatter = new Intl.DateTimeFormat('fr-BE', {
       timeZone: 'Europe/Brussels',
@@ -928,7 +928,7 @@ export class OrderService {
       }
     }
 
-    // ── 6. Trier par heure de début, groupe caisse en dernier ─────────────
+    // Trier par heure de début, groupe caisse en dernier
     return Array.from(grouped.values()).sort((a, b) => {
       if (a.isManual) return 1;
       if (b.isManual) return -1;

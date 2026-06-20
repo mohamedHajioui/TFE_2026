@@ -49,8 +49,7 @@ export default function Profile() {
             await refreshUser();
             setProfileSuccess('Profil mis à jour avec succès.');
         } catch (err: unknown) {
-            const message = getApiErrorMessage(err);
-            setProfileError(message);
+            setProfileError(getApiErrorMessage(err));
         } finally {
             setProfileLoading(false);
         }
@@ -69,17 +68,13 @@ export default function Profile() {
         setPasswordLoading(true);
 
         try {
-            await usersApi.changePassword({
-                currentPassword,
-                newPassword,
-            });
+            await usersApi.changePassword({ currentPassword, newPassword });
             setPasswordSuccess('Mot de passe modifié avec succès.');
             setCurrentPassword('');
             setNewPassword('');
             setConfirmPassword('');
         } catch (err: unknown) {
-            const message = getApiErrorMessage(err);
-            setPasswordError(message);
+            setPasswordError(getApiErrorMessage(err));
         } finally {
             setPasswordLoading(false);
         }
@@ -188,96 +183,95 @@ export default function Profile() {
                         </div>
                     </section>
                 ) : (
-                <section className={`card-dark ${styles.section}`}>
-                    <h2 className={styles.sectionTitle}>
-                        <Lock size={18} className={styles.sectionTitleIcon} />
-                        Modifier le mot de passe
-                    </h2>
+                    <section className={`card-dark ${styles.section}`}>
+                        <h2 className={styles.sectionTitle}>
+                            <Lock size={18} className={styles.sectionTitleIcon} />
+                            Modifier le mot de passe
+                        </h2>
 
-                    <form className={styles.form} onSubmit={handlePasswordSubmit}>
-                        <div className={styles.fieldGroup}>
-                            <label className={styles.label}>Mot de passe actuel</label>
-                            <input
-                                type="password"
-                                className={styles.input}
-                                value={currentPassword}
-                                onChange={(e) => setCurrentPassword(e.target.value)}
-                                required
-                            />
-                        </div>
+                        <form className={styles.form} onSubmit={handlePasswordSubmit}>
+                            <div className={styles.fieldGroup}>
+                                <label className={styles.label}>Mot de passe actuel</label>
+                                <input
+                                    type="password"
+                                    className={styles.input}
+                                    value={currentPassword}
+                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
 
-                        <div className={styles.fieldGroup}>
-                            <label className={styles.label}>Nouveau mot de passe</label>
-                            <input
-                                type="password"
-                                className={styles.input}
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                required
-                            />
-                            {newPassword.length > 0 && (
-                                <div className={styles.passwordHints}>
-                                    <span className={hasMinLength ? styles.hintValid : styles.hintInvalid}>
-                                        {hasMinLength ? '✓' : '○'} Minimum 8 caractères
-                                    </span>
-                                    <span className={hasUppercase ? styles.hintValid : styles.hintInvalid}>
-                                        {hasUppercase ? '✓' : '○'} Une majuscule
-                                    </span>
-                                    <span className={hasLowercase ? styles.hintValid : styles.hintInvalid}>
-                                        {hasLowercase ? '✓' : '○'} Une minuscule
-                                    </span>
-                                    <span className={hasNumber ? styles.hintValid : styles.hintInvalid}>
-                                        {hasNumber ? '✓' : '○'} Un chiffre
-                                    </span>
+                            <div className={styles.fieldGroup}>
+                                <label className={styles.label}>Nouveau mot de passe</label>
+                                <input
+                                    type="password"
+                                    className={styles.input}
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    required
+                                />
+                                {newPassword.length > 0 && (
+                                    <div className={styles.passwordHints}>
+                                        <span className={hasMinLength ? styles.hintValid : styles.hintInvalid}>
+                                            {hasMinLength ? '✓' : '○'} Minimum 8 caractères
+                                        </span>
+                                        <span className={hasUppercase ? styles.hintValid : styles.hintInvalid}>
+                                            {hasUppercase ? '✓' : '○'} Une majuscule
+                                        </span>
+                                        <span className={hasLowercase ? styles.hintValid : styles.hintInvalid}>
+                                            {hasLowercase ? '✓' : '○'} Une minuscule
+                                        </span>
+                                        <span className={hasNumber ? styles.hintValid : styles.hintInvalid}>
+                                            {hasNumber ? '✓' : '○'} Un chiffre
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className={styles.fieldGroup}>
+                                <label className={styles.label}>Confirmer le nouveau mot de passe</label>
+                                <input
+                                    type="password"
+                                    className={styles.input}
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    required
+                                />
+                                {confirmPassword.length > 0 && (
+                                    <div className={styles.passwordHints}>
+                                        <span className={passwordsMatch ? styles.hintValid : styles.hintInvalid}>
+                                            {passwordsMatch ? '✓' : '○'} Les mots de passe correspondent
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {passwordError && (
+                                <div className={styles.errorBox}>
+                                    <AlertCircle size={14} /> {passwordError}
                                 </div>
                             )}
-                        </div>
-
-                        <div className={styles.fieldGroup}>
-                            <label className={styles.label}>Confirmer le nouveau mot de passe</label>
-                            <input
-                                type="password"
-                                className={styles.input}
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                required
-                            />
-                            {confirmPassword.length > 0 && (
-                                <div className={styles.passwordHints}>
-                                    <span className={passwordsMatch ? styles.hintValid : styles.hintInvalid}>
-                                        {passwordsMatch ? '✓' : '○'} Les mots de passe correspondent
-                                    </span>
+                            {passwordSuccess && (
+                                <div className={styles.successBox}>
+                                    <CheckCircle2 size={14} /> {passwordSuccess}
                                 </div>
                             )}
-                        </div>
 
-                        {passwordError && (
-                            <div className={styles.errorBox}>
-                                <AlertCircle size={14} /> {passwordError}
-                            </div>
-                        )}
-                        {passwordSuccess && (
-                            <div className={styles.successBox}>
-                                <CheckCircle2 size={14} /> {passwordSuccess}
-                            </div>
-                        )}
-
-                        <button
-                            type="submit"
-                            className={`btn-primary ${styles.submitBtn}`}
-                            disabled={
-                                passwordLoading ||
-                                !hasMinLength || !hasUppercase || !hasLowercase || !hasNumber ||
-                                !passwordsMatch
-                            }
-                        >
-                            {passwordLoading ? 'Modification...' : 'Modifier le mot de passe'}
-                        </button>
-                    </form>
-                </section>
+                            <button
+                                type="submit"
+                                className={`btn-primary ${styles.submitBtn}`}
+                                disabled={
+                                    passwordLoading ||
+                                    !hasMinLength || !hasUppercase || !hasLowercase || !hasNumber ||
+                                    !passwordsMatch
+                                }
+                            >
+                                {passwordLoading ? 'Modification...' : 'Modifier le mot de passe'}
+                            </button>
+                        </form>
+                    </section>
                 )}
             </div>
         </AppLayout>
     );
 }
-

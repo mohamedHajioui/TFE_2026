@@ -195,6 +195,7 @@ export class MenuService {
     if (updateMenuDto.isActive !== undefined) menu.isActive = updateMenuDto.isActive;
     if (updateMenuDto.availableFrom) menu.availableFrom = updateMenuDto.availableFrom;
     if (updateMenuDto.availableTo) menu.availableTo = updateMenuDto.availableTo;
+    if (updateMenuDto.configuration !== undefined) menu.configuration = updateMenuDto.configuration;
 
     return await this.menuRepository.save(menu);
   }

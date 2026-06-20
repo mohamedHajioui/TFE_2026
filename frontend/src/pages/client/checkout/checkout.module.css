@@ -461,6 +461,10 @@
     margin: 6px 0;
 }
 
+.recapRowError {
+    color: #F87171;
+}
+
 .recapTotal {
     display: flex;
     justify-content: space-between;
@@ -499,6 +503,20 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+.deliveryRecalcRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: #0A0A0C;
+    border: 1px solid #FFFFFF0F;
+    border-radius: 8px;
+    color: #71717A;
+    font-size: 0.82rem;
+    font-family: "Nunito", sans-serif;
 }
 
 .successInfoRow {

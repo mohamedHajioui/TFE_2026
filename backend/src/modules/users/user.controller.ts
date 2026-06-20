@@ -19,8 +19,8 @@ import { User } from './entity/user.entity';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
-
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
 import { UserRole } from './enums/user-role.enum';
 
 @Controller('users')
@@ -44,7 +44,7 @@ export class UserController {
   @Put('me/update')
   async updateMyProfile(
     @CurrentUser() user: User,
-    @Body() updateUserDto: UpdateUserDto,
+    @Body() updateUserDto: UpdateMyProfileDto,
   ): Promise<User> {
     return await this.userService.updateMyProfile(user.id, updateUserDto);
   }
@@ -59,15 +59,6 @@ export class UserController {
     @Body() changePasswordDto: ChangePasswordDto,
   ): Promise<{ message: string }> {
     return await this.userService.changePassword(user.id, changePasswordDto);
-  }
-  /** Réinitialiser le mot de passe — PUT /api/users/:id/reset-password (ADMIN) */
-  @Roles(UserRole.ADMIN)
-  @Put(':id/reset-password')
-  async adminResetPassword(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() body: { newPassword: string },
-  ): Promise<{ message: string }> {
-    return await this.userService.adminResetPassword(id, body.newPassword);
   }
 
   /**

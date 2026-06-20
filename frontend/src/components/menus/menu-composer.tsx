@@ -29,10 +29,8 @@ export function MenuComposer({ menu, onClose }: MenuComposerProps) {
         side: sides[0]?.id,
     });
 
-    const isValid =
-        (!menu.configuration?.sandwich?.required || choices.sandwich) &&
-        (!menu.configuration?.drink?.required || choices.drink) &&
-        (!menu.configuration?.dessert?.required || choices.dessert);
+    const isValid = !!(choices.sandwich || sandwiches.length === 0) &&
+        !!(choices.drink || drinks.length === 0);
 
     const handleAdd = () => {
         if (!isValid) return;
@@ -59,7 +57,6 @@ export function MenuComposer({ menu, onClose }: MenuComposerProps) {
                     {sandwiches.length > 0 && (
                         <CategorySection
                             label="Sandwich"
-                            required={menu.configuration?.sandwich?.required ?? true}
                             products={sandwiches}
                             selectedId={choices.sandwich}
                             onSelect={id => setChoices(c => ({ ...c, sandwich: id }))}
@@ -68,7 +65,6 @@ export function MenuComposer({ menu, onClose }: MenuComposerProps) {
                     {drinks.length > 0 && (
                         <CategorySection
                             label="Boisson"
-                            required={menu.configuration?.drink?.required ?? true}
                             products={drinks}
                             selectedId={choices.drink}
                             onSelect={id => setChoices(c => ({ ...c, drink: id }))}
@@ -77,7 +73,6 @@ export function MenuComposer({ menu, onClose }: MenuComposerProps) {
                     {desserts.length > 0 && (
                         <CategorySection
                             label="Dessert"
-                            required={menu.configuration?.dessert?.required ?? false}
                             products={desserts}
                             selectedId={choices.dessert}
                             onSelect={id => setChoices(c => ({ ...c, dessert: id }))}
@@ -86,7 +81,6 @@ export function MenuComposer({ menu, onClose }: MenuComposerProps) {
                     {sides.length > 0 && (
                         <CategorySection
                             label="Accompagnement"
-                            required={menu.configuration?.side?.required ?? false}
                             products={sides}
                             selectedId={choices.side}
                             onSelect={id => setChoices(c => ({ ...c, side: id }))}
@@ -109,9 +103,8 @@ export function MenuComposer({ menu, onClose }: MenuComposerProps) {
     );
 }
 
-function CategorySection({ label, required, products, selectedId, onSelect }: {
+function CategorySection({ label, products, selectedId, onSelect }: {
     label: string;
-    required: boolean;
     products: ProductModel[];
     selectedId?: number;
     onSelect: (id: number) => void;
@@ -120,7 +113,6 @@ function CategorySection({ label, required, products, selectedId, onSelect }: {
         <div className={styles.category}>
             <div className={styles.categoryHeader}>
                 <span className={styles.categoryLabel}>{label}</span>
-                {!required && <span className={styles.categoryOptional}>(optionnel)</span>}
             </div>
 
             <div className={styles.productList}>

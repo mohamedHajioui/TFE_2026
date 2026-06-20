@@ -79,7 +79,7 @@ export class Order {
   @Column({ nullable: true, type: 'timestamp' })
   completedAt: Date;
 
-  // ─── Relations (user connecté) ───
+  // Relations (user connecté)
 
   @ManyToOne(() => User, (user) => user.orders, {
     onDelete: 'SET NULL',

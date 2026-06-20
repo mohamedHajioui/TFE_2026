@@ -220,7 +220,7 @@ export class IngredientService {
       relations: ['product', 'product.productIngredients', 'product.productIngredients.ingredient', 'menu'],
     });
 
-    const ingredientDeltas = new Map<number, number>(); // ingredientId → quantité à déduire
+    const ingredientDeltas = new Map<number, number>(); // ingredientId - quantité à déduire
 
     for (const item of items) {
       if (item.itemType === 'product' && item.product) {

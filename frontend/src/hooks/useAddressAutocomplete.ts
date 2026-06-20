@@ -184,3 +184,40 @@ export function useAddressAutocomplete() {
         clearSuggestions,
     };
 }
+
+/**
+ * Géocode une adresse structurée via Nominatim pour obtenir des coords précises.
+ * Utilisé quand le client modifie le numéro de rue après avoir sélectionné une suggestion.
+ * Retourne null si l'adresse n'est pas trouvée (on garde les coords existantes).
+ */
+export async function geocodeAddress(
+    street: string,
+    number: string,
+    postalCode: string,
+    city: string,
+): Promise<{ lat: number; lng: number } | null> {
+    const q = [number, street, postalCode, city, 'Belgium'].filter(Boolean).join(' ');
+    if (q.trim().length < 5) return null;
+
+    const params = new URLSearchParams({
+        q,
+        format: 'json',
+        addressdetails: '1',
+        limit: '1',
+        countrycodes: 'be',
+        'accept-language': 'fr',
+    });
+
+    try {
+        const res = await fetch(
+            `https://nominatim.openstreetmap.org/search?${params.toString()}`,
+            { headers: { 'Accept-Language': 'fr' } },
+        );
+        if (!res.ok) return null;
+        const results: NominatimResult[] = await res.json();
+        if (!results.length) return null;
+        return { lat: parseFloat(results[0].lat), lng: parseFloat(results[0].lon) };
+    } catch {
+        return null;
+    }
+}
